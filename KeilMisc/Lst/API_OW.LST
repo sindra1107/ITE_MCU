@@ -1,0 +1,1328 @@
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE API_OW
+OBJECT MODULE PLACED IN Code\API\API_OW.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\API\API_OW.C LA WL(1) CD OT(9,SIZE) NOAREGS OR INCDIR(.
+                    -\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*-----------------------------------------------------------------------------
+   2          * TITLE: API_OW.C
+   3          *
+   4          * Author : Dino
+   5          *
+   6          * History : 
+   7          * ------------------------------
+   8          * Version : 1.00
+   9          * ------------------------------
+  10          *
+  11          * Note : To link [api_xxx.o] if related api function be used.
+  12          *
+  13          *---------------------------------------------------------------------------*/
+  14          
+  15          //*****************************************************************************
+  16          // Include all header file
+  17          #include <CORE_INCLUDE.H>
+  18          #include <API_INCLUDE.H>
+  19          //
+  20          //*****************************************************************************
+  21          #if API_OW_SUPPORT
+  22          //*****************************************************************************
+  23          ECReg   OW_DATA          _at_ 0x2A00;           // One Wire Data Register
+  24          ECReg   OW_CTRL          _at_ 0x2A01;           // One Wire Control Register
+  25          ECReg   OW_MOD           _at_ 0x2A02;           // One Wire Mode Register
+  26          ECReg   OW_STS           _at_ 0x2A03;           // One Wire Status Register
+  27          ECReg   OW_INTEN         _at_ 0x2A04;           // One Wire Interrupt Enable Register
+  28          ECReg   OW_RSTL_RSTH_H   _at_ 0x2A05;           // One Wire High bit of Reset Low and Reset High Register
+  29          ECReg   OW_RST_LOW       _at_ 0x2A06;           // One Wire Reset Low Register
+  30          ECReg   OW_MSP           _at_ 0x2A07;           // One Wire Master Sample Present Register
+  31          ECReg   OW_RSTH          _at_ 0x2A08;           // One Wire Reset High Register
+  32          ECReg   OW_SLOT          _at_ 0x2A09;           // One Wire Time Slot Register
+  33          ECReg   OW_W1L           _at_ 0x2A0A;           // One Wire Write 1 Low Register
+  34          ECReg   OW_W0L           _at_ 0x2A0B;           // One Wire Write 0 Low Register
+  35          ECReg   OW_MSR           _at_ 0x2A0C;           // One Wire Master Sample Read Bit Register
+  36          
+  37          //*****************************************************************************
+  38          // Software OW
+  39          //*****************************************************************************
+  40          //*****************************************************************************
+  41          //*****************************************************************************
+  42          //
+  43          // Reset OW device function
+  44          //
+  45          //  parameter :
+  46          //      none
+  47          //
+  48          //  return :
+  49          //      FFh : Reset device OK.
+  50          //      00h : Reset device fail.
+  51          //
+  52          //*****************************************************************************
+  53          //__attribute__((optimize("O0")))
+  54          BYTE SW_OW_Device_Reset(void)
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 2   
+
+  55          {       
+  56   1          BYTE report;
+  57   1          BYTE delay;
+  58   1      
+  59   1          DisableAllInterrupt();
+  60   1          report = 0xFF;          // Pre-set 0xFF, OK
+  61   1          
+  62   1          //-------------------------------------------------
+  63   1          // Low 500 us, tRSTL
+  64   1          //-------------------------------------------------
+  65   1          OneWireOutput;
+  66   1          OneWireLow;             // Output low
+  67   1      
+  68   1          for(delay=0x00; delay<=34; delay++) 
+  69   1          {                       // Delay > 480 us
+  70   2              WNCKR = 0x00;       // Delay 15.26 us
+  71   2          }
+  72   1      
+  73   1          OneWireInput;
+  74   1          //-------------------------------------------------
+  75   1          // To wait pin high (120us time out)
+  76   1          //-------------------------------------------------    
+  77   1          for(delay=0x00; delay<8; delay++) // (120us time out)
+  78   1          {
+  79   2              WNCKR = 0x00;       // Delay 15.26 us
+  80   2              
+  81   2              if(OneWireStatusHigh)
+  82   2              {
+  83   3                  report = 0xFF;  // 0xFF, OK
+  84   3                  break;
+  85   3              }
+  86   2              else
+  87   2              {
+  88   3                  report = 0x00;  // 0x00, Fail
+  89   3              }
+  90   2          }
+  91   1      
+  92   1          if(report == 0xFF)
+  93   1          {
+  94   2              //-------------------------------------------------
+  95   2              // To wait pin high (240us time out)
+  96   2              //-------------------------------------------------   
+  97   2              for(delay=0x00; delay<=16; delay++) // (240us time out)
+  98   2              {
+  99   3                  WNCKR = 0x00;       // Delay 15.26 us
+ 100   3                  
+ 101   3                  if(OneWireStatusLow)
+ 102   3                  {
+ 103   4                      report = 0xFF;  // 0xFF, OK
+ 104   4                      break;
+ 105   4                  }
+ 106   3                  else
+ 107   3                  {
+ 108   4                      report = 0x00;  // 0x00, Fail
+ 109   4                  }
+ 110   3              }
+ 111   2          }
+ 112   1              
+ 113   1          if(report == 0xFF)
+ 114   1          {
+ 115   2              //-------------------------------------------------
+ 116   2              // To wait pin high (1ms time out)
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 3   
+
+ 117   2              //-------------------------------------------------    
+ 118   2              for(delay=0x00; delay<=66; delay++) // (1ms time out)
+ 119   2              {
+ 120   3                  if(OneWireStatusHigh)
+ 121   3                  {
+ 122   4                      report = 0xFF;  // 0xFF, OK
+ 123   4                      break;
+ 124   4                  }
+ 125   3                  else
+ 126   3                  {
+ 127   4                      report = 0x00;  // 0x00, Fail
+ 128   4                  }
+ 129   3              }
+ 130   2          }
+ 131   1          
+ 132   1          EnableAllInterrupt();
+ 133   1          return(report);
+ 134   1      }
+ 135          
+ 136          //*****************************************************************************
+ 137          //
+ 138          // Write one bit function
+ 139          //
+ 140          //  parameter :
+ 141          //      0 or 1
+ 142          //
+ 143          //  return :
+ 144          //      none
+ 145          //
+ 146          //*****************************************************************************
+ 147          //__attribute__((optimize("O0")))
+ 148          void SW_OW_Device_WriteBit(BYTE Psidbit)
+ 149          {
+ 150   1          BYTE delay;
+ 151   1          
+ 152   1          OneWireOutput;
+ 153   1          OneWireLow;
+ 154   1      
+ 155   1          if(Psidbit)
+ 156   1          {
+ 157   2              OneWireHigh;
+ 158   2          }
+ 159   1          else
+ 160   1          {
+ 161   2              OneWireLow;
+ 162   2          }
+ 163   1      
+ 164   1          //-------------------------------------------------
+ 165   1          // Delay 60us
+ 166   1          //-------------------------------------------------
+ 167   1          for(delay=0x00; delay<4; delay++) 
+ 168   1          {                       // Delay 60 us
+ 169   2              WNCKR = 0x00;       // Delay 15.26 us
+ 170   2          }
+ 171   1      
+ 172   1          OneWireInput;
+ 173   1          WNCKR = 0x00;           // Delay 15.26 us
+ 174   1      }
+ 175          
+ 176          //*****************************************************************************
+ 177          //
+ 178          // Write one byte to OW device.
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 4   
+
+ 179          //
+ 180          //  parameter :
+ 181          //      00h ~ FFh
+ 182          //
+ 183          //  return :
+ 184          //      none
+ 185          //
+ 186          //*****************************************************************************
+ 187          //__attribute__((optimize("O0")))
+ 188          void SW_OW_Device_WriteByte(BYTE PsidByte)
+ 189          {
+ 190   1          BYTE index;
+ 191   1      
+ 192   1          DisableAllInterrupt();
+ 193   1              for(index=0x00;index<8;index++)
+ 194   1              {
+ 195   2                      if((PsidByte>>index)&0x01)
+ 196   2                      {
+ 197   3                          SW_OW_Device_WriteBit(1);
+ 198   3                      }
+ 199   2                      else
+ 200   2                      {
+ 201   3                          SW_OW_Device_WriteBit(0);
+ 202   3                      }
+ 203   2              }
+ 204   1          EnableAllInterrupt();
+ 205   1      }
+ 206          
+ 207          //*****************************************************************************
+ 208          //
+ 209          // Read one bit function
+ 210          //
+ 211          //  parameter :
+ 212          //      none
+ 213          //
+ 214          //  return :
+ 215          //      0 or 1
+ 216          //
+ 217          //*****************************************************************************
+ 218          //__attribute__((optimize("O0")))
+ 219          BYTE SW_OW_Device_ReadBit(void)
+ 220          {
+ 221   1              BYTE tempdata;
+ 222   1          BYTE delay;
+ 223   1          
+ 224   1          OneWireOutput;
+ 225   1          OneWireLow;
+ 226   1          _nop_();
+ 227   1          
+ 228   1          OneWireInput;
+ 229   1          WNCKR = 0x00;       // Delay 15.26 us
+ 230   1      
+ 231   1          if(OneWireStatusHigh)
+ 232   1          {
+ 233   2              tempdata = 1;
+ 234   2          }
+ 235   1          else
+ 236   1          {
+ 237   2              tempdata = 0;
+ 238   2          }
+ 239   1      
+ 240   1          //-------------------------------------------------
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 5   
+
+ 241   1          // Delay 60us
+ 242   1          //-------------------------------------------------
+ 243   1          for(delay=0x00; delay<4; delay++) 
+ 244   1          {                       // Delay 60 us
+ 245   2              WNCKR = 0x00;       // Delay 15.26 us
+ 246   2          }
+ 247   1      
+ 248   1          return(tempdata);
+ 249   1      }
+ 250          
+ 251          //*****************************************************************************
+ 252          //
+ 253          // Read one byte from OW device.
+ 254          //
+ 255          //  parameter :
+ 256          //      none
+ 257          //
+ 258          //  return :
+ 259          //      00h ~ FFh
+ 260          //
+ 261          //*****************************************************************************
+ 262          //__attribute__((optimize("O0")))
+ 263          BYTE SW_OW_Device_ReadByte(void)
+ 264          {
+ 265   1          BYTE index;
+ 266   1          BYTE readbit;
+ 267   1          BYTE result;
+ 268   1      
+ 269   1          DisableAllInterrupt();
+ 270   1              result=0x00;
+ 271   1              for(index=0x00;index<8;index++)
+ 272   1              {
+ 273   2                      readbit = SW_OW_Device_ReadBit();
+ 274   2                      result|=(readbit<<index);
+ 275   2              }
+ 276   1              EnableAllInterrupt();
+ 277   1          
+ 278   1              return(result);
+ 279   1      }
+ 280          
+ 281          //*****************************************************************************
+ 282          //*****************************************************************************
+ 283          // Hardware OW
+ 284          //*****************************************************************************
+ 285          //*****************************************************************************
+ 286          //*****************************************************************************
+ 287          // OW register setting
+ 288          //
+ 289          //  parameter :
+ 290          //      none
+ 291          //
+ 292          //  return :
+ 293          //      none
+ 294          //
+ 295          //*****************************************************************************
+ 296          void OW_Init_Registers(void)
+ 297          {   
+ 298   1          GPCRB2 = ALT+PULL_UP;           // GPIO B2 alt function
+ 299   1          //CGCTRL3R = 0x01;              // 0x1E05 , Bit0 = 1
+ 300   1          GCR6 |= BIT4;                               // 0x16F5 , Bit4 = 1
+ 301   1      }
+ 302          
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 6   
+
+ 303          //*****************************************************************************
+ 304          //
+ 305          // Init timer1 for interface time-out
+ 306          //
+ 307          //  parameter :
+ 308          //      Tomeout : 1, 2, 5, 20, 30, 40 ms ; Default : 5 ms
+ 309          //
+ 310          //  return :
+ 311          //      none
+ 312          //
+ 313          //*****************************************************************************
+ 314          void Enable_ETimer_T(BYTE Tomeout)
+ 315          {
+ 316   1              WORD _Timeout;
+ 317   1      
+ 318   1              switch(Tomeout)
+ 319   1              {
+ 320   2                      case 1:
+ 321   2                              _Timeout = Timer_1ms;           // Set timer1 counter 5ms
+ 322   2                              break;
+ 323   2      
+ 324   2                      case 2:
+ 325   2                              _Timeout = Timer_2ms;           // Set timer1 counter 5ms
+ 326   2                              break;
+ 327   2      
+ 328   2                      case 5:
+ 329   2                              _Timeout = Timer_5ms;           // Set timer1 counter 5ms
+ 330   2                              break;
+ 331   2      
+ 332   2                      case 20:
+ 333   2                              _Timeout = Timer_20ms;
+ 334   2                              break;
+ 335   2      
+ 336   2                      case 30:
+ 337   2                              _Timeout = Timer_30ms;
+ 338   2                              break;
+ 339   2      
+ 340   2                      case 40:
+ 341   2                              _Timeout = Timer_40ms;
+ 342   2                              break;
+ 343   2      
+ 344   2                      default:
+ 345   2                              _Timeout = Timer_5ms;           // Set timer1 counter 5ms
+ 346   2                              break;
+ 347   2      
+ 348   2              }
+ 349   1              TR1 = 0;                        // Disable timer1
+ 350   1          ET1 = 0;                    // Disable timer1 interrupt
+ 351   1          _nop_();
+ 352   1          _nop_();
+ 353   1          _nop_();
+ 354   1          _nop_();
+ 355   1              TH1 = _Timeout>>8;              
+ 356   1          TL1 = _Timeout;             // Set timer1 counter 5ms
+ 357   1              TF1 = 0;                        // Clear overflow flag
+ 358   1          TR1 = 1;                    // Enable timer1
+ 359   1      }
+ 360          
+ 361          //*****************************************************************************
+ 362          //
+ 363          // Stop Time Out Function 
+ 364          //
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 7   
+
+ 365          //  parameter :
+ 366          //      none
+ 367          //
+ 368          //  return :
+ 369          //      none
+ 370          //
+ 371          //*****************************************************************************
+ 372          void Stop_ETimer(void)
+ 373          {
+ 374   1              TR1=0;
+ 375   1              TF1=0;
+ 376   1          ET1=1;
+ 377   1      }
+ 378          
+ 379          //*****************************************************************************
+ 380          //
+ 381          // Reset OW device function
+ 382          //
+ 383          //  parameter :
+ 384          //      none
+ 385          //
+ 386          //  return :
+ 387          //      01h : Reset device OK.
+ 388          //      00h : Reset device fail.
+ 389          //
+ 390          //*****************************************************************************
+ 391          BYTE HW_OW_Device_Reset(void)
+ 392          {
+ 393   1          BYTE result;
+ 394   1          result = FALSE;                 // Pr-set result is fail
+ 395   1      
+ 396   1          SET_MASK(OW_CTRL, OW_RST);      // start reset
+ 397   1      
+ 398   1          Enable_ETimer_T(5);             // To enable 5ms time-out timer
+ 399   1      
+ 400   1          while(!TF1)                                 // No overflow, no time out
+ 401   1          {    
+ 402   2              if(IS_MASK_SET(OW_STS, OW_DONE))    // One-Wire Done 
+ 403   2              {
+ 404   3                  SET_MASK(OW_STS, OW_DONE);      // Write clear
+ 405   3                  result = TRUE;                      // return true
+ 406   3                  break;
+ 407   3              }
+ 408   2              else if(IS_MASK_SET(OW_STS, OWLOW_ERR))
+ 409   2              {
+ 410   3                  SET_MASK(OW_STS, OWLOW_ERR);    // Write clear
+ 411   3                  break;
+ 412   3              }
+ 413   2              else if(IS_MASK_SET(OW_STS, OWHIGH_ERR))
+ 414   2              {
+ 415   3                  SET_MASK(OW_STS, OWHIGH_ERR);   // Write clear
+ 416   3                  break;
+ 417   3              }
+ 418   2          }
+ 419   1      
+ 420   1          Stop_ETimer();
+ 421   1          return(result);                 // return result
+ 422   1      }
+ 423          
+ 424          //*****************************************************************************
+ 425          // 
+ 426          // Write one byte to device.
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 8   
+
+ 427          //
+ 428          //  parameter :
+ 429          //      00h ~ FFh
+ 430          //
+ 431          //  return :
+ 432          //      none
+ 433          //
+ 434          //*****************************************************************************
+ 435          BYTE HW_OW_Device_WriteByte(BYTE writedata)
+ 436          {
+ 437   1          BYTE result;
+ 438   1          result = FALSE;
+ 439   1      
+ 440   1          CLEAR_MASK(OW_MOD, OBMOD);
+ 441   1          OW_DATA = writedata;
+ 442   1          SET_MASK(OW_CTRL, OW_WR);
+ 443   1      
+ 444   1          Enable_ETimer_T(5);                         // To enable 5ms time-out timer
+ 445   1      
+ 446   1          while(!TF1)                                                 // No overflow, no time out
+ 447   1          {    
+ 448   2              if(IS_MASK_SET(OW_STS, OW_DONE))    // One-Wire Done 
+ 449   2              {
+ 450   3                  SET_MASK(OW_STS, OW_DONE);      // Write clear
+ 451   3                  result = TRUE;                      // return true
+ 452   3                  break;
+ 453   3              }
+ 454   2              else if(IS_MASK_SET(OW_STS, OWLOW_ERR))
+ 455   2              {
+ 456   3                  SET_MASK(OW_STS, OWLOW_ERR);    // Write clear
+ 457   3                  break;
+ 458   3              }
+ 459   2              else if(IS_MASK_SET(OW_STS, OWHIGH_ERR))
+ 460   2              {
+ 461   3                  SET_MASK(OW_STS, OWHIGH_ERR);   // Write clear
+ 462   3                  break;
+ 463   3              }
+ 464   2          }
+ 465   1      
+ 466   1          Stop_ETimer();
+ 467   1          return(result);
+ 468   1      }
+ 469          
+ 470          //*****************************************************************************
+ 471          // 
+ 472          // Read one byte from device.
+ 473          //
+ 474          //  parameter :
+ 475          //      none
+ 476          //
+ 477          //  return :
+ 478          //      00h ~ FFh
+ 479          //
+ 480          //*****************************************************************************
+ 481          BYTE HW_OW_Device_ReadByte(void)
+ 482          {
+ 483   1          BYTE result;
+ 484   1          result = 0xFF;
+ 485   1      
+ 486   1          CLEAR_MASK(OW_MOD, OBMOD);
+ 487   1          SET_MASK(OW_CTRL, OW_RD);
+ 488   1      
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 9   
+
+ 489   1          Enable_ETimer_T(5);                         // To enable 5ms time-out timer
+ 490   1      
+ 491   1          while(!TF1)                                                 // No overflow, no time out
+ 492   1          {    
+ 493   2              if(IS_MASK_SET(OW_STS, OW_DONE))    // One-Wire Done 
+ 494   2              {
+ 495   3                  SET_MASK(OW_STS, OW_DONE);      // Write clear
+ 496   3                  result = OW_DATA;               // return true
+ 497   3                  break;
+ 498   3              }
+ 499   2              else if(IS_MASK_SET(OW_STS, OWLOW_ERR))
+ 500   2              {
+ 501   3                  SET_MASK(OW_STS, OWLOW_ERR);    // Write clear
+ 502   3                  break;
+ 503   3              }
+ 504   2              else if(IS_MASK_SET(OW_STS, OWHIGH_ERR))
+ 505   2              {
+ 506   3                  SET_MASK(OW_STS, OWHIGH_ERR);   // Write clear
+ 507   3                  break;
+ 508   3              }
+ 509   2          }
+ 510   1      
+ 511   1          Stop_ETimer();
+ 512   1          return(result);
+ 513   1      }
+ 514          #endif
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 10  
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION Com0055 (BEGIN)
+0000         L?0086:
+0000         L?0087:
+0000 900000      E     MOV     DPTR,#GPCRF2
+0003 7440              MOV     A,#040H
+0005 F0                MOVX    @DPTR,A
+0006         L?0088:
+0006 900000      E     MOV     DPTR,#GPDRF
+0009 E0                MOVX    A,@DPTR
+000A 54FB              ANL     A,#0FBH
+000C F0                MOVX    @DPTR,A
+000D 22                RET     
+000E         L?0089:
+000E         L?0090:
+000E E4                CLR     A
+000F 900000      E     MOV     DPTR,#WNCKR
+0012 F0                MOVX    @DPTR,A
+0013 900000      E     MOV     DPTR,#GPDRF
+0016 E0                MOVX    A,@DPTR
+0017 22                RET     
+0018         L?0091:
+0018         L?0092:
+0018 900000      R     MOV     DPTR,#report
+001B 74FF              MOV     A,#0FFH
+001D F0                MOVX    @DPTR,A
+001E 22                RET     
+001F         L?0093:
+001F         L?0094:
+001F E4                CLR     A
+0020 900000      E     MOV     DPTR,#WNCKR
+0023 F0                MOVX    @DPTR,A
+0024 0F                INC     R7
+0025 EF                MOV     A,R7
+0026 22                RET     
+0027         L?0095:
+0027         L?0096:
+0027 900000      E     MOV     DPTR,#GPCRF2
+002A 7480              MOV     A,#080H
+002C F0                MOVX    @DPTR,A
+002D 22                RET     
+002E         L?0097:
+002E         L?0098:
+002E 120000      R     LCALL   Stop_ETimer
+0031 CF                XCH     A,R7
+0032 EE                MOV     A,R6
+0033 CF                XCH     A,R7
+0034 22                RET     
+             ; FUNCTION Com0055 (END)
+
+             ; FUNCTION SW_OW_Device_Reset (BEGIN)
+                                           ; SOURCE LINE # 54
+                                           ; SOURCE LINE # 55
+                                           ; SOURCE LINE # 59
+0000 120000      E     LCALL   DisableAllInterrupt
+                                           ; SOURCE LINE # 60
+0003 120000      R     LCALL   L?0091
+                                           ; SOURCE LINE # 65
+                                           ; SOURCE LINE # 66
+0006 120000      R     LCALL   L?0086
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 11  
+
+                                           ; SOURCE LINE # 68
+;---- Variable 'delay' assigned to Register 'R7' ----
+0009 E4                CLR     A
+000A FF                MOV     R7,A
+000B         ?C0001:
+                                           ; SOURCE LINE # 69
+                                           ; SOURCE LINE # 70
+                                           ; SOURCE LINE # 71
+000B 120000      R     LCALL   L?0093
+000E B423FA            CJNE    A,#023H,?C0001
+0011         ?C0002:
+                                           ; SOURCE LINE # 73
+0011 120000      R     LCALL   L?0095
+                                           ; SOURCE LINE # 77
+0014 E4                CLR     A
+0015 FF                MOV     R7,A
+0016         ?C0004:
+                                           ; SOURCE LINE # 78
+                                           ; SOURCE LINE # 79
+                                           ; SOURCE LINE # 81
+0016 120000      R     LCALL   L?0089
+0019 30E205            JNB     ACC.2,?C0007
+                                           ; SOURCE LINE # 82
+                                           ; SOURCE LINE # 83
+001C 120000      R     LCALL   L?0091
+                                           ; SOURCE LINE # 84
+001F 800A              SJMP    ?C0005
+                                           ; SOURCE LINE # 85
+0021         ?C0007:
+                                           ; SOURCE LINE # 87
+                                           ; SOURCE LINE # 88
+0021 E4                CLR     A
+0022 900000      R     MOV     DPTR,#report
+0025 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 89
+                                           ; SOURCE LINE # 90
+0026         ?C0006:
+0026 0F                INC     R7
+0027 EF                MOV     A,R7
+0028 B408EB            CJNE    A,#08H,?C0004
+002B         ?C0005:
+                                           ; SOURCE LINE # 92
+002B 900000      R     MOV     DPTR,#report
+002E E0                MOVX    A,@DPTR
+002F B4FF17            CJNE    A,#0FFH,?C0009
+                                           ; SOURCE LINE # 93
+                                           ; SOURCE LINE # 97
+0032 E4                CLR     A
+0033 FF                MOV     R7,A
+0034         ?C0010:
+                                           ; SOURCE LINE # 98
+                                           ; SOURCE LINE # 99
+                                           ; SOURCE LINE # 101
+0034 120000      R     LCALL   L?0089
+0037 20E205            JB      ACC.2,?C0013
+                                           ; SOURCE LINE # 102
+                                           ; SOURCE LINE # 103
+003A 120000      R     LCALL   L?0092
+                                           ; SOURCE LINE # 104
+003D 800A              SJMP    ?C0009
+                                           ; SOURCE LINE # 105
+003F         ?C0013:
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 12  
+
+                                           ; SOURCE LINE # 107
+                                           ; SOURCE LINE # 108
+003F E4                CLR     A
+0040 900000      R     MOV     DPTR,#report
+0043 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 109
+                                           ; SOURCE LINE # 110
+0044         ?C0012:
+0044 0F                INC     R7
+0045 EF                MOV     A,R7
+0046 B411EB            CJNE    A,#011H,?C0010
+                                           ; SOURCE LINE # 111
+0049         ?C0009:
+                                           ; SOURCE LINE # 113
+0049 900000      R     MOV     DPTR,#report
+004C E0                MOVX    A,@DPTR
+004D B4FF18            CJNE    A,#0FFH,?C0015
+                                           ; SOURCE LINE # 114
+                                           ; SOURCE LINE # 118
+0050 E4                CLR     A
+0051 FF                MOV     R7,A
+0052         ?C0016:
+                                           ; SOURCE LINE # 119
+                                           ; SOURCE LINE # 120
+0052 900000      E     MOV     DPTR,#GPDRF
+0055 E0                MOVX    A,@DPTR
+0056 30E205            JNB     ACC.2,?C0019
+                                           ; SOURCE LINE # 121
+                                           ; SOURCE LINE # 122
+0059 120000      R     LCALL   L?0092
+                                           ; SOURCE LINE # 123
+005C 800A              SJMP    ?C0015
+                                           ; SOURCE LINE # 124
+005E         ?C0019:
+                                           ; SOURCE LINE # 126
+                                           ; SOURCE LINE # 127
+005E E4                CLR     A
+005F 900000      R     MOV     DPTR,#report
+0062 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 128
+                                           ; SOURCE LINE # 129
+0063         ?C0018:
+0063 0F                INC     R7
+0064 EF                MOV     A,R7
+0065 B443EA            CJNE    A,#043H,?C0016
+                                           ; SOURCE LINE # 130
+0068         ?C0015:
+                                           ; SOURCE LINE # 132
+0068 120000      E     LCALL   EnableAllInterrupt
+                                           ; SOURCE LINE # 133
+006B 900000      R     MOV     DPTR,#report
+006E E0                MOVX    A,@DPTR
+006F FF                MOV     R7,A
+                                           ; SOURCE LINE # 134
+0070         ?C0021:
+0070 22                RET     
+             ; FUNCTION SW_OW_Device_Reset (END)
+
+             ; FUNCTION _SW_OW_Device_WriteBit (BEGIN)
+                                           ; SOURCE LINE # 148
+;---- Variable 'Psidbit' assigned to Register 'R5' ----
+                                           ; SOURCE LINE # 149
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 13  
+
+                                           ; SOURCE LINE # 152
+                                           ; SOURCE LINE # 153
+0000 120000      R     LCALL   L?0086
+                                           ; SOURCE LINE # 155
+0003 EF                MOV     A,R7
+0004 6006              JZ      ?C0022
+                                           ; SOURCE LINE # 156
+                                           ; SOURCE LINE # 157
+0006 E0                MOVX    A,@DPTR
+0007 4404              ORL     A,#04H
+0009 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 158
+000A 8003              SJMP    ?C0023
+000C         ?C0022:
+                                           ; SOURCE LINE # 160
+                                           ; SOURCE LINE # 161
+000C 120000      R     LCALL   L?0088
+                                           ; SOURCE LINE # 162
+000F         ?C0023:
+                                           ; SOURCE LINE # 167
+;---- Variable 'delay' assigned to Register 'R7' ----
+000F E4                CLR     A
+0010 FF                MOV     R7,A
+0011         ?C0024:
+                                           ; SOURCE LINE # 168
+                                           ; SOURCE LINE # 169
+                                           ; SOURCE LINE # 170
+0011 120000      R     LCALL   L?0093
+0014 B404FA            CJNE    A,#04H,?C0024
+0017         ?C0025:
+                                           ; SOURCE LINE # 172
+0017 120000      R     LCALL   L?0095
+                                           ; SOURCE LINE # 173
+001A E4                CLR     A
+001B 900000      E     MOV     DPTR,#WNCKR
+001E F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 174
+001F 22                RET     
+             ; FUNCTION _SW_OW_Device_WriteBit (END)
+
+             ; FUNCTION _SW_OW_Device_WriteByte (BEGIN)
+                                           ; SOURCE LINE # 188
+0000 900000      R     MOV     DPTR,#PsidByte
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 189
+                                           ; SOURCE LINE # 192
+0005 120000      E     LCALL   DisableAllInterrupt
+                                           ; SOURCE LINE # 193
+;---- Variable 'index' assigned to Register 'R6' ----
+0008 E4                CLR     A
+0009 FE                MOV     R6,A
+000A         ?C0028:
+                                           ; SOURCE LINE # 194
+                                           ; SOURCE LINE # 195
+000A 900000      R     MOV     DPTR,#PsidByte
+000D E0                MOVX    A,@DPTR
+000E FF                MOV     R7,A
+000F C8                XCH     A,R0
+0010 EE                MOV     A,R6
+0011 C8                XCH     A,R0
+0012 08                INC     R0
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 14  
+
+0013 8002              SJMP    ?C0080
+0015         ?C0079:
+0015 C3                CLR     C
+0016 13                RRC     A
+0017         ?C0080:
+0017 D8FC              DJNZ    R0,?C0079
+0019 30E004            JNB     ACC.0,?C0031
+                                           ; SOURCE LINE # 196
+                                           ; SOURCE LINE # 197
+001C 7F01              MOV     R7,#01H
+                                           ; SOURCE LINE # 198
+001E 8002              SJMP    ?C0083
+0020         ?C0031:
+                                           ; SOURCE LINE # 200
+                                           ; SOURCE LINE # 201
+0020 E4                CLR     A
+0021 FF                MOV     R7,A
+0022         ?C0083:
+0022 120000      R     LCALL   _SW_OW_Device_WriteBit
+                                           ; SOURCE LINE # 202
+                                           ; SOURCE LINE # 203
+0025         ?C0030:
+0025 0E                INC     R6
+0026 EE                MOV     A,R6
+0027 B408E0            CJNE    A,#08H,?C0028
+002A         ?C0029:
+                                           ; SOURCE LINE # 204
+002A 020000      E     LJMP    EnableAllInterrupt
+             ; FUNCTION _SW_OW_Device_WriteByte (END)
+
+             ; FUNCTION SW_OW_Device_ReadBit (BEGIN)
+                                           ; SOURCE LINE # 219
+;---- Variable 'tempdata' assigned to Register 'R5' ----
+                                           ; SOURCE LINE # 220
+                                           ; SOURCE LINE # 224
+                                           ; SOURCE LINE # 225
+0000 120000      R     LCALL   L?0087
+                                           ; SOURCE LINE # 226
+0003 00                NOP     
+                                           ; SOURCE LINE # 228
+0004 120000      R     LCALL   L?0096
+                                           ; SOURCE LINE # 229
+                                           ; SOURCE LINE # 231
+0007 120000      R     LCALL   L?0090
+000A 30E204            JNB     ACC.2,?C0034
+                                           ; SOURCE LINE # 232
+                                           ; SOURCE LINE # 233
+000D 7D01              MOV     R5,#01H
+                                           ; SOURCE LINE # 234
+000F 8002              SJMP    ?C0035
+0011         ?C0034:
+                                           ; SOURCE LINE # 236
+                                           ; SOURCE LINE # 237
+0011 E4                CLR     A
+0012 FD                MOV     R5,A
+                                           ; SOURCE LINE # 238
+0013         ?C0035:
+                                           ; SOURCE LINE # 243
+;---- Variable 'delay' assigned to Register 'R7' ----
+0013 E4                CLR     A
+0014 FF                MOV     R7,A
+0015         ?C0036:
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 15  
+
+                                           ; SOURCE LINE # 244
+                                           ; SOURCE LINE # 245
+                                           ; SOURCE LINE # 246
+0015 120000      R     LCALL   L?0094
+0018 B404FA            CJNE    A,#04H,?C0036
+001B         ?C0037:
+                                           ; SOURCE LINE # 248
+001B CF                XCH     A,R7
+001C ED                MOV     A,R5
+001D CF                XCH     A,R7
+                                           ; SOURCE LINE # 249
+001E         ?C0039:
+001E 22                RET     
+             ; FUNCTION SW_OW_Device_ReadBit (END)
+
+             ; FUNCTION SW_OW_Device_ReadByte (BEGIN)
+                                           ; SOURCE LINE # 263
+                                           ; SOURCE LINE # 264
+                                           ; SOURCE LINE # 269
+0000 120000      E     LCALL   DisableAllInterrupt
+                                           ; SOURCE LINE # 270
+0003 E4                CLR     A
+0004 900000      R     MOV     DPTR,#result
+0007 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 271
+;---- Variable 'index' assigned to Register 'R4' ----
+0008 FC                MOV     R4,A
+0009         ?C0040:
+                                           ; SOURCE LINE # 272
+                                           ; SOURCE LINE # 273
+0009 120000      R     LCALL   SW_OW_Device_ReadBit
+;---- Variable 'readbit' assigned to Register 'R5' ----
+000C CD                XCH     A,R5
+000D EF                MOV     A,R7
+000E CD                XCH     A,R5
+                                           ; SOURCE LINE # 274
+000F 900000      R     MOV     DPTR,#result
+0012 E0                MOVX    A,@DPTR
+0013 FF                MOV     R7,A
+0014 ED                MOV     A,R5
+0015 C8                XCH     A,R0
+0016 EC                MOV     A,R4
+0017 C8                XCH     A,R0
+0018 08                INC     R0
+0019 8002              SJMP    ?C0082
+001B         ?C0081:
+001B C3                CLR     C
+001C 33                RLC     A
+001D         ?C0082:
+001D D8FC              DJNZ    R0,?C0081
+001F 4F                ORL     A,R7
+0020 900000      R     MOV     DPTR,#result
+0023 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 275
+0024 0C                INC     R4
+0025 EC                MOV     A,R4
+0026 B408E0            CJNE    A,#08H,?C0040
+0029         ?C0041:
+                                           ; SOURCE LINE # 276
+0029 120000      E     LCALL   EnableAllInterrupt
+                                           ; SOURCE LINE # 278
+002C 900000      R     MOV     DPTR,#result
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 16  
+
+002F E0                MOVX    A,@DPTR
+0030 FF                MOV     R7,A
+                                           ; SOURCE LINE # 279
+0031         ?C0043:
+0031 22                RET     
+             ; FUNCTION SW_OW_Device_ReadByte (END)
+
+             ; FUNCTION OW_Init_Registers (BEGIN)
+                                           ; SOURCE LINE # 296
+                                           ; SOURCE LINE # 297
+                                           ; SOURCE LINE # 298
+0000 900000      E     MOV     DPTR,#GPCRB2
+0003 7404              MOV     A,#04H
+0005 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 300
+0006 900000      E     MOV     DPTR,#GCR6
+0009 E0                MOVX    A,@DPTR
+000A 4410              ORL     A,#010H
+000C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 301
+000D 22                RET     
+             ; FUNCTION OW_Init_Registers (END)
+
+             ; FUNCTION _Enable_ETimer_T (BEGIN)
+                                           ; SOURCE LINE # 314
+;---- Variable 'Tomeout' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 315
+                                           ; SOURCE LINE # 318
+0000 EF                MOV     A,R7
+0001 24FE              ADD     A,#0FEH
+0003 601F              JZ      ?C0047
+0005 24FD              ADD     A,#0FDH
+0007 604B              JZ      ?C0052
+0009 24F1              ADD     A,#0F1H
+000B 6023              JZ      ?C0049
+000D 24F6              ADD     A,#0F6H
+000F 602B              JZ      ?C0050
+0011 24F6              ADD     A,#0F6H
+0013 6033              JZ      ?C0051
+0015 2427              ADD     A,#027H
+0017 703B              JNZ     ?C0052
+                                           ; SOURCE LINE # 319
+                                           ; SOURCE LINE # 320
+0019         ?C0046:
+                                           ; SOURCE LINE # 321
+0019 900000      R     MOV     DPTR,#_Timeout
+001C 74FD              MOV     A,#0FDH
+001E F0                MOVX    @DPTR,A
+001F A3                INC     DPTR
+0020 E4                CLR     A
+0021 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 322
+0022 803A              SJMP    ?C0045
+                                           ; SOURCE LINE # 324
+0024         ?C0047:
+                                           ; SOURCE LINE # 325
+0024 900000      R     MOV     DPTR,#_Timeout
+0027 74FA              MOV     A,#0FAH
+0029 F0                MOVX    @DPTR,A
+002A A3                INC     DPTR
+002B 7401              MOV     A,#01H
+002D F0                MOVX    @DPTR,A
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 17  
+
+                                           ; SOURCE LINE # 326
+002E 802E              SJMP    ?C0045
+                                           ; SOURCE LINE # 328
+                                           ; SOURCE LINE # 332
+0030         ?C0049:
+                                           ; SOURCE LINE # 333
+0030 900000      R     MOV     DPTR,#_Timeout
+0033 74C4              MOV     A,#0C4H
+0035 F0                MOVX    @DPTR,A
+0036 A3                INC     DPTR
+0037 741B              MOV     A,#01BH
+0039 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 334
+003A 8022              SJMP    ?C0045
+                                           ; SOURCE LINE # 336
+003C         ?C0050:
+                                           ; SOURCE LINE # 337
+003C 900000      R     MOV     DPTR,#_Timeout
+003F 74A6              MOV     A,#0A6H
+0041 F0                MOVX    @DPTR,A
+0042 A3                INC     DPTR
+0043 7429              MOV     A,#029H
+0045 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 338
+0046 8016              SJMP    ?C0045
+                                           ; SOURCE LINE # 340
+0048         ?C0051:
+                                           ; SOURCE LINE # 341
+0048 900000      R     MOV     DPTR,#_Timeout
+004B 7488              MOV     A,#088H
+004D F0                MOVX    @DPTR,A
+004E A3                INC     DPTR
+004F 744F              MOV     A,#04FH
+0051 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 342
+0052 800A              SJMP    ?C0045
+                                           ; SOURCE LINE # 344
+0054         ?C0052:
+                                           ; SOURCE LINE # 345
+0054         ?C0084:
+0054 900000      R     MOV     DPTR,#_Timeout
+0057 74F1              MOV     A,#0F1H
+0059 F0                MOVX    @DPTR,A
+005A A3                INC     DPTR
+005B 7406              MOV     A,#06H
+005D F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 346
+                                           ; SOURCE LINE # 348
+005E         ?C0045:
+                                           ; SOURCE LINE # 349
+005E C28E              CLR     TR1
+                                           ; SOURCE LINE # 350
+0060 C2AB              CLR     ET1
+                                           ; SOURCE LINE # 351
+0062 00                NOP     
+                                           ; SOURCE LINE # 352
+0063 00                NOP     
+                                           ; SOURCE LINE # 353
+0064 00                NOP     
+                                           ; SOURCE LINE # 354
+0065 00                NOP     
+                                           ; SOURCE LINE # 355
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 18  
+
+0066 900000      R     MOV     DPTR,#_Timeout
+0069 E0                MOVX    A,@DPTR
+006A F58D              MOV     TH1,A
+                                           ; SOURCE LINE # 356
+006C E0                MOVX    A,@DPTR
+006D A3                INC     DPTR
+006E E0                MOVX    A,@DPTR
+006F F58B              MOV     TL1,A
+                                           ; SOURCE LINE # 357
+0071 C28F              CLR     TF1
+                                           ; SOURCE LINE # 358
+0073 D28E              SETB    TR1
+                                           ; SOURCE LINE # 359
+0075 22                RET     
+             ; FUNCTION _Enable_ETimer_T (END)
+
+             ; FUNCTION Stop_ETimer (BEGIN)
+                                           ; SOURCE LINE # 372
+                                           ; SOURCE LINE # 373
+                                           ; SOURCE LINE # 374
+0000 C28E              CLR     TR1
+                                           ; SOURCE LINE # 375
+0002 C28F              CLR     TF1
+                                           ; SOURCE LINE # 376
+0004 D2AB              SETB    ET1
+                                           ; SOURCE LINE # 377
+0006 22                RET     
+             ; FUNCTION Stop_ETimer (END)
+
+             ; FUNCTION HW_OW_Device_Reset (BEGIN)
+                                           ; SOURCE LINE # 391
+                                           ; SOURCE LINE # 392
+                                           ; SOURCE LINE # 394
+;---- Variable 'result' assigned to Register 'R6' ----
+0000 E4                CLR     A
+0001 FE                MOV     R6,A
+                                           ; SOURCE LINE # 396
+0002 902A01            MOV     DPTR,#OW_CTRL
+0005 E0                MOVX    A,@DPTR
+0006 4401              ORL     A,#01H
+0008 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 398
+0009 7F05              MOV     R7,#05H
+000B 120000      R     LCALL   _Enable_ETimer_T
+000E         ?C0055:
+                                           ; SOURCE LINE # 400
+000E 208F27            JB      TF1,?C0056
+                                           ; SOURCE LINE # 401
+                                           ; SOURCE LINE # 402
+0011 902A03            MOV     DPTR,#OW_STS
+0014 E0                MOVX    A,@DPTR
+0015 30E008            JNB     ACC.0,?C0057
+                                           ; SOURCE LINE # 403
+                                           ; SOURCE LINE # 404
+0018 E0                MOVX    A,@DPTR
+0019 4401              ORL     A,#01H
+001B F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 405
+001C 7E01              MOV     R6,#01H
+                                           ; SOURCE LINE # 406
+001E 8018              SJMP    ?C0056
+                                           ; SOURCE LINE # 407
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 19  
+
+0020         ?C0057:
+                                           ; SOURCE LINE # 408
+0020 902A03            MOV     DPTR,#OW_STS
+0023 E0                MOVX    A,@DPTR
+0024 30E106            JNB     ACC.1,?C0059
+                                           ; SOURCE LINE # 409
+                                           ; SOURCE LINE # 410
+0027 E0                MOVX    A,@DPTR
+0028 4402              ORL     A,#02H
+002A F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 411
+002B 800B              SJMP    ?C0056
+                                           ; SOURCE LINE # 412
+002D         ?C0059:
+                                           ; SOURCE LINE # 413
+002D 902A03            MOV     DPTR,#OW_STS
+0030 E0                MOVX    A,@DPTR
+0031 30E2DA            JNB     ACC.2,?C0055
+                                           ; SOURCE LINE # 414
+                                           ; SOURCE LINE # 415
+0034 E0                MOVX    A,@DPTR
+0035 4404              ORL     A,#04H
+0037 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 416
+                                           ; SOURCE LINE # 417
+                                           ; SOURCE LINE # 418
+0038         ?C0056:
+                                           ; SOURCE LINE # 420
+                                           ; SOURCE LINE # 421
+0038 120000      R     LCALL   L?0097
+                                           ; SOURCE LINE # 422
+003B         ?C0062:
+003B 22                RET     
+             ; FUNCTION HW_OW_Device_Reset (END)
+
+             ; FUNCTION _HW_OW_Device_WriteByte (BEGIN)
+                                           ; SOURCE LINE # 435
+;---- Variable 'writedata' assigned to Register 'R4' ----
+0000 CC                XCH     A,R4
+0001 EF                MOV     A,R7
+0002 CC                XCH     A,R4
+                                           ; SOURCE LINE # 436
+                                           ; SOURCE LINE # 438
+;---- Variable 'result' assigned to Register 'R6' ----
+0003 E4                CLR     A
+0004 FE                MOV     R6,A
+                                           ; SOURCE LINE # 440
+0005 902A02            MOV     DPTR,#OW_MOD
+0008 E0                MOVX    A,@DPTR
+0009 54FD              ANL     A,#0FDH
+000B F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 441
+000C 902A00            MOV     DPTR,#OW_DATA
+000F EF                MOV     A,R7
+0010 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 442
+0011 A3                INC     DPTR
+0012 E0                MOVX    A,@DPTR
+0013 4402              ORL     A,#02H
+0015 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 444
+0016 7F05              MOV     R7,#05H
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 20  
+
+0018 120000      R     LCALL   _Enable_ETimer_T
+001B         ?C0063:
+                                           ; SOURCE LINE # 446
+001B 208F27            JB      TF1,?C0064
+                                           ; SOURCE LINE # 447
+                                           ; SOURCE LINE # 448
+001E 902A03            MOV     DPTR,#OW_STS
+0021 E0                MOVX    A,@DPTR
+0022 30E008            JNB     ACC.0,?C0065
+                                           ; SOURCE LINE # 449
+                                           ; SOURCE LINE # 450
+0025 E0                MOVX    A,@DPTR
+0026 4401              ORL     A,#01H
+0028 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 451
+0029 7E01              MOV     R6,#01H
+                                           ; SOURCE LINE # 452
+002B 8018              SJMP    ?C0064
+                                           ; SOURCE LINE # 453
+002D         ?C0065:
+                                           ; SOURCE LINE # 454
+002D 902A03            MOV     DPTR,#OW_STS
+0030 E0                MOVX    A,@DPTR
+0031 30E106            JNB     ACC.1,?C0067
+                                           ; SOURCE LINE # 455
+                                           ; SOURCE LINE # 456
+0034 E0                MOVX    A,@DPTR
+0035 4402              ORL     A,#02H
+0037 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 457
+0038 800B              SJMP    ?C0064
+                                           ; SOURCE LINE # 458
+003A         ?C0067:
+                                           ; SOURCE LINE # 459
+003A 902A03            MOV     DPTR,#OW_STS
+003D E0                MOVX    A,@DPTR
+003E 30E2DA            JNB     ACC.2,?C0063
+                                           ; SOURCE LINE # 460
+                                           ; SOURCE LINE # 461
+0041 E0                MOVX    A,@DPTR
+0042 4404              ORL     A,#04H
+0044 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 462
+                                           ; SOURCE LINE # 463
+                                           ; SOURCE LINE # 464
+0045         ?C0064:
+                                           ; SOURCE LINE # 466
+                                           ; SOURCE LINE # 467
+0045 120000      R     LCALL   L?0097
+                                           ; SOURCE LINE # 468
+0048         ?C0070:
+0048 22                RET     
+             ; FUNCTION _HW_OW_Device_WriteByte (END)
+
+             ; FUNCTION HW_OW_Device_ReadByte (BEGIN)
+                                           ; SOURCE LINE # 481
+                                           ; SOURCE LINE # 482
+                                           ; SOURCE LINE # 484
+;---- Variable 'result' assigned to Register 'R6' ----
+0000 7EFF              MOV     R6,#0FFH
+                                           ; SOURCE LINE # 486
+0002 902A02            MOV     DPTR,#OW_MOD
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 21  
+
+0005 E0                MOVX    A,@DPTR
+0006 54FD              ANL     A,#0FDH
+0008 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 487
+0009 902A01            MOV     DPTR,#OW_CTRL
+000C E0                MOVX    A,@DPTR
+000D 4404              ORL     A,#04H
+000F F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 489
+0010 7F05              MOV     R7,#05H
+0012 120000      R     LCALL   _Enable_ETimer_T
+0015         ?C0071:
+                                           ; SOURCE LINE # 491
+0015 208F2A            JB      TF1,?C0072
+                                           ; SOURCE LINE # 492
+                                           ; SOURCE LINE # 493
+0018 902A03            MOV     DPTR,#OW_STS
+001B E0                MOVX    A,@DPTR
+001C 30E00B            JNB     ACC.0,?C0073
+                                           ; SOURCE LINE # 494
+                                           ; SOURCE LINE # 495
+001F E0                MOVX    A,@DPTR
+0020 4401              ORL     A,#01H
+0022 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 496
+0023 902A00            MOV     DPTR,#OW_DATA
+0026 E0                MOVX    A,@DPTR
+0027 FE                MOV     R6,A
+                                           ; SOURCE LINE # 497
+0028 8018              SJMP    ?C0072
+                                           ; SOURCE LINE # 498
+002A         ?C0073:
+                                           ; SOURCE LINE # 499
+002A 902A03            MOV     DPTR,#OW_STS
+002D E0                MOVX    A,@DPTR
+002E 30E106            JNB     ACC.1,?C0075
+                                           ; SOURCE LINE # 500
+                                           ; SOURCE LINE # 501
+0031 E0                MOVX    A,@DPTR
+0032 4402              ORL     A,#02H
+0034 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 502
+0035 800B              SJMP    ?C0072
+                                           ; SOURCE LINE # 503
+0037         ?C0075:
+                                           ; SOURCE LINE # 504
+0037 902A03            MOV     DPTR,#OW_STS
+003A E0                MOVX    A,@DPTR
+003B 30E2D7            JNB     ACC.2,?C0071
+                                           ; SOURCE LINE # 505
+                                           ; SOURCE LINE # 506
+003E E0                MOVX    A,@DPTR
+003F 4404              ORL     A,#04H
+0041 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 507
+                                           ; SOURCE LINE # 508
+                                           ; SOURCE LINE # 509
+0042         ?C0072:
+                                           ; SOURCE LINE # 511
+                                           ; SOURCE LINE # 512
+0042 120000      R     LCALL   L?0098
+                                           ; SOURCE LINE # 513
+C51 COMPILER V9.03   API_OW                                                                02/02/2015 14:30:50 PAGE 22  
+
+0045         ?C0078:
+0045 22                RET     
+             ; FUNCTION HW_OW_Device_ReadByte (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    666    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       5
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

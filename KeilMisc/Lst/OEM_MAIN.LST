@@ -1,0 +1,538 @@
+C51 COMPILER V9.03   OEM_MAIN                                                              02/02/2015 14:30:21 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE OEM_MAIN
+OBJECT MODULE PLACED IN Code\OEM\OEM_MAIN.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\OEM\OEM_MAIN.C LA WL(1) CD OT(9,SIZE) NOAREGS OR INCDIR
+                    -(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*-----------------------------------------------------------------------------
+   2           * TITLE: OEM_MAIN.C - OEM specific code
+   3           *
+   4           * Some "HOOKS" from CHIPHOOK.C are copied into this file in order to replace
+   5           * (or augment) core functions.
+   6           *
+   7           * Copyright (c) 1983-2007, Insyde Software Corporation. All Rights Reserved.
+   8           *
+   9           * You may not reproduce, distribute, publish, display, perform, modify, adapt,
+  10           * transmit, broadcast, present, recite, release, license or otherwise exploit
+  11           * any part of this publication in any form, by any means, without the prior
+  12           * written permission of Insyde Software Corporation.
+  13           *---------------------------------------------------------------------------*/
+  14           
+  15          #include <CORE_INCLUDE.H>
+  16          #include <OEM_INCLUDE.H>
+  17          
+  18          //------------------------------------------------------------
+  19          // Hook 1ms events
+  20          // EventId is 0 ~ 9 cycle
+  21          //------------------------------------------------------------
+  22          void Hook_Timer1msEvent(IBYTE EventId)
+  23          {
+  24   1          EventManager(EventId);      // Polling system event 
+  25   1          Oem_SysPowerContrl();       // System Power Control  
+  26   1      }
+  27          
+  28          //------------------------------------------------------------
+  29          // Hook 5ms events
+  30          //------------------------------------------------------------
+  31          void Hook_Timer5msEvent(void)
+  32          {
+  33   1          #ifdef PECI_Support
+  34   1          PECI_PowerCtrlCenter();
+  35   1          #endif
+  36   1      
+  37   1      }
+  38          
+  39          //------------------------------------------------------------
+  40          // Hook 10ms events
+  41          //------------------------------------------------------------
+  42          void Hook_Timer10msEventA(void)
+  43          {
+  44   1          #ifdef ECPowerDownModeSupport
+                  ECPowerDownModeManager();
+                  #endif
+  47   1      }
+  48          
+  49          //------------------------------------------------------------
+  50          // Hook 10ms events
+  51          //------------------------------------------------------------
+  52          void Hook_Timer10msEventB(void)
+  53          {
+  54   1      }
+C51 COMPILER V9.03   OEM_MAIN                                                              02/02/2015 14:30:21 PAGE 2   
+
+  55          
+  56          //------------------------------------------------------------
+  57          // Hook 50ms events A
+  58          //------------------------------------------------------------
+  59          void Hook_Timer50msEventA(void)
+  60          {
+  61   1      
+  62   1      }
+  63          
+  64          //------------------------------------------------------------
+  65          // Hook 50ms events B
+  66          //------------------------------------------------------------
+  67          void Hook_Timer50msEventB(void)
+  68          {
+  69   1      
+  70   1      }
+  71          
+  72          //------------------------------------------------------------
+  73          // Hook 50ms events C
+  74          //------------------------------------------------------------
+  75          void Hook_Timer50msEventC(void)
+  76          {
+  77   1      
+  78   1      }
+  79          
+  80          //------------------------------------------------------------
+  81          // Hook 100ms events A
+  82          //------------------------------------------------------------
+  83          void Hook_Timer100msEventA(void)
+  84          {
+  85   1      
+  86   1      }
+  87          
+  88          //------------------------------------------------------------
+  89          // Hook 100ms events B
+  90          //------------------------------------------------------------
+  91          void Hook_Timer100msEventB(void)
+  92          {
+  93   1      
+  94   1      }
+  95          
+  96          //------------------------------------------------------------
+  97          // Hook 100ms events C
+  98          //------------------------------------------------------------
+  99          void Hook_Timer100msEventC(void)
+ 100          {
+ 101   1          #if SmartFanSupport
+ 102   1          if(SystemIsS0)
+ 103   1          {
+ 104   2              FanManager();
+ 105   2          }
+ 106   1          #endif
+ 107   1      }
+ 108          
+ 109          //------------------------------------------------------------
+ 110          // Hook 500ms events A
+ 111          //------------------------------------------------------------
+ 112          void Hook_Timer500msEventA(void)
+ 113          {
+ 114   1      
+ 115   1      }
+ 116          
+C51 COMPILER V9.03   OEM_MAIN                                                              02/02/2015 14:30:21 PAGE 3   
+
+ 117          //------------------------------------------------------------
+ 118          // Hook 500ms events B
+ 119          //------------------------------------------------------------
+ 120          void Hook_Timer500msEventB(void)
+ 121          {
+ 122   1          
+ 123   1      }
+ 124          
+ 125          //------------------------------------------------------------
+ 126          // Hook 500ms events C
+ 127          //------------------------------------------------------------
+ 128          void Hook_Timer500msEventC(void)
+ 129          {
+ 130   1          
+ 131   1      }
+ 132          
+ 133          //------------------------------------------------------------
+ 134          // Hook 1sec events A
+ 135          //------------------------------------------------------------
+ 136          void Hook_Timer1SecEventA(void)
+ 137          {
+ 138   1          #if LEDFuncSupport
+ 139   1          ProcessLED();
+ 140   1          #endif
+ 141   1      
+ 142   1          #if SmartFanSupport
+ 143   1          if(SystemIsS0)
+ 144   1          {
+ 145   2              CheckFanRPM1();
+ 146   2          }
+ 147   1          #endif
+ 148   1      
+ 149   1          #ifdef PECI_Support
+ 150   1          if(SystemIsS0)
+ 151   1          {
+ 152   2              #if ReadDRAMTemperature
+                      PECI_ReadDRAMTemperature();
+                      #endif
+ 155   2          }
+ 156   1          #endif
+ 157   1      }
+ 158          
+ 159          //------------------------------------------------------------
+ 160          // Hook 1sec events B
+ 161          //------------------------------------------------------------
+ 162          void Hook_Timer1SecEventB(void)
+ 163          {
+ 164   1          #if GetCPUTempSupport
+ 165   1          ReadCPUTemp();
+ 166   1          #endif
+ 167   1      
+ 168   1          ReadDgpuTemp();
+ 169   1      
+ 170   1          #if SmartFanSupport
+ 171   1          if(SystemIsS0)
+ 172   1          {
+ 173   2              CheckFanRPM2();
+ 174   2          }
+ 175   1          #endif
+ 176   1      }
+ 177          
+ 178          //------------------------------------------------------------
+C51 COMPILER V9.03   OEM_MAIN                                                              02/02/2015 14:30:21 PAGE 4   
+
+ 179          // Hook 1sec events C
+ 180          //------------------------------------------------------------
+ 181          void Hook_Timer1SecEventC(void)
+ 182          {
+ 183   1      
+ 184   1      }
+ 185          
+ 186          //------------------------------------------------------------
+ 187          // Hook1min events
+ 188          //------------------------------------------------------------
+ 189          void Hook_Timer1MinEvent(void)
+ 190          {
+ 191   1      
+ 192   1      }
+ 193          
+ 194          //------------------------------------------------------------
+ 195          // service_OEM_1
+ 196          //------------------------------------------------------------
+ 197          void service_OEM_1(void)
+ 198          {
+ 199   1      
+ 200   1      }
+ 201          
+ 202          //------------------------------------------------------------
+ 203          // service_OEM_2
+ 204          //------------------------------------------------------------
+ 205          void service_OEM_2(void)
+ 206          {
+ 207   1      
+ 208   1      }
+ 209          
+ 210          //------------------------------------------------------------
+ 211          // service_OEM_3
+ 212          //------------------------------------------------------------
+ 213          void service_OEM_3(void)
+ 214          {
+ 215   1      
+ 216   1      }
+ 217          
+ 218          //------------------------------------------------------------
+ 219          // service_OEM_4
+ 220          //------------------------------------------------------------
+ 221          void service_OEM_4(void)
+ 222          {
+ 223   1      
+ 224   1      }
+ 225          
+ 226          //------------------------------------------------------------
+ 227          //
+ 228          //------------------------------------------------------------
+ 229          void Hook_main_service_H(void) 
+ 230          {
+ 231   1      
+ 232   1      }
+ 233          
+ 234          //------------------------------------------------------------
+ 235          //
+ 236          //------------------------------------------------------------
+ 237          void Hook_main_service_L(void) 
+ 238          {
+ 239   1      
+ 240   1      }
+C51 COMPILER V9.03   OEM_MAIN                                                              02/02/2015 14:30:21 PAGE 5   
+
+ 241          
+ 242          //------------------------------------------------------------
+ 243          // Timer event control function
+ 244          // Return :
+ 245          //  Only_Timer1msEvent : Only Timer1msEvent and Hook_Timer1msEvent function
+ 246          //  All_TimerEvent : All timer events are OK.
+ 247          //------------------------------------------------------------
+ 248          BYTE Hook_Only_Timer1msEvent(void)
+ 249          {
+ 250   1      
+ 251   1      // Return :
+ 252   1      //  Only_Timer1msEvent : Only Timer1msEvent and Hook_Timer1msEvent function
+ 253   1      //  All_TimerEvent : All timer events are OK.
+ 254   1          return(All_TimerEvent);
+ 255   1      }
+ 256          
+ 257          //----------------------------------------------------------------------------
+ 258          // OEM_SkipMainServiceFunc
+ 259          //  Note:
+ 260          //      1. Always return(0xFF|Normal_MainService) to run normal main_service function.
+ 261          //      2. If you don't understand the use of OEM_SkipMainServiceFunc function, don't change anything.
+ 262          //----------------------------------------------------------------------------
+ 263          BYTE OEM_SkipMainServiceFunc(void)
+ 264          {
+ 265   1          
+ 266   1          // Return :
+ 267   1          return(Normal_MainService);
+ 268   1      }
+C51 COMPILER V9.03   OEM_MAIN                                                              02/02/2015 14:30:21 PAGE 6   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION _Hook_Timer1msEvent (BEGIN)
+                                           ; SOURCE LINE # 22
+0000 900000      R     MOV     DPTR,#EventId
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 23
+                                           ; SOURCE LINE # 24
+0005 E0                MOVX    A,@DPTR
+0006 FF                MOV     R7,A
+0007 120000      E     LCALL   _EventManager
+                                           ; SOURCE LINE # 25
+000A 020000      E     LJMP    Oem_SysPowerContrl
+             ; FUNCTION _Hook_Timer1msEvent (END)
+
+             ; FUNCTION Hook_Timer5msEvent (BEGIN)
+                                           ; SOURCE LINE # 31
+                                           ; SOURCE LINE # 32
+                                           ; SOURCE LINE # 34
+0000 020000      E     LJMP    PECI_PowerCtrlCenter
+             ; FUNCTION Hook_Timer5msEvent (END)
+
+             ; FUNCTION Hook_Timer10msEventA (BEGIN)
+                                           ; SOURCE LINE # 42
+                                           ; SOURCE LINE # 43
+                                           ; SOURCE LINE # 47
+0000 22                RET     
+             ; FUNCTION Hook_Timer10msEventA (END)
+
+             ; FUNCTION Hook_Timer10msEventB (BEGIN)
+                                           ; SOURCE LINE # 52
+                                           ; SOURCE LINE # 53
+                                           ; SOURCE LINE # 54
+0000 22                RET     
+             ; FUNCTION Hook_Timer10msEventB (END)
+
+             ; FUNCTION Hook_Timer50msEventA (BEGIN)
+                                           ; SOURCE LINE # 59
+                                           ; SOURCE LINE # 60
+                                           ; SOURCE LINE # 62
+0000 22                RET     
+             ; FUNCTION Hook_Timer50msEventA (END)
+
+             ; FUNCTION Hook_Timer50msEventB (BEGIN)
+                                           ; SOURCE LINE # 67
+                                           ; SOURCE LINE # 68
+                                           ; SOURCE LINE # 70
+0000 22                RET     
+             ; FUNCTION Hook_Timer50msEventB (END)
+
+             ; FUNCTION Hook_Timer50msEventC (BEGIN)
+                                           ; SOURCE LINE # 75
+                                           ; SOURCE LINE # 76
+                                           ; SOURCE LINE # 78
+0000 22                RET     
+             ; FUNCTION Hook_Timer50msEventC (END)
+
+             ; FUNCTION Hook_Timer100msEventA (BEGIN)
+                                           ; SOURCE LINE # 83
+                                           ; SOURCE LINE # 84
+C51 COMPILER V9.03   OEM_MAIN                                                              02/02/2015 14:30:21 PAGE 7   
+
+                                           ; SOURCE LINE # 86
+0000 22                RET     
+             ; FUNCTION Hook_Timer100msEventA (END)
+
+             ; FUNCTION Hook_Timer100msEventB (BEGIN)
+                                           ; SOURCE LINE # 91
+                                           ; SOURCE LINE # 92
+                                           ; SOURCE LINE # 94
+0000 22                RET     
+             ; FUNCTION Hook_Timer100msEventB (END)
+
+             ; FUNCTION Hook_Timer100msEventC (BEGIN)
+                                           ; SOURCE LINE # 99
+                                           ; SOURCE LINE # 100
+                                           ; SOURCE LINE # 102
+0000 900000      E     MOV     DPTR,#SysPowState
+0003 E0                MOVX    A,@DPTR
+0004 B41003            CJNE    A,#010H,?C0011
+                                           ; SOURCE LINE # 103
+                                           ; SOURCE LINE # 104
+0007 120000      E     LCALL   FanManager
+                                           ; SOURCE LINE # 105
+                                           ; SOURCE LINE # 107
+000A         ?C0011:
+000A 22                RET     
+             ; FUNCTION Hook_Timer100msEventC (END)
+
+             ; FUNCTION Hook_Timer500msEventA (BEGIN)
+                                           ; SOURCE LINE # 112
+                                           ; SOURCE LINE # 113
+                                           ; SOURCE LINE # 115
+0000 22                RET     
+             ; FUNCTION Hook_Timer500msEventA (END)
+
+             ; FUNCTION Hook_Timer500msEventB (BEGIN)
+                                           ; SOURCE LINE # 120
+                                           ; SOURCE LINE # 121
+                                           ; SOURCE LINE # 123
+0000 22                RET     
+             ; FUNCTION Hook_Timer500msEventB (END)
+
+             ; FUNCTION Hook_Timer500msEventC (BEGIN)
+                                           ; SOURCE LINE # 128
+                                           ; SOURCE LINE # 129
+                                           ; SOURCE LINE # 131
+0000 22                RET     
+             ; FUNCTION Hook_Timer500msEventC (END)
+
+             ; FUNCTION Hook_Timer1SecEventA (BEGIN)
+                                           ; SOURCE LINE # 136
+                                           ; SOURCE LINE # 137
+                                           ; SOURCE LINE # 139
+0000 120000      E     LCALL   ProcessLED
+                                           ; SOURCE LINE # 143
+0003 900000      E     MOV     DPTR,#SysPowState
+0006 E0                MOVX    A,@DPTR
+0007 B41003            CJNE    A,#010H,?C0015
+                                           ; SOURCE LINE # 144
+                                           ; SOURCE LINE # 145
+000A 120000      E     LCALL   CheckFanRPM1
+                                           ; SOURCE LINE # 146
+000D         ?C0015:
+C51 COMPILER V9.03   OEM_MAIN                                                              02/02/2015 14:30:21 PAGE 8   
+
+                                           ; SOURCE LINE # 150
+000D 900000      E     MOV     DPTR,#SysPowState
+0010 E0                MOVX    A,@DPTR
+                                           ; SOURCE LINE # 151
+                                           ; SOURCE LINE # 155
+                                           ; SOURCE LINE # 157
+0011         ?C0017:
+0011 22                RET     
+             ; FUNCTION Hook_Timer1SecEventA (END)
+
+             ; FUNCTION Hook_Timer1SecEventB (BEGIN)
+                                           ; SOURCE LINE # 162
+                                           ; SOURCE LINE # 163
+                                           ; SOURCE LINE # 165
+0000 120000      E     LCALL   ReadCPUTemp
+                                           ; SOURCE LINE # 168
+0003 120000      E     LCALL   ReadDgpuTemp
+                                           ; SOURCE LINE # 171
+0006 900000      E     MOV     DPTR,#SysPowState
+0009 E0                MOVX    A,@DPTR
+000A B41003            CJNE    A,#010H,?C0019
+                                           ; SOURCE LINE # 172
+                                           ; SOURCE LINE # 173
+000D 120000      E     LCALL   CheckFanRPM2
+                                           ; SOURCE LINE # 174
+                                           ; SOURCE LINE # 176
+0010         ?C0019:
+0010 22                RET     
+             ; FUNCTION Hook_Timer1SecEventB (END)
+
+             ; FUNCTION Hook_Timer1SecEventC (BEGIN)
+                                           ; SOURCE LINE # 181
+                                           ; SOURCE LINE # 182
+                                           ; SOURCE LINE # 184
+0000 22                RET     
+             ; FUNCTION Hook_Timer1SecEventC (END)
+
+             ; FUNCTION Hook_Timer1MinEvent (BEGIN)
+                                           ; SOURCE LINE # 189
+                                           ; SOURCE LINE # 190
+                                           ; SOURCE LINE # 192
+0000 22                RET     
+             ; FUNCTION Hook_Timer1MinEvent (END)
+
+             ; FUNCTION service_OEM_1 (BEGIN)
+                                           ; SOURCE LINE # 197
+                                           ; SOURCE LINE # 198
+                                           ; SOURCE LINE # 200
+0000 22                RET     
+             ; FUNCTION service_OEM_1 (END)
+
+             ; FUNCTION service_OEM_2 (BEGIN)
+                                           ; SOURCE LINE # 205
+                                           ; SOURCE LINE # 206
+                                           ; SOURCE LINE # 208
+0000 22                RET     
+             ; FUNCTION service_OEM_2 (END)
+
+             ; FUNCTION service_OEM_3 (BEGIN)
+                                           ; SOURCE LINE # 213
+                                           ; SOURCE LINE # 214
+                                           ; SOURCE LINE # 216
+C51 COMPILER V9.03   OEM_MAIN                                                              02/02/2015 14:30:21 PAGE 9   
+
+0000 22                RET     
+             ; FUNCTION service_OEM_3 (END)
+
+             ; FUNCTION service_OEM_4 (BEGIN)
+                                           ; SOURCE LINE # 221
+                                           ; SOURCE LINE # 222
+                                           ; SOURCE LINE # 224
+0000 22                RET     
+             ; FUNCTION service_OEM_4 (END)
+
+             ; FUNCTION Hook_main_service_H (BEGIN)
+                                           ; SOURCE LINE # 229
+                                           ; SOURCE LINE # 230
+                                           ; SOURCE LINE # 232
+0000 22                RET     
+             ; FUNCTION Hook_main_service_H (END)
+
+             ; FUNCTION Hook_main_service_L (BEGIN)
+                                           ; SOURCE LINE # 237
+                                           ; SOURCE LINE # 238
+                                           ; SOURCE LINE # 240
+0000 22                RET     
+             ; FUNCTION Hook_main_service_L (END)
+
+             ; FUNCTION Hook_Only_Timer1msEvent (BEGIN)
+                                           ; SOURCE LINE # 248
+                                           ; SOURCE LINE # 249
+                                           ; SOURCE LINE # 254
+0000 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 255
+0002         ?C0028:
+0002 22                RET     
+             ; FUNCTION Hook_Only_Timer1msEvent (END)
+
+             ; FUNCTION OEM_SkipMainServiceFunc (BEGIN)
+                                           ; SOURCE LINE # 263
+                                           ; SOURCE LINE # 264
+                                           ; SOURCE LINE # 267
+0000 7FFF              MOV     R7,#0FFH
+                                           ; SOURCE LINE # 268
+0002         ?C0029:
+0002 22                RET     
+             ; FUNCTION OEM_SkipMainServiceFunc (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     86    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       1
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

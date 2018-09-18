@@ -1,0 +1,3797 @@
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE OEM_POWER
+OBJECT MODULE PLACED IN Code\OEM\OEM_POWER.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\OEM\OEM_POWER.C LA WL(1) CD OT(9,SIZE) NOAREGS OR INCDI
+                    -R(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*----------------------------------------------------------------------------
+   2           * Filename: OEM_Power.C  For Chipset: ITE.IT85XX
+   3           *
+   4           * Function: Power sequnce control function example
+   5           *
+   6           * Author  : Dino
+   7           * 
+   8           * Copyright (c) 2009 - , ITE Tech. Inc. All Rights Reserved. 
+   9           *
+  10           * Note : These functions are reference only.
+  11           *        Please follow your project software specification to do some modification.
+  12           *---------------------------------------------------------------------------*/
+  13          
+  14          #include <CORE_INCLUDE.H>
+  15          #include <OEM_INCLUDE.H>
+  16          
+  17          
+  18          void PF_DNBSWON_ON(void)
+  19          {
+  20   1              DNBSWON_ON();
+  21   1      } 
+  22          
+  23          void PF_DNBSWON_OFF(void)
+  24          {
+  25   1              DNBSWON_OFF();
+  26   1      }
+  27          
+  28          void PF_RSMRST_ON(void)
+  29          {
+  30   1              RSMRST_ON();
+  31   1      }
+  32          
+  33          void PF_RSMRST_OFF(void)
+  34          {
+  35   1              RSMRST_OFF();
+  36   1      }
+  37          
+  38          void PF_RVCC_ON(void)
+  39          {
+  40   1          RSMRST_ON();
+  41   1          Delay1MS(5);        // Delay 5ms for rsmrst
+  42   1          S5_ON();            // Turn on S5 power
+  43   1          Delay1MS(20);       // Delay 20ms for rsmrst
+  44   1              
+  45   1          Delay1MS(5);        // Delay 5ms for rsmrst
+  46   1          RSMRST_OFF(); 
+  47   1      }
+  48          
+  49          void PF_RVCC_OFF(void)
+  50          {
+  51   1          RSMRST_ON();
+  52   1          Delay1MS(20);       // Delay 20ms for rsmrst
+  53   1          S5_OFF();
+  54   1      }
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 2   
+
+  55          
+  56          void PF_SUSON_ON(void)
+  57          {
+  58   1      //      SUSON_ON();
+  59   1      }
+  60          
+  61          void PF_SUSON_OFF(void)
+  62          {
+  63   1      //      SUSON_OFF();
+  64   1      }
+  65          
+  66          void PF_MAINON_ON(void)
+  67          {
+  68   1      //      MAINON_ON();
+  69   1      }
+  70          
+  71          void PF_MAINON_OFF(void)
+  72          {
+  73   1      //      MAINON_OFF();
+  74   1      }
+  75          
+  76          void PF_VRON_ON(void)
+  77          {
+  78   1      //      VRON_ON();
+  79   1      }
+  80          
+  81          void PF_VRON_OFF(void)
+  82          {
+  83   1      //      VRON_OFF();
+  84   1      }
+  85          
+  86          void PF_ECPWROK_ON(void)
+  87          {
+  88   1              ECPWROK_ON();
+  89   1      }
+  90          
+  91          void PF_ECPWROK_OFF(void)
+  92          {
+  93   1              ECPWROK_OFF();
+  94   1      }
+  95          
+  96          BYTE PF_Read_SLPS3(void)
+  97          {
+  98   1              if(Read_SLPS3())
+  99   1              {
+ 100   2                      SET_MASK(POWER_FLAG2,SLP_S3_ON);
+ 101   2                      return(1);
+ 102   2              }
+ 103   1              return(0);
+ 104   1      }
+ 105          
+ 106          BYTE PF_Read_SLPS4(void)
+ 107          {
+ 108   1              if(Read_SLPS4())
+ 109   1              {
+ 110   2              SET_MASK(POWER_FLAG2,SLP_S4_ON);
+ 111   2                      return(1);
+ 112   2              }
+ 113   1              return(0);
+ 114   1      }
+ 115          
+ 116          BYTE PF_Read_SLPS5(void)
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 3   
+
+ 117          {
+ 118   1              if(Read_SLPS5())
+ 119   1              {
+ 120   2                      SET_MASK(POWER_FLAG2,SLP_S5_ON);
+ 121   2                      return(1);
+ 122   2              }
+ 123   1              return(0);
+ 124   1      }
+ 125          
+ 126          BYTE PF_Read_ALL_SYS_PWRGD(void)
+ 127          {
+ 128   1              if(Read_ALL_SYS_PWRGD())
+ 129   1              {
+ 130   2                      return(1);
+ 131   2              }
+ 132   1              return(0);
+ 133   1      }
+ 134          
+ 135          
+ 136          
+ 137          BYTE PF_Read_SLPA(void)
+ 138          {
+ 139   1      //      if(Read_SLPA())
+ 140   1      //      {
+ 141   1      //              return(1);
+ 142   1      //      }
+ 143   1              return(0);
+ 144   1      }
+ 145          
+ 146          //BYTE PF_Read_SUSACK(void)
+ 147          //{
+ 148          //    if(Read_SUSACK())
+ 149          //    {
+ 150          //              return(1);
+ 151          //    }
+ 152          //    return(0);
+ 153          //}
+ 154          
+ 155          BYTE PF_Read_SLP_SUS(void)
+ 156          {
+ 157   1      //    if(Read_SLP_SUS())
+ 158   1      //    {
+ 159   1      //return(1);
+ 160   1      //    }
+ 161   1          return(0);
+ 162   1      }
+ 163          
+ 164          BYTE PF_Read_HWPG(void)
+ 165          {
+ 166   1      //      if(Read_HWPG())
+ 167   1      //      {
+ 168   1      //              HWPG_TIMER = 0x00;
+ 169   1      //              return(1);
+ 170   1      //      }
+ 171   1      //      else
+ 172   1      //      {
+ 173   1      //              HWPG_TIMER++;
+ 174   1      //              if(HWPG_TIMER>T_HWPG)
+ 175   1      //              {
+ 176   1      ////                    Oem_TriggerS0S5(SC_HWPGSx_S0Off);
+ 177   1      //                      HWPG_TIMER = 0x00;
+ 178   1      //              }
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 4   
+
+ 179   1                      return(0);
+ 180   1      //}
+ 181   1      }
+ 182          
+ 183          void PF_LOMDIS_ON(void)
+ 184          {
+ 185   1      
+ 186   1      }
+ 187          
+ 188          void PF_LOMDIS_OFF(void)
+ 189          {
+ 190   1      
+ 191   1      }
+ 192          
+ 193          void PF_LANPOWER_ON(void)
+ 194          {
+ 195   1      
+ 196   1      }
+ 197          
+ 198          void PF_LANPOWER_OFF(void)
+ 199          {
+ 200   1      
+ 201   1      }
+ 202          
+ 203          void PF_VOLMUTE_ON(void)
+ 204          {
+ 205   1              VOLMUTE_ON();    // 2014-10-28: Peter Modify for Audio
+ 206   1      }
+ 207          
+ 208          void PF_VOLMUTE_OFF(void)
+ 209          {
+ 210   1              VOLMUTE_OFF();    // 2014-10-28: Peter Modify for Audio
+ 211   1      }
+ 212          
+ 213          void PF_USB_ON(void)
+ 214          {
+ 215   1          USB_On_ON();
+ 216   1      }
+ 217          
+ 218          void PF_USB_OFF(void)
+ 219          {
+ 220   1          USB_On_OFF();
+ 221   1      }
+ 222          
+ 223          void PF_WLan_Power_ON(void)
+ 224          {
+ 225   1          WLAN_PWR_EN_ON();
+ 226   1      }
+ 227          
+ 228          void PF_WLan_Power_OFF(void)
+ 229          {
+ 230   1          WLAN_PWR_EN_OFF();
+ 231   1      }
+ 232          
+ 233          void PF_EC_ODD_EN_ON(void)
+ 234          {
+ 235   1      //    EC_ODD_EN_ON();
+ 236   1      }
+ 237          
+ 238          void PF_EC_ODD_EN_OFF(void)
+ 239          {
+ 240   1      //    EC_ODD_EN_OFF();
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 5   
+
+ 241   1      }
+ 242          
+ 243          void PF_Disable_HSPI(void)
+ 244          {
+ 245   1      }
+ 246          
+ 247          // 2014-08-28: Peter add for VGA, start
+ 248          BYTE PF_DGPU_ON(void)
+ 249          {
+ 250   1              if(Read_DGPU_IN())
+ 251   1              {
+ 252   2                      DOCK_AC19V_ON();
+ 253   2              }
+ 254   1      
+ 255   1              return 0; 
+ 256   1      }
+ 257          
+ 258          BYTE PF_DGPU_OK(void)
+ 259          {
+ 260   1              if(Read_DGPU_IN()) {
+ 261   2                      if(IS_DGPU_PWR_OK())
+ 262   2                              return(1);
+ 263   2                      return(0);
+ 264   2              } else {
+ 265   2                      return(1);
+ 266   2              }
+ 267   1      }
+ 268          
+ 269          BYTE PF_DGPU_OFF(void)
+ 270          {
+ 271   1              DOCK_AC19V_OFF();
+ 272   1              return 0; 
+ 273   1      }
+ 274          
+ 275          BYTE PF_FAN_ON(void)
+ 276          {
+ 277   1              SmBusI2CAddress=0;
+ 278   1              ResetSMBus(0);
+ 279   1      
+ 280   1              SET_MASK(ZTIER, BIT1);  // enable PWM output
+ 281   1              DCR0=160;               // enable to default fan speed on system boot
+ 282   1              DCR1=160;               // enable to default fan speed on system boot
+ 283   1              SET_MASK(GCR5, BIT1);           // select GPJ3 TACH1B as its alternative function
+ 284   1              DebugforceFan1RPM=0;
+ 285   1      
+ 286   1              SET_MASK(CLK6MSEL, BIT0);       // set PWM clock source output as EC_Freq*2/3 = 24K
+ 287   1      
+ 288   1      
+ 289   1              return 0; 
+ 290   1      }
+ 291          
+ 292          // 2014-08-28: Peter add for VGA, end
+ 293          
+ 294          //-------------------------------------------------------------------------------------
+ 295          //  Do S5 -> S0 power sequnce
+ 296          //-------------------------------------------------------------------------------------
+ 297          const sPowerSEQ code asPowerSEQS5S0[]=  
+ 298          {
+ 299                  { 0x0000,                               0,              0,  },  // Dummy step always in the top of tabel
+ 300                  { PF_DNBSWON_OFF,               0,      0,  },
+ 301                  { PF_RVCC_ON,                   0,              0,  },
+ 302                  { Hook_A20ON,               0,          0,  },
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 6   
+
+ 303                  { Hook_SMIOFF,              0,          0,  },
+ 304                  { Hook_SCIOFF,              0,          0,  },
+ 305                  { PF_DNBSWON_ON,                120,    0,  },
+ 306                  { PF_Read_SLPS5,                0,              1,  },
+ 307                  { PF_Read_SLPS3,                0,              1,  },
+ 308              { PF_DNBSWON_OFF,       0,      0,  },  
+ 309                  { PF_Read_ALL_SYS_PWRGD,0,      1,  },
+ 310                  {PF_DGPU_ON,    100,    0},                                     // 2014-08-28: Peter add for VGA
+ 311                          {PF_FAN_ON,             20,             0 }, 
+ 312                  { PF_USB_ON,                5,          0,  },
+ 313                  { PF_WLan_Power_ON,     0,              0,  },
+ 314              { InitSio,                          10,     0,  },
+ 315                  { PF_ECPWROK_ON,                0,      0,  },
+ 316                  { S5_S0Variable,            0,          0,  },  // always in the end of tabel
+ 317          }; 
+ 318          
+ 319          //-------------------------------------------------------------------------------------
+ 320          //  Do S0 -> S5 power sequnce
+ 321          //-------------------------------------------------------------------------------------
+ 322          const sPowerSEQ code asPowerSEQS0S5[]=  
+ 323          {
+ 324                  { 0x0000,                               0,              0,  },  // Dummy step always in the top of tabel
+ 325                  { PF_DNBSWON_OFF,           0,          0,  },  
+ 326              { PF_ECPWROK_OFF,       10,         0,  },    
+ 327              { PF_WLan_Power_OFF,    0,          0,  },   
+ 328              { PF_VOLMUTE_ON,  0,  0, },        // 2014-10-28: Peter add for Audio
+ 329              { PF_USB_OFF,               0,              0,  },   
+ 330                  {PF_DGPU_OFF,   0,      0},                                     // // 2014-08-28: Peter add for VGA
+ 331              { Hook_A20OFF,          0,          0,  },
+ 332                  { Hook_SMION,               0,          0,  },
+ 333                  { Hook_SCION,               0,          0,  },
+ 334              { PF_RVCC_OFF,              0,              0,  },    
+ 335                  //{ PF_DNBSWON_ON,          0,          0,  },  
+ 336                  { S0_S5Variable,            0,          0,  },  // always in the end of tabel   
+ 337          }; 
+ 338          
+ 339          //-------------------------------------------------------------------------------------
+ 340          //  Do S4 -> S0 power sequnce
+ 341          //-------------------------------------------------------------------------------------
+ 342          const sPowerSEQ code asPowerSEQS4S0[]= 
+ 343          {
+ 344                  { 0x0000,                               0,              0,  },  // Dummy step always in the top of tabel
+ 345                  { PF_DNBSWON_OFF,               0,      0,  },
+ 346                  { PF_RVCC_ON,                   0,              0,  },      
+ 347                  { Hook_A20ON,               0,          0,  },
+ 348                  { Hook_KBRSTOFF,                0,              0,  },
+ 349                  { Hook_SMIOFF,              0,          0,  },
+ 350                  { Hook_SCIOFF,              0,          0,  },
+ 351                  { PF_DNBSWON_ON,                120,    0,  },
+ 352              { PF_Read_SLPA,             0,              1,  },
+ 353                  { PF_Read_SLPS5,                0,              1,  },
+ 354              { PF_Read_SLPS4,            0,              1,  },
+ 355                  { PF_Read_SLPS3,                0,              1,  },
+ 356                  { PF_DNBSWON_OFF,               0,              0,  },  
+ 357                  { PF_SUSON_ON,                  0,              0,  },
+ 358                  { PF_USB_ON,                5,          0,  },
+ 359                  { PF_VOLMUTE_ON,                0,              0,  },
+ 360                  { PF_MAINON_ON,                 10,             0,  },
+ 361                  { PF_WLan_Power_ON,     0,              0,  },
+ 362                  { PF_EC_ODD_EN_ON,      0,              0,  },
+ 363                  { PF_Read_HWPG,                 10,         1,  },
+ 364              { InitSio,                          10,     0,  },
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 7   
+
+ 365                  { PF_VRON_ON,                   100,    0,  },  
+ 366                  { PF_ECPWROK_ON,                0,      0,  },
+ 367              { S4_S0Variable,        0,          0       },      // always in the end of tabel
+ 368          }; 
+ 369          
+ 370          //-------------------------------------------------------------------------------------
+ 371          //  Do S0 -> S4 power sequnce
+ 372          //-------------------------------------------------------------------------------------
+ 373          const sPowerSEQ code asPowerSEQS0S4[]=  
+ 374          {
+ 375                  { 0x0000,                               0,              0,  },  // Dummy step always in the top of tabel
+ 376                  { PF_DNBSWON_OFF,           0,          0,  },  
+ 377              { PF_Disable_HSPI,      0,      0,  },
+ 378              { PF_ECPWROK_OFF,       10,         0,  },    
+ 379                  { PF_VRON_OFF,          10,             0,  },  
+ 380              { PF_EC_ODD_EN_OFF,     0,          0,  },
+ 381              { PF_WLan_Power_OFF,    0,          0,  },  
+ 382              { PF_MAINON_OFF,        0,          0,  },    
+ 383              { PF_USB_OFF,               0,              0,  },   
+ 384                  { Hook_KBRSTON,             0,          0,  },  
+ 385              { Hook_A20OFF,          0,          0,  },
+ 386                  { Hook_SMION,               0,          0,  },
+ 387                  { Hook_SCION,               0,          0,  },
+ 388              { PF_SUSON_OFF,         10,         0,  },  
+ 389              { PF_RVCC_OFF,              0,              0,  },    
+ 390                  //{ PF_DNBSWON_ON,          0,          0,  },  
+ 391              { S0_S4Variable,        0,          0       },  // always in the end of tabel       
+ 392          }; 
+ 393          
+ 394          //-------------------------------------------------------------------------------------
+ 395          //  Do S3 -> S0 power sequnce
+ 396          //-------------------------------------------------------------------------------------
+ 397          const sPowerSEQ code asPowerSEQS3S0[]= 
+ 398          {
+ 399                  { 0x0000,                               0,              0,  },  // Dummy step always in the top of tabel
+ 400                  { Hook_A20ON,               0,          0,  },
+ 401                  { Hook_SMIOFF,              0,          0,  },
+ 402                  { Hook_SCIOFF,              0,          0,  },
+ 403              { PF_DNBSWON_OFF,           0,              0,  },  
+ 404          //      {PF_DGPU_ON,    0,      0},                                     // 2014-08-28: Peter add for VGA
+ 405              { PF_USB_ON,                    5,          0,  },
+ 406                  { PF_WLan_Power_ON,     0,              0,  },
+ 407              { InitSio,                          10,     0,  },
+ 408                  { PF_ECPWROK_ON,                0,      0,  },
+ 409                  { S3_S0Variable,            0,          0,  },  // always in the end of tabel
+ 410          }; 
+ 411          
+ 412          //-------------------------------------------------------------------------------------
+ 413          //  Do S0 -> S3 power sequnce
+ 414          //-------------------------------------------------------------------------------------
+ 415          const sPowerSEQ code asPowerSEQS0S3[]=  
+ 416          {
+ 417                  { 0x0000,                               0,              0,  },  // Dummy step always in the top of tabel
+ 418                  { PF_DNBSWON_OFF,           0,          0,  },  
+ 419              { PF_ECPWROK_OFF,       10,         0,  },  
+ 420              { PF_WLan_Power_OFF,    0,          0,  },
+ 421              { PF_VOLMUTE_ON,  0,  0, },        // 2014-10-28: Peter add for Audio
+ 422              //{ PF_USB_OFF,                 0,          0,  },  
+ 423              { Hook_A20OFF,          0,          0,  },
+ 424          //      {PF_DGPU_OFF,   0,      0},                                     // 2014-08-28: Peter add for VGA
+ 425                  //{ Hook_SMION,                     0,          0,  },
+ 426                  //{ Hook_SCION,                     0,          0,  },
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 8   
+
+ 427                  { S0_S3Variable,            0,          0,  },  // always in the end of tabel   
+ 428          }; 
+ 429          
+ 430          //-----------------------------------------------------------------------------
+ 431          //  The OEM variable of Sx -> S0
+ 432          //-----------------------------------------------------------------------------
+ 433          void OEM_SX_S0CommVar(void)
+ 434          {
+ 435   1          CheckPowerStateIndex = 0x00;
+ 436   1      }
+ 437          
+ 438          //-----------------------------------------------------------------------------
+ 439          //  The variable of Sx -> S0
+ 440          //-----------------------------------------------------------------------------
+ 441          void SX_S0CommVar(void)
+ 442          {
+ 443   1              SysPowState=SYSTEM_S0;
+ 444   1      //      InitThermalChip();
+ 445   1              InitThermalTable1();
+ 446   1              InitThermalTable2();
+ 447   1              ResetSCIEvent();
+ 448   1          OEM_SX_S0CommVar();
+ 449   1      //    InitSMBus();
+ 450   1      
+ 451   1              DCR1 = 0xA0;
+ 452   1              DCR0 = 0xA0;
+ 453   1      //    FAN_CTL_DGPU_ON();
+ 454   1      //    FANCTL1_ON();
+ 455   1              
+ 456   1          KSOH1 |= 0x08;              // 2014-08-26: Peter add for Audio
+ 457   1      }
+ 458          
+ 459          //-----------------------------------------------------------------------------
+ 460          // The variable of S5 -> S0
+ 461          //-----------------------------------------------------------------------------
+ 462          void S5_S0Variable(void)
+ 463          {
+ 464   1              SX_S0CommVar();
+ 465   1      }
+ 466          
+ 467          //-----------------------------------------------------------------------------
+ 468          // The variable of S4 -> S0
+ 469          //-----------------------------------------------------------------------------
+ 470          void S4_S0Variable(void)
+ 471          {
+ 472   1          SX_S0CommVar();
+ 473   1      
+ 474   1      }
+ 475          
+ 476          //-----------------------------------------------------------------------------
+ 477          // The variable of S3 -> S0
+ 478          //-----------------------------------------------------------------------------
+ 479          void S3_S0Variable(void)
+ 480          {
+ 481   1              SX_S0CommVar();
+ 482   1      
+ 483   1      }
+ 484          
+ 485          //-----------------------------------------------------------------------------
+ 486          //  The OEM variable of S0 -> Sx
+ 487          //-----------------------------------------------------------------------------
+ 488          void OEM_S0_SXCommVar(void)
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 9   
+
+ 489          {
+ 490   1          CheckPowerStateIndex = 0x00;
+ 491   1          CLEAR_MASK(SYS_MISC1,ACPI_OS);
+ 492   1      }
+ 493          
+ 494          //-----------------------------------------------------------------------------
+ 495          //  The variable of S0 -> Sx
+ 496          //-----------------------------------------------------------------------------
+ 497          void S0_SXCommVar(void)
+ 498          {
+ 499   1      #ifdef PECI_Support
+ 500   1          PECI_ClearPSTVariables();
+ 501   1      #endif
+ 502   1          
+ 503   1      #if TouchPad_only
+ 504   1          PowerOffClearTPPendingData();
+ 505   1      #endif    
+ 506   1              CLEAR_MASK(KBHISR,SYSF);
+ 507   1          Ccb42_SYS_FLAG=0;
+ 508   1              Hook_KBRSTON();
+ 509   1              Hook_A20OFF();
+ 510   1      //      InitSMBus();
+ 511   1      
+ 512   1          OEM_S0_SXCommVar();
+ 513   1      
+ 514   1          DCR0 = 0;
+ 515   1          DCR1 = 0;
+ 516   1      //    FAN_CTL_DGPU_OFF();
+ 517   1      //    FANCTL1_OFF();
+ 518   1      }
+ 519          
+ 520          //-----------------------------------------------------------------------------
+ 521          //  The variable of S0 -> S5
+ 522          //-----------------------------------------------------------------------------
+ 523          void S0_S5Variable(void)
+ 524          {
+ 525   1          SysPowState=SYSTEM_S5;
+ 526   1          S0_SXCommVar();
+ 527   1      
+ 528   1      }
+ 529          
+ 530          //-----------------------------------------------------------------------------
+ 531          //  The variable of S0 -> S4
+ 532          //-----------------------------------------------------------------------------
+ 533          void S0_S4Variable(void)
+ 534          {
+ 535   1          SysPowState=SYSTEM_S4;
+ 536   1          S0_SXCommVar();
+ 537   1          
+ 538   1      }
+ 539          
+ 540          //-----------------------------------------------------------------------------
+ 541          // The variable of S0 -> S3
+ 542          //-----------------------------------------------------------------------------
+ 543          void S0_S3Variable(void)
+ 544          {
+ 545   1              SysPowState=SYSTEM_S3;
+ 546   1              S0_SXCommVar();
+ 547   1          
+ 548   1      }
+ 549          
+ 550          //----------------------------------------------------------------------------
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 10  
+
+ 551          //
+ 552          //----------------------------------------------------------------------------
+ 553          void Oem_TriggerS3S0(void)
+ 554          {
+ 555   1          if(SystemIsS0)
+ 556   1          {
+ 557   2              return;
+ 558   2          }
+ 559   1          
+ 560   1              SysPowState=SYSTEM_S3_S0;
+ 561   1              PWSeqStep = 1;
+ 562   1              PowSeqDelay = 0x00;
+ 563   1      }
+ 564          
+ 565          //----------------------------------------------------------------------------
+ 566          //
+ 567          //----------------------------------------------------------------------------
+ 568          void Oem_TriggerS4S0(void)
+ 569          {
+ 570   1          if(SystemIsS0)
+ 571   1          {
+ 572   2              return;
+ 573   2          }
+ 574   1          
+ 575   1          SysPowState=SYSTEM_S4_S0;
+ 576   1          PWSeqStep = 1;
+ 577   1          PowSeqDelay = 0x00;
+ 578   1      }
+ 579          
+ 580          //----------------------------------------------------------------------------
+ 581          //
+ 582          //----------------------------------------------------------------------------
+ 583          void Oem_TriggerS5S0(void)
+ 584          {
+ 585   1          if(SystemIsS0)
+ 586   1          {
+ 587   2              return;
+ 588   2          }
+ 589   1          
+ 590   1          SysPowState=SYSTEM_S5_S0;
+ 591   1              PWSeqStep = 1;
+ 592   1              PowSeqDelay = 0x00;
+ 593   1      }
+ 594          
+ 595          //----------------------------------------------------------------------------
+ 596          // S5 to S0 sequnce
+ 597          //----------------------------------------------------------------------------
+ 598          void Oem_S5S0Sequence(void)
+ 599          {
+ 600   1          if ( PowSeqDelay != 0x00 )
+ 601   1          {
+ 602   2              PowSeqDelay--;                          //1m Sec count base
+ 603   2              if ( PowSeqDelay != 0x00 )
+ 604   2              {
+ 605   3                  return;
+ 606   3              } 
+ 607   2          }
+ 608   1      
+ 609   1              while(PWSeqStep<(sizeof(asPowerSEQS5S0)/sizeof(sPowerSEQ)))
+ 610   1              {       
+ 611   2                      if(asPowerSEQS5S0[PWSeqStep].checkstatus==0x00) // Do function
+ 612   2                      {
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 11  
+
+ 613   3                              (asPowerSEQS5S0[PWSeqStep].func)();
+ 614   3                              PowSeqDelay = asPowerSEQS5S0[PWSeqStep].delay;
+ 615   3                              PWSeqStep++;
+ 616   3                              if(PowSeqDelay!=0x00)
+ 617   3                              {
+ 618   4                                      break;
+ 619   4                              }
+ 620   3                      }
+ 621   2                      else                                                                                    // Check input status pin
+ 622   2                      {
+ 623   3                              if((asPowerSEQS5S0[PWSeqStep].func)())
+ 624   3                              {
+ 625   4                                      PowSeqDelay = asPowerSEQS5S0[PWSeqStep].delay;
+ 626   4                                  PWSeqStep++;
+ 627   4                              }  
+ 628   3                              break;
+ 629   3                      }       
+ 630   2              }
+ 631   1      }
+ 632          
+ 633          //----------------------------------------------------------------------------
+ 634          // S4 to S0 sequnce
+ 635          //----------------------------------------------------------------------------
+ 636          void Oem_S4S0Sequence(void)
+ 637          {
+ 638   1          if ( PowSeqDelay != 0x00 )
+ 639   1          {
+ 640   2              PowSeqDelay--;                          //1m Sec count base
+ 641   2              if ( PowSeqDelay != 0x00 )
+ 642   2              {
+ 643   3                  return;
+ 644   3              }
+ 645   2          }
+ 646   1      
+ 647   1          while(PWSeqStep<(sizeof(asPowerSEQS4S0)/sizeof(sPowerSEQ)))
+ 648   1          {   
+ 649   2              if(asPowerSEQS4S0[PWSeqStep].checkstatus==0x00) // Do function
+ 650   2              {
+ 651   3                  (asPowerSEQS4S0[PWSeqStep].func)();
+ 652   3                  PowSeqDelay = asPowerSEQS4S0[PWSeqStep].delay;
+ 653   3                  PWSeqStep++;
+ 654   3                  if(PowSeqDelay!=0x00)
+ 655   3                  {
+ 656   4                      break;
+ 657   4                  }
+ 658   3              }
+ 659   2              else                                                                                    // Check input status pin
+ 660   2              {
+ 661   3                  if((asPowerSEQS4S0[PWSeqStep].func)())
+ 662   3                  {
+ 663   4                      PowSeqDelay = asPowerSEQS4S0[PWSeqStep].delay;
+ 664   4                      PWSeqStep++;
+ 665   4                  }
+ 666   3                  break;
+ 667   3              }       
+ 668   2          }
+ 669   1      }
+ 670          
+ 671          //----------------------------------------------------------------------------
+ 672          // S3 to S0 sequnce
+ 673          //----------------------------------------------------------------------------
+ 674          void Oem_S3S0Sequence(void)
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 12  
+
+ 675          {
+ 676   1          if ( PowSeqDelay != 0x00 )
+ 677   1          {
+ 678   2              PowSeqDelay--;                          //1m Sec count base
+ 679   2              if ( PowSeqDelay != 0x00 )
+ 680   2              {
+ 681   3                  return;
+ 682   3              }
+ 683   2          }
+ 684   1      
+ 685   1              while(PWSeqStep<(sizeof(asPowerSEQS3S0)/sizeof(sPowerSEQ)))
+ 686   1              {       
+ 687   2                      if(asPowerSEQS3S0[PWSeqStep].checkstatus==0x00) // Do function
+ 688   2                      {
+ 689   3                              (asPowerSEQS3S0[PWSeqStep].func)();
+ 690   3                              PowSeqDelay = asPowerSEQS3S0[PWSeqStep].delay;
+ 691   3                              PWSeqStep++;
+ 692   3                              if(PowSeqDelay!=0x00)
+ 693   3                              {
+ 694   4                                      break;
+ 695   4                              }
+ 696   3                      }
+ 697   2                      else                                                                                    // Check input status pin
+ 698   2                      {
+ 699   3                              if((asPowerSEQS3S0[PWSeqStep].func)())
+ 700   3                              {
+ 701   4                                      PowSeqDelay = asPowerSEQS3S0[PWSeqStep].delay;
+ 702   4                                      PWSeqStep++;
+ 703   4                              }
+ 704   3                              break;
+ 705   3                      }       
+ 706   2              } 
+ 707   1      }
+ 708          
+ 709          //-----------------------------------------------------------------------------
+ 710          // Check SUSB and SUSC
+ 711          //-----------------------------------------------------------------------------
+ 712          //------------------------------------------------------------------------------
+ 713          //The function of checking slp s3
+ 714          //------------------------------------------------------------------------------
+ 715          void CheckSLP_S3(void)
+ 716          {
+ 717   1              CLEAR_MASK(POWER_FLAG2, SLP_S3_ON);
+ 718   1              if(Read_SLPS3())
+ 719   1          {
+ 720   2              SET_MASK(POWER_FLAG2, SLP_S3_ON);
+ 721   2          }   
+ 722   1      }
+ 723          
+ 724          //------------------------------------------------------------------------------
+ 725          //The function of checking slp s4
+ 726          //------------------------------------------------------------------------------
+ 727          void CheckSLP_S4(void)
+ 728          {
+ 729   1              CLEAR_MASK(POWER_FLAG2, SLP_S4_ON);
+ 730   1              if(Read_SLPS4())
+ 731   1          {
+ 732   2              SET_MASK(POWER_FLAG2, SLP_S4_ON);
+ 733   2          } 
+ 734   1      }
+ 735          
+ 736          //------------------------------------------------------------------------------
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 13  
+
+ 737          //The function of checking slp s5
+ 738          //------------------------------------------------------------------------------
+ 739          void CheckSLP_S5(void)
+ 740          {
+ 741   1          CLEAR_MASK(POWER_FLAG2, SLP_S5_ON);
+ 742   1              if(Read_SLPS5())
+ 743   1          {
+ 744   2              SET_MASK(POWER_FLAG2, SLP_S5_ON);
+ 745   2          }  
+ 746   1      }
+ 747          
+ 748          void DoPowerStatus(void)
+ 749          {
+ 750   1          BYTE presentstatus;
+ 751   1      
+ 752   1          presentstatus = (POWER_FLAG2&(SLP_S3_ON+SLP_S5_ON));
+ 753   1          if(PowerStatusBK != presentstatus)      // To make sure all SLP is checked.
+ 754   1          {
+ 755   2              PowerStatusBK = presentstatus;
+ 756   2              return;
+ 757   2          }
+ 758   1          
+ 759   1              switch(POWER_FLAG2 & (SLP_S3_ON+SLP_S5_ON)) 
+ 760   1              {
+ 761   2                      case 0:                                 // goto S5
+ 762   2                  switch (SysPowState) 
+ 763   2                  {
+ 764   3                      case SYSTEM_S0 :
+ 765   3                          Oem_TriggerS0S5(SC_S0SLPOff);
+ 766   3                          break;
+ 767   3                          
+ 768   3                      case SYSTEM_S3 :
+ 769   3                          Oem_TriggerS0S5(SC_S3S4SLPOff);
+ 770   3                          break;           
+ 771   3                  }
+ 772   2                      break;
+ 773   2      
+ 774   2                      case (SLP_S3_ON+SLP_S5_ON): // goto S0
+ 775   2                  switch (SysPowState) 
+ 776   2                  {
+ 777   3                      case SYSTEM_S3 :
+ 778   3                          Oem_TriggerS3S0();
+ 779   3                          break;
+ 780   3                          
+ 781   3                      case SYSTEM_S5 :                                     
+ 782   3                          Oem_TriggerS5S0();
+ 783   3                           break;
+ 784   3                  }
+ 785   2                  break;            
+ 786   2      
+ 787   2              case (SLP_S5_ON):             // goto S3
+ 788   2                  switch (SysPowState) 
+ 789   2                  {
+ 790   3                      case SYSTEM_S0 :
+ 791   3                          Oem_TriggerS0S3(0x30);
+ 792   3                          break;
+ 793   3                  }
+ 794   2                  break;
+ 795   2              }
+ 796   1      }
+ 797          
+ 798          //------------------------------------------------------------------------------
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 14  
+
+ 799          void CheckPowerState(void)
+ 800          {
+ 801   1          switch(CheckPowerStateIndex)
+ 802   1          {
+ 803   2              case 0:
+ 804   2                  CheckSLP_S3();          // Check SLP_S3#(or SUS_B#)
+ 805   2                  CheckPowerStateIndex ++;
+ 806   2                  break;
+ 807   2                  
+ 808   2              case 1:
+ 809   2                  CheckSLP_S5();          // Check SLP_S5#(or SUS_C#)
+ 810   2                  CheckPowerStateIndex ++;
+ 811   2                  break;
+ 812   2      
+ 813   2              case 2:
+ 814   2                  DoPowerStatus();
+ 815   2                  CheckPowerStateIndex = 0x00;
+ 816   2                  break;
+ 817   2      
+ 818   2              default:
+ 819   2                  CheckPowerStateIndex = 0x00;
+ 820   2                  break;
+ 821   2          }
+ 822   1      }
+ 823          
+ 824          
+ 825          //----------------------------------------------------------------------------
+ 826          //
+ 827          //----------------------------------------------------------------------------
+ 828          void Oem_TriggerS0S3(BYTE causecode)
+ 829          {
+ 830   1          if(SystemIsS3)
+ 831   1          {
+ 832   2              return;
+ 833   2          }
+ 834   1          
+ 835   1              ShutDnCause = causecode;                // setup shutdown case
+ 836   1              SysPowState=SYSTEM_S0_S3;
+ 837   1              PWSeqStep = 1;
+ 838   1              PowSeqDelay = 0x00;
+ 839   1      }
+ 840          
+ 841          
+ 842          //----------------------------------------------------------------------------
+ 843          //
+ 844          //----------------------------------------------------------------------------
+ 845          void Oem_TriggerS0S4(BYTE causecode)
+ 846          {
+ 847   1          if(SystemIsS4)
+ 848   1          {
+ 849   2              return;
+ 850   2          }
+ 851   1          
+ 852   1          ShutDnCause = causecode;            // setup shutdown case
+ 853   1          SysPowState=SYSTEM_S0_S4;
+ 854   1          PWSeqStep = 1;
+ 855   1          PowSeqDelay = 0x00;
+ 856   1      }
+ 857          
+ 858          
+ 859          //----------------------------------------------------------------------------
+ 860          //
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 15  
+
+ 861          //----------------------------------------------------------------------------
+ 862          void Oem_TriggerS0S5(BYTE causecode)
+ 863          {
+ 864   1          if(SystemIsS5)
+ 865   1          {
+ 866   2              return;
+ 867   2          }
+ 868   1          
+ 869   1              ShutDnCause = causecode;                // setup shutdown case 
+ 870   1          SysPowState=SYSTEM_S0_S5;
+ 871   1              PWSeqStep = 1;
+ 872   1              PowSeqDelay = 0x00;
+ 873   1      }
+ 874          
+ 875          //-----------------------------------------------------------------------------
+ 876          // process POWER OFF sequence
+ 877          // entry:       1¡Bpower shutdown case
+ 878          //                      2¡BS5 off or not
+ 879          // Shutdown cause:
+ 880          //      1:      0x8A command of 66 port
+ 881          //      2:      0x8B command of 66 port
+ 882          //      3:      4secs Overrided
+ 883          //      4:      HWPG low
+ 884          //      5:      0x8C command of 66 port
+ 885          //      6:      0x8D command of 66 port
+ 886          //      7:      temperature to high
+ 887          //      8:
+ 888          //      9:      Init. thermal chip fail
+ 889          //      10:     Check SLP // S0 -> S4
+ 890          //      11:     Check SLP // S3 -> S5
+ 891          //      12:     Check SLP // S0 -> S5
+ 892          
+ 893          //-----------------------------------------------------------------------------
+ 894          //----------------------------------------------------------------------------
+ 895          // S0 to S3 sequnce
+ 896          //----------------------------------------------------------------------------
+ 897          void Oem_S0S3Sequence(void)
+ 898          {
+ 899   1          if ( PowSeqDelay != 0x00 )
+ 900   1          {
+ 901   2              PowSeqDelay--;                          //1m Sec count base
+ 902   2              if ( PowSeqDelay != 0x00 )
+ 903   2              {
+ 904   3                  return;
+ 905   3              }
+ 906   2          }
+ 907   1      
+ 908   1              while(PWSeqStep<(sizeof(asPowerSEQS0S3)/sizeof(sPowerSEQ)))
+ 909   1              {       
+ 910   2                      if(asPowerSEQS0S3[PWSeqStep].checkstatus==0x00) // Do function
+ 911   2                      {
+ 912   3                              (asPowerSEQS0S3[PWSeqStep].func)();
+ 913   3                              PowSeqDelay = asPowerSEQS0S3[PWSeqStep].delay;
+ 914   3                              PWSeqStep++;
+ 915   3                              if(PowSeqDelay!=0x00)
+ 916   3                              {
+ 917   4                                      break;
+ 918   4                              }
+ 919   3                      }
+ 920   2                      else                                                                                    // Check input status pin
+ 921   2                      {
+ 922   3                              if((asPowerSEQS0S3[PWSeqStep].func)())
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 16  
+
+ 923   3                              {
+ 924   4                                      PowSeqDelay = asPowerSEQS0S3[PWSeqStep].delay;
+ 925   4                                      PWSeqStep++;
+ 926   4                              }
+ 927   3                              break;
+ 928   3                      }       
+ 929   2              }           
+ 930   1      }
+ 931          
+ 932          
+ 933          //----------------------------------------------------------------------------
+ 934          // S0 to S4 sequnce
+ 935          //----------------------------------------------------------------------------
+ 936          void Oem_S0S4Sequence(void)
+ 937          {
+ 938   1          if ( PowSeqDelay != 0x00 )
+ 939   1          {
+ 940   2              PowSeqDelay--;                          //1m Sec count base
+ 941   2              if ( PowSeqDelay != 0x00 )
+ 942   2              {
+ 943   3                  return;
+ 944   3              }
+ 945   2          }
+ 946   1      
+ 947   1          while(PWSeqStep<(sizeof(asPowerSEQS0S4)/sizeof(sPowerSEQ)))
+ 948   1          {   
+ 949   2              if(asPowerSEQS0S4[PWSeqStep].checkstatus==0x00) // Do function
+ 950   2              {
+ 951   3                  (asPowerSEQS0S4[PWSeqStep].func)();
+ 952   3                  PowSeqDelay = asPowerSEQS0S4[PWSeqStep].delay;
+ 953   3                  PWSeqStep++;
+ 954   3                  if(PowSeqDelay!=0x00)
+ 955   3                  {
+ 956   4                      break;
+ 957   4                  }
+ 958   3              }
+ 959   2              else                                                                                    // Check input status pin
+ 960   2              {
+ 961   3                  if((asPowerSEQS0S4[PWSeqStep].func)())
+ 962   3                  {
+ 963   4                      PowSeqDelay = asPowerSEQS0S4[PWSeqStep].delay;
+ 964   4                      PWSeqStep++;
+ 965   4                  }
+ 966   3                  break;
+ 967   3              }       
+ 968   2          }       
+ 969   1      }
+ 970          
+ 971          //-----------------------------------------------------------------
+ 972          // S0 to S5 sequnce
+ 973          //-----------------------------------------------------------------
+ 974          void Oem_S0S5Sequence(void)
+ 975          {
+ 976   1          if ( PowSeqDelay != 0x00 )
+ 977   1          {
+ 978   2              PowSeqDelay--;                          //1m Sec count base
+ 979   2              if ( PowSeqDelay != 0x00 )
+ 980   2              {
+ 981   3                  return;
+ 982   3              }
+ 983   2          }
+ 984   1      
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 17  
+
+ 985   1              while(PWSeqStep<(sizeof(asPowerSEQS0S5)/sizeof(sPowerSEQ)))
+ 986   1              {       
+ 987   2                      if(asPowerSEQS0S5[PWSeqStep].checkstatus==0x00) // Do function
+ 988   2                      {
+ 989   3                              (asPowerSEQS0S5[PWSeqStep].func)();
+ 990   3                              PowSeqDelay = asPowerSEQS0S5[PWSeqStep].delay;
+ 991   3                              PWSeqStep++;
+ 992   3                              if(PowSeqDelay!=0x00)
+ 993   3                              {
+ 994   4                                      break;
+ 995   4                              }
+ 996   3                      }
+ 997   2                      else                                                                                    // Check input status pin
+ 998   2                      {
+ 999   3                              if((asPowerSEQS0S5[PWSeqStep].func)())
+1000   3                              {
+1001   4                                      PowSeqDelay = asPowerSEQS0S5[PWSeqStep].delay;
+1002   4                                      PWSeqStep++;
+1003   4                              }
+1004   3                              break;
+1005   3                      }       
+1006   2              }  
+1007   1      }
+1008          
+1009          /* ----------------------------------------------------------------------------
+1010           * FUNCTION: check Enter Deep Sleep mode
+1011           *      Timer base : 500 ms
+1012           * ------------------------------------------------------------------------- */
+1013          BYTE CheckEnterDeepSleep(void)
+1014          {
+1015   1              BYTE resault;
+1016   1              resault = 0x00;
+1017   1          
+1018   1          if(SystemIsS0)                                      // if system in S0
+1019   1              resault = 0x01; 
+1020   1          if(SystemIsS3)                                      // if system in S3
+1021   1              resault = 0x01;
+1022   1          if(IS_MASK_SET(POWER_FLAG1,wait_PSW_off))   // power switch pressed
+1023   1              resault = 0x01; 
+1024   1      
+1025   1              if(resault == 0x00)
+1026   1              {
+1027   2                      if(DeepSleepCunt<10)        // Delay 500 ms for EC deep sleep mode
+1028   2                      {
+1029   3                              DeepSleepCunt++;
+1030   3                              resault = 0x02;
+1031   3                      }
+1032   2                      else
+1033   2                      {
+1034   3                              resault = 0x00;
+1035   3                              DeepSleepCunt = 0x00;
+1036   3                      }
+1037   2              }
+1038   1          else
+1039   1          {
+1040   2              DeepSleepCunt = 0x00;
+1041   2          }
+1042   1      
+1043   1              switch(resault)
+1044   1              {
+1045   2                      case 0:
+1046   2                              return(1);
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 18  
+
+1047   2                              break;
+1048   2      
+1049   2                      case 1:
+1050   2                              DeepSleepCunt=0x00;
+1051   2                              return(0);
+1052   2                              break;
+1053   2      
+1054   2                      case 2:
+1055   2                              return(0);
+1056   2                              break;
+1057   2              }
+1058   1          return(0);
+1059   1      }
+1060          
+1061          /* ----------------------------------------------------------------------------
+1062           * FUNCTION: Enter Deep Sleep mode
+1063           * ------------------------------------------------------------------------- */
+1064          void EnterDeepSleep(void)
+1065          {
+1066   1              IER0=0x00;                              
+1067   1              IER1=0x00;
+1068   1              IER2=0x00;
+1069   1              IER3=0x00;
+1070   1              IER4=0x00;
+1071   1      
+1072   1              DisableAllInterrupt();
+1073   1      
+1074   1                                                              // Disable module
+1075   1      //      DisableADCChannel();    // Disable ADC
+1076   1              DACPWRDN=0x3F;                  // Disable DAC          
+1077   1      
+1078   1              KSOL = 0xFF;
+1079   1              KSOH1 = 0xFF;
+1080   1              KSOH2 = 0xFF;
+1081   1              
+1082   1              //*************************************************************************
+1083   1              // Set Wake up pin -> alt function
+1084   1              //*************************************************************************
+1085   1              GPCRD0 = ALT;                   // SUSB to alternate pin        
+1086   1              GPCRD1 = ALT;                   // ACIN to alternate pin
+1087   1              GPCRE4 = ALT;                   // pwrsw to alternate pin
+1088   1              GPCRE5 = ALT;                   // NOVO Button to alternate pin  
+1089   1              //*************************************************************************
+1090   1      
+1091   1              CGCTRL1R = 0xFF;
+1092   1              CGCTRL2R = 0xFF;
+1093   1              CGCTRL3R = 0xFF;
+1094   1      
+1095   1              //*************************************************************************
+1096   1              // Set WUC interrupt function
+1097   1              //*************************************************************************
+1098   1              WUENR2 = 0x23;          // Wake-up enable WU25 for pwrsw
+1099   1                                      // Wake-up enable WU20 for SUSB
+1100   1                                      // Wake-up enable WU21 for acin
+1101   1      
+1102   1              WUEMR2 = 0x20;          // Wake-up Falling-edge WU25 for pwrsw
+1103   1                                  // Wake-up Rising-edge WU20 for SUSB
+1104   1                                  // Wake-up Rising-edge WU21 for ACIN
+1105   1      
+1106   1              WUENR4 = 0x01;          // Wake-up enable WU40 for NOVO Button
+1107   1              WUEMR4 = 0x01;          // Wake-up Edge WU40 for NOVO    
+1108   1      
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 19  
+
+1109   1              IER0 |= (Int_WKO20+Int_WKINTAD);    // enable int 1 for  SUSB
+1110   1                                                                          // enable int 5 for  NOVO button    
+1111   1              IER1 |= Int_WKO25;          // enable int 14 for  pwrsw
+1112   1              IER3 |= Int_WKO21;          // enable int 31 for  ACIN
+1113   1      
+1114   1              ISR0 = (Int_WKO20+Int_WKINTAD);     // clear int 1 for  SUSB
+1115   1                                                                          // clear int 5 for  NOVO button     
+1116   1              ISR1 = Int_WKO25;           // clear int 14 for  pwrsw
+1117   1              ISR3 = Int_WKO21;           // clear int 31 for  ACIN
+1118   1              //*************************************************************************
+1119   1      
+1120   1              WUESR1 = 0xFF;                  // clear wakeup status
+1121   1              WUESR2 = 0xFF;
+1122   1              WUESR3 = 0xFF;
+1123   1              WUESR4 = 0xFF;
+1124   1      
+1125   1              _nop_();
+1126   1              _nop_();
+1127   1      
+1128   1              EnableAllInterrupt();
+1129   1              PLLCTRL = 1;
+1130   1              PCON =2 ;               // enter sleep mode
+1131   1      
+1132   1              _nop_();
+1133   1              _nop_();
+1134   1              _nop_();
+1135   1              _nop_();
+1136   1              _nop_();
+1137   1              _nop_();
+1138   1              _nop_();
+1139   1              _nop_();
+1140   1      
+1141   1              WUENR1 = 0x00;  
+1142   1              WUENR2 = 0x00;  
+1143   1              WUENR3 = 0x00;  
+1144   1              WUENR4 = 0x00;  
+1145   1      
+1146   1              IER0=0x00;                              
+1147   1              IER1=0x00;
+1148   1              IER2=0x00;
+1149   1              IER3=0x00;
+1150   1              IER4=0x00;
+1151   1      
+1152   1              //*************************************************************************
+1153   1              //
+1154   1              //*************************************************************************     
+1155   1              GPCRD0 = INPUT;                 // SUSB to alternate pin        
+1156   1              GPCRD1 = INPUT;                 // ACIN to alternate pin
+1157   1              GPCRE4 = INPUT;                 // pwrsw to alternate pin
+1158   1              GPCRE5 = INPUT;                 // NOVO Button to alternate pin  
+1159   1              //*************************************************************************
+1160   1      
+1161   1              WUESR1 = 0xff;
+1162   1              WUESR2 = 0xff;
+1163   1              WUESR3 = 0xff;
+1164   1              WUESR4 = 0xff;
+1165   1      
+1166   1              CGCTRL1R = 000;
+1167   1              CGCTRL2R = 0x00;
+1168   1              CGCTRL3R = 0x00;
+1169   1          
+1170   1      #if ADCFuncSupport  
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 20  
+
+                      EnableADCChannel();             // enable ADC   
+              #endif  
+1173   1      
+1174   1              DACPWRDN=0x00;                  // enable DAC   
+1175   1              Enable_Any_Key_Irq();   // Enable Keyboard
+1176   1              Init_Timers();
+1177   1      }
+1178          
+1179          //-----------------------------------------------------------------------------
+1180          // The function of checking HWPG
+1181          //-----------------------------------------------------------------------------
+1182          void MoniterHWPG(void)
+1183          {
+1184   1      //    if(SystemIsS0)
+1185   1      //    {
+1186   1      //        if(!Read_HWPG()) 
+1187   1      //        {
+1188   1      //            HWPG_TIMER++;
+1189   1      //            if(HWPG_TIMER>T_HWPG)
+1190   1      //            {
+1191   1      //                Oem_TriggerS0S5(SC_HWPS0Off);
+1192   1      //                HWPG_TIMER = 0x00;
+1193   1      //            }
+1194   1      //        }
+1195   1      //        else
+1196   1      //        {
+1197   1      //             HWPG_TIMER = 0x00;
+1198   1      //        }
+1199   1      //    }
+1200   1      }
+1201          
+1202          //----------------------------------------------------------------------------
+1203          // EC auto power on function
+1204          //----------------------------------------------------------------------------
+1205          void CheckAutoS5S0(void)
+1206          {
+1207   1              if(ECAutoPowerOn==1)
+1208   1              {
+1209   2                      ECAutoPowerOn = 0;
+1210   2                      DelayDoPowerSeq = 1000;
+1211   2                      Oem_TriggerS5S0();
+1212   2              }
+1213   1              
+1214   1              if(ECWDTRSTNow)
+1215   1              {
+1216   2                      ECWDTRSTNow = 0;
+1217   2                      SysPowState = SYSTEM_EC_WDTRST;
+1218   2              }
+1219   1      }
+1220          
+1221          //-----------------------------------------------------------------------------
+1222          // Handle System Power Control
+1223          // Called by service_1mS -> Timer1msEvent -> Hook_Timer1msEvent
+1224          //-----------------------------------------------------------------------------
+1225          void Oem_SysPowerContrl(void)
+1226          {
+1227   1              if(SystemIsS0)
+1228   1              {
+1229   2                      //if (!Read_LPCRST())
+1230   2                      //{
+1231   2      
+1232   2                      //}
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 21  
+
+1233   2              }
+1234   1      
+1235   1          // Check if delay doing PowerSeq is needed.
+1236   1          if ( DelayDoPowerSeq != 0x00 )
+1237   1          {
+1238   2              DelayDoPowerSeq--;              
+1239   2              if ( DelayDoPowerSeq != 0x00 )
+1240   2              {
+1241   3                  return;
+1242   3              }
+1243   2          }
+1244   1      
+1245   1          if((SystemIsS0)||(SystemIsS3)||(SystemIsS5))
+1246   1          {
+1247   2              CheckPowerState();
+1248   2          }
+1249   1      
+1250   1          // Check current System PowerState to see what should we do.
+1251   1          switch (SysPowState)
+1252   1          {
+1253   2              case SYSTEM_S0: 
+1254   2                              MoniterHWPG();
+1255   2                              break;
+1256   2      
+1257   2              case SYSTEM_S3: 
+1258   2                      break;
+1259   2      
+1260   2              case SYSTEM_S5:
+1261   2                              CheckAutoS5S0();
+1262   2                  break;
+1263   2      
+1264   2              case SYSTEM_S5_S0:
+1265   2                              Oem_S5S0Sequence();
+1266   2                              break;
+1267   2                                      
+1268   2              case SYSTEM_S3_S0:
+1269   2                              Oem_S3S0Sequence();
+1270   2                  break;
+1271   2      
+1272   2              case SYSTEM_S0_S3:
+1273   2                              Oem_S0S3Sequence();
+1274   2                  break;
+1275   2      
+1276   2              case SYSTEM_S0_S5:
+1277   2                              Oem_S0S5Sequence();
+1278   2                      break;
+1279   2                                      
+1280   2                      case SYSTEM_EC_WDTRST:
+1281   2                              InternalWDTNow();
+1282   2                              break;
+1283   2      
+1284   2              default:
+1285   2                      SysPowState=SYSTEM_S5;
+1286   2                      break;
+1287   2          }
+1288   1      }
+1289          
+1290          
+1291          void CheckResetSource(void)
+1292          {
+1293   1          switch(RSTStatus&0x03)
+1294   1          {
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 22  
+
+1295   2              case 0:
+1296   2              case 1:
+1297   2                  if(GPCRA0==0x84)
+1298   2                  {
+1299   3                      ShutDnCause = SC_ECColdBoot;
+1300   3                  }
+1301   2                  else
+1302   2                  {
+1303   3                      ShutDnCause = SC_EC_0x0000;
+1304   3                  }
+1305   2                  break;
+1306   2                  
+1307   2              case 2:
+1308   2                  if(GPCRA0==0x84)
+1309   2                  {
+1310   3                      ShutDnCause = SC_IntWatchDog;
+1311   3                  }
+1312   2                  else
+1313   2                  {
+1314   3                      ShutDnCause = SC_EC_0x0000;
+1315   3                  }
+1316   2                  break;         
+1317   2      
+1318   2              case 3:
+1319   2                  if(GPCRA0==0x84)
+1320   2                  {
+1321   3                      ShutDnCause = SC_ExtWatchDog;
+1322   3                  }
+1323   2                  else
+1324   2                  {
+1325   3                      ShutDnCause = SC_EC_0x0000;
+1326   3                  }
+1327   2                  
+1328   2                  break;
+1329   2          }
+1330   1      }
+1331          
+1332          //-----------------------------------------------------------------------------
+1333          // The function of pulsing S.B. power button 100ms
+1334          //-----------------------------------------------------------------------------
+1335          void PulseSBPowerButton(void)
+1336          {
+1337   1          DNBSWON_ON();
+1338   1          SBSWReleaseCunt = 20;   // decrease timer base is 10ms total time 200ms
+1339   1      }
+1340          
+1341          //-----------------------------------------------------------------------------
+1342          // The function of releasing S.B. power button
+1343          //-----------------------------------------------------------------------------
+1344          void CheckSBPowerButton(void)
+1345          {
+1346   1              if(SBSWReleaseCunt!=0x00)
+1347   1              {
+1348   2                      SBSWReleaseCunt--;
+1349   2                      if(SBSWReleaseCunt==0x00)
+1350   2                      {
+1351   3                              DNBSWON_OFF();
+1352   3                      }
+1353   2              }
+1354   1      }
+1355          
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 23  
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION Com00E0 (BEGIN)
+0000         L?0225:
+0000 900000      E     MOV     DPTR,#PWSeqStep
+0003 E0                MOVX    A,@DPTR
+0004 75F005            MOV     B,#05H
+0007 A4                MUL     AB
+0008 2400        R     ADD     A,#LOW asPowerSEQS5S0+02H
+000A F582              MOV     DPL,A
+000C E4                CLR     A
+000D 3400        R     ADDC    A,#HIGH asPowerSEQS5S0+02H
+000F         L?0226:
+000F F583              MOV     DPH,A
+0011 E4                CLR     A
+0012 93                MOVC    A,@A+DPTR
+0013 FF                MOV     R7,A
+0014 7401              MOV     A,#01H
+0016 93                MOVC    A,@A+DPTR
+0017 900000      E     MOV     DPTR,#PowSeqDelay
+001A CF                XCH     A,R7
+001B F0                MOVX    @DPTR,A
+001C A3                INC     DPTR
+001D EF                MOV     A,R7
+001E F0                MOVX    @DPTR,A
+001F 900000      E     MOV     DPTR,#PWSeqStep
+0022 E0                MOVX    A,@DPTR
+0023 04                INC     A
+0024 F0                MOVX    @DPTR,A
+0025 22                RET     
+0026         L?0227:
+0026         L?0228:
+0026 F583              MOV     DPH,A
+0028 E4                CLR     A
+0029 93                MOVC    A,@A+DPTR
+002A FE                MOV     R6,A
+002B 7401              MOV     A,#01H
+002D 93                MOVC    A,@A+DPTR
+002E CA                XCH     A,R2
+002F EE                MOV     A,R6
+0030 CA                XCH     A,R2
+0031 F9                MOV     R1,A
+0032 120000      E     LCALL   ?C?ICALL
+0035         L?0229:
+0035 900000      E     MOV     DPTR,#PWSeqStep
+0038 E0                MOVX    A,@DPTR
+0039 75F005            MOV     B,#05H
+003C A4                MUL     AB
+003D 22                RET     
+003E         L?0230:
+003E 2400        R     ADD     A,#LOW asPowerSEQS5S0
+0040 F582              MOV     DPL,A
+0042 E4                CLR     A
+0043 3400        R     ADDC    A,#HIGH asPowerSEQS5S0
+0045         L?0231:
+0045 F583              MOV     DPH,A
+0047 E4                CLR     A
+0048 93                MOVC    A,@A+DPTR
+0049 FE                MOV     R6,A
+004A 7401              MOV     A,#01H
+004C 93                MOVC    A,@A+DPTR
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 24  
+
+004D CA                XCH     A,R2
+004E EE                MOV     A,R6
+004F CA                XCH     A,R2
+0050 F9                MOV     R1,A
+0051 020000      E     LJMP    ?C?ICALL
+0054         L?0232:
+0054 900000      E     MOV     DPTR,#SysPowState
+0057         L?0233:
+0057 F0                MOVX    @DPTR,A
+0058 900000      E     MOV     DPTR,#PWSeqStep
+005B 7401              MOV     A,#01H
+005D F0                MOVX    @DPTR,A
+005E E4                CLR     A
+005F 900000      E     MOV     DPTR,#PowSeqDelay
+0062 F0                MOVX    @DPTR,A
+0063 A3                INC     DPTR
+0064 F0                MOVX    @DPTR,A
+0065 22                RET     
+0066         L?0234:
+0066         L?0235:
+0066 900000      E     MOV     DPTR,#PowSeqDelay
+0069 74FF              MOV     A,#0FFH
+006B F5F0              MOV     B,A
+006D 120000      E     LCALL   ?C?IILDX
+0070 900000      E     MOV     DPTR,#PowSeqDelay
+0073 E0                MOVX    A,@DPTR
+0074 22                RET     
+0075         L?0236:
+0075 900000      E     MOV     DPTR,#IER0
+0078 F0                MOVX    @DPTR,A
+0079 900000      E     MOV     DPTR,#IER1
+007C F0                MOVX    @DPTR,A
+007D 900000      E     MOV     DPTR,#IER2
+0080 F0                MOVX    @DPTR,A
+0081 900000      E     MOV     DPTR,#IER3
+0084 F0                MOVX    @DPTR,A
+0085 900000      E     MOV     DPTR,#IER4
+0088 F0                MOVX    @DPTR,A
+0089 22                RET     
+008A         L?0237:
+008A F0                MOVX    @DPTR,A
+008B 900000      E     MOV     DPTR,#WUESR1
+008E 74FF              MOV     A,#0FFH
+0090 F0                MOVX    @DPTR,A
+0091 900000      E     MOV     DPTR,#WUESR2
+0094 F0                MOVX    @DPTR,A
+0095 900000      E     MOV     DPTR,#WUESR3
+0098 F0                MOVX    @DPTR,A
+0099 900000      E     MOV     DPTR,#WUESR4
+009C F0                MOVX    @DPTR,A
+009D 22                RET     
+009E         L?0238:
+009E         L?0239:
+009E 900000      E     MOV     DPTR,#ShutDnCause
+00A1 EF                MOV     A,R7
+00A2 F0                MOVX    @DPTR,A
+00A3 900000      E     MOV     DPTR,#SysPowState
+00A6 22                RET     
+00A7         L?0240:
+00A7         L?0241:
+00A7 900000      E     MOV     DPTR,#SysPowState
+00AA E0                MOVX    A,@DPTR
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 25  
+
+00AB 6410              XRL     A,#010H
+00AD 22                RET     
+00AE         L?0242:
+00AE F0                MOVX    @DPTR,A
+00AF 900000      E     MOV     DPTR,#GPCRD1
+00B2 F0                MOVX    @DPTR,A
+00B3 900000      E     MOV     DPTR,#GPCRE4
+00B6 F0                MOVX    @DPTR,A
+00B7 900000      E     MOV     DPTR,#GPCRE5
+00BA 22                RET     
+00BB         L?0243:
+00BB         L?0244:
+00BB 900000      E     MOV     DPTR,#GPDRD
+00BE E0                MOVX    A,@DPTR
+00BF 54DF              ANL     A,#0DFH
+00C1 F0                MOVX    @DPTR,A
+00C2 22                RET     
+00C3         L?0245:
+00C3         L?0246:
+00C3 900000      E     MOV     DPTR,#GPCRA0
+00C6 E0                MOVX    A,@DPTR
+00C7 900000      E     MOV     DPTR,#ShutDnCause
+00CA 22                RET     
+00CB         L?0247:
+00CB F0                MOVX    @DPTR,A
+00CC 900000      E     MOV     DPTR,#CGCTRL2R
+00CF F0                MOVX    @DPTR,A
+00D0 900000      E     MOV     DPTR,#CGCTRL3R
+00D3 F0                MOVX    @DPTR,A
+00D4 22                RET     
+             ; FUNCTION Com00E0 (END)
+
+             ; FUNCTION PF_DNBSWON_ON (BEGIN)
+                                           ; SOURCE LINE # 18
+                                           ; SOURCE LINE # 19
+                                           ; SOURCE LINE # 20
+0000 900000      E     MOV     DPTR,#GPDRG
+0003 E0                MOVX    A,@DPTR
+0004 54FD              ANL     A,#0FDH
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 21
+0007 22                RET     
+             ; FUNCTION PF_DNBSWON_ON (END)
+
+             ; FUNCTION PF_DNBSWON_OFF (BEGIN)
+                                           ; SOURCE LINE # 23
+                                           ; SOURCE LINE # 24
+                                           ; SOURCE LINE # 25
+0000 900000      E     MOV     DPTR,#GPDRG
+0003 E0                MOVX    A,@DPTR
+0004 4402              ORL     A,#02H
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 26
+0007 22                RET     
+             ; FUNCTION PF_DNBSWON_OFF (END)
+
+             ; FUNCTION PF_RSMRST_ON (BEGIN)
+                                           ; SOURCE LINE # 28
+                                           ; SOURCE LINE # 29
+                                           ; SOURCE LINE # 30
+0000 120000      R     LCALL   L?0243
+                                           ; SOURCE LINE # 31
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 26  
+
+0003 22                RET     
+             ; FUNCTION PF_RSMRST_ON (END)
+
+             ; FUNCTION PF_RSMRST_OFF (BEGIN)
+                                           ; SOURCE LINE # 33
+                                           ; SOURCE LINE # 34
+                                           ; SOURCE LINE # 35
+0000 900000      E     MOV     DPTR,#GPDRD
+0003 E0                MOVX    A,@DPTR
+0004 4420              ORL     A,#020H
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 36
+0007 22                RET     
+             ; FUNCTION PF_RSMRST_OFF (END)
+
+             ; FUNCTION PF_RVCC_ON (BEGIN)
+                                           ; SOURCE LINE # 38
+                                           ; SOURCE LINE # 39
+                                           ; SOURCE LINE # 40
+0000 120000      R     LCALL   L?0243
+                                           ; SOURCE LINE # 41
+0003 7F05              MOV     R7,#05H
+0005 120000      E     LCALL   _Delay1MS
+                                           ; SOURCE LINE # 42
+0008 900000      E     MOV     DPTR,#GPDRH
+000B E0                MOVX    A,@DPTR
+000C 4404              ORL     A,#04H
+000E F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 43
+000F 7F14              MOV     R7,#014H
+0011 120000      E     LCALL   _Delay1MS
+                                           ; SOURCE LINE # 45
+0014 7F05              MOV     R7,#05H
+0016 120000      E     LCALL   _Delay1MS
+                                           ; SOURCE LINE # 46
+0019 900000      E     MOV     DPTR,#GPDRD
+001C E0                MOVX    A,@DPTR
+001D 4420              ORL     A,#020H
+001F F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 47
+0020 22                RET     
+             ; FUNCTION PF_RVCC_ON (END)
+
+             ; FUNCTION PF_RVCC_OFF (BEGIN)
+                                           ; SOURCE LINE # 49
+                                           ; SOURCE LINE # 50
+                                           ; SOURCE LINE # 51
+0000 120000      R     LCALL   L?0244
+                                           ; SOURCE LINE # 52
+0003 7F14              MOV     R7,#014H
+0005 120000      E     LCALL   _Delay1MS
+                                           ; SOURCE LINE # 53
+0008 900000      E     MOV     DPTR,#GPDRH
+000B E0                MOVX    A,@DPTR
+000C 54FB              ANL     A,#0FBH
+000E F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 54
+000F 22                RET     
+             ; FUNCTION PF_RVCC_OFF (END)
+
+             ; FUNCTION PF_SUSON_ON (BEGIN)
+                                           ; SOURCE LINE # 56
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 27  
+
+                                           ; SOURCE LINE # 57
+                                           ; SOURCE LINE # 59
+0000 22                RET     
+             ; FUNCTION PF_SUSON_ON (END)
+
+             ; FUNCTION PF_SUSON_OFF (BEGIN)
+                                           ; SOURCE LINE # 61
+                                           ; SOURCE LINE # 62
+                                           ; SOURCE LINE # 64
+0000 22                RET     
+             ; FUNCTION PF_SUSON_OFF (END)
+
+             ; FUNCTION PF_MAINON_ON (BEGIN)
+                                           ; SOURCE LINE # 66
+                                           ; SOURCE LINE # 67
+                                           ; SOURCE LINE # 69
+0000 22                RET     
+             ; FUNCTION PF_MAINON_ON (END)
+
+             ; FUNCTION PF_MAINON_OFF (BEGIN)
+                                           ; SOURCE LINE # 71
+                                           ; SOURCE LINE # 72
+                                           ; SOURCE LINE # 74
+0000 22                RET     
+             ; FUNCTION PF_MAINON_OFF (END)
+
+             ; FUNCTION PF_VRON_ON (BEGIN)
+                                           ; SOURCE LINE # 76
+                                           ; SOURCE LINE # 77
+                                           ; SOURCE LINE # 79
+0000 22                RET     
+             ; FUNCTION PF_VRON_ON (END)
+
+             ; FUNCTION PF_VRON_OFF (BEGIN)
+                                           ; SOURCE LINE # 81
+                                           ; SOURCE LINE # 82
+                                           ; SOURCE LINE # 84
+0000 22                RET     
+             ; FUNCTION PF_VRON_OFF (END)
+
+             ; FUNCTION PF_ECPWROK_ON (BEGIN)
+                                           ; SOURCE LINE # 86
+                                           ; SOURCE LINE # 87
+                                           ; SOURCE LINE # 88
+0000 900000      E     MOV     DPTR,#GPDRB
+0003 E0                MOVX    A,@DPTR
+0004 4440              ORL     A,#040H
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 89
+0007 22                RET     
+             ; FUNCTION PF_ECPWROK_ON (END)
+
+             ; FUNCTION PF_ECPWROK_OFF (BEGIN)
+                                           ; SOURCE LINE # 91
+                                           ; SOURCE LINE # 92
+                                           ; SOURCE LINE # 93
+0000 900000      E     MOV     DPTR,#GPDRB
+0003 E0                MOVX    A,@DPTR
+0004 54BF              ANL     A,#0BFH
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 94
+0007 22                RET     
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 28  
+
+             ; FUNCTION PF_ECPWROK_OFF (END)
+
+             ; FUNCTION PF_Read_SLPS3 (BEGIN)
+                                           ; SOURCE LINE # 96
+                                           ; SOURCE LINE # 97
+                                           ; SOURCE LINE # 98
+0000 900000      E     MOV     DPTR,#GPDRI
+0003 E0                MOVX    A,@DPTR
+0004 30E20A            JNB     ACC.2,?C0015
+                                           ; SOURCE LINE # 99
+                                           ; SOURCE LINE # 100
+0007 900000      E     MOV     DPTR,#POWER_FLAG2
+000A E0                MOVX    A,@DPTR
+000B 4401              ORL     A,#01H
+000D F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 101
+000E 7F01              MOV     R7,#01H
+0010 22                RET     
+                                           ; SOURCE LINE # 102
+0011         ?C0015:
+                                           ; SOURCE LINE # 103
+0011 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 104
+0013         ?C0016:
+0013 22                RET     
+             ; FUNCTION PF_Read_SLPS3 (END)
+
+             ; FUNCTION PF_Read_SLPS4 (BEGIN)
+                                           ; SOURCE LINE # 106
+                                           ; SOURCE LINE # 107
+                                           ; SOURCE LINE # 108
+0000 900000      E     MOV     DPTR,#KSIGDMRR
+0003 E0                MOVX    A,@DPTR
+0004 30E00A            JNB     ACC.0,?C0017
+                                           ; SOURCE LINE # 109
+                                           ; SOURCE LINE # 110
+0007 900000      E     MOV     DPTR,#POWER_FLAG2
+000A E0                MOVX    A,@DPTR
+000B 4402              ORL     A,#02H
+000D F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 111
+000E 7F01              MOV     R7,#01H
+0010 22                RET     
+                                           ; SOURCE LINE # 112
+0011         ?C0017:
+                                           ; SOURCE LINE # 113
+0011 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 114
+0013         ?C0018:
+0013 22                RET     
+             ; FUNCTION PF_Read_SLPS4 (END)
+
+             ; FUNCTION PF_Read_SLPS5 (BEGIN)
+                                           ; SOURCE LINE # 116
+                                           ; SOURCE LINE # 117
+                                           ; SOURCE LINE # 118
+0000 900000      E     MOV     DPTR,#KSIGDMRR
+0003 E0                MOVX    A,@DPTR
+0004 30E00A            JNB     ACC.0,?C0019
+                                           ; SOURCE LINE # 119
+                                           ; SOURCE LINE # 120
+0007 900000      E     MOV     DPTR,#POWER_FLAG2
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 29  
+
+000A E0                MOVX    A,@DPTR
+000B 4404              ORL     A,#04H
+000D F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 121
+000E 7F01              MOV     R7,#01H
+0010 22                RET     
+                                           ; SOURCE LINE # 122
+0011         ?C0019:
+                                           ; SOURCE LINE # 123
+0011 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 124
+0013         ?C0020:
+0013 22                RET     
+             ; FUNCTION PF_Read_SLPS5 (END)
+
+             ; FUNCTION PF_Read_ALL_SYS_PWRGD (BEGIN)
+                                           ; SOURCE LINE # 126
+                                           ; SOURCE LINE # 127
+                                           ; SOURCE LINE # 128
+0000 900000      E     MOV     DPTR,#GPDRI
+0003 E0                MOVX    A,@DPTR
+0004 30E003            JNB     ACC.0,?C0021
+                                           ; SOURCE LINE # 129
+                                           ; SOURCE LINE # 130
+0007 7F01              MOV     R7,#01H
+0009 22                RET     
+                                           ; SOURCE LINE # 131
+000A         ?C0021:
+                                           ; SOURCE LINE # 132
+000A 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 133
+000C         ?C0022:
+000C 22                RET     
+             ; FUNCTION PF_Read_ALL_SYS_PWRGD (END)
+
+             ; FUNCTION PF_Read_SLPA (BEGIN)
+                                           ; SOURCE LINE # 137
+                                           ; SOURCE LINE # 138
+                                           ; SOURCE LINE # 143
+0000 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 144
+0002         ?C0023:
+0002 22                RET     
+             ; FUNCTION PF_Read_SLPA (END)
+
+             ; FUNCTION PF_Read_SLP_SUS (BEGIN)
+                                           ; SOURCE LINE # 155
+                                           ; SOURCE LINE # 156
+                                           ; SOURCE LINE # 161
+0000 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 162
+0002         ?C0024:
+0002 22                RET     
+             ; FUNCTION PF_Read_SLP_SUS (END)
+
+             ; FUNCTION PF_Read_HWPG (BEGIN)
+                                           ; SOURCE LINE # 164
+                                           ; SOURCE LINE # 165
+                                           ; SOURCE LINE # 179
+0000 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 181
+0002         ?C0025:
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 30  
+
+0002 22                RET     
+             ; FUNCTION PF_Read_HWPG (END)
+
+             ; FUNCTION PF_LOMDIS_ON (BEGIN)
+                                           ; SOURCE LINE # 183
+                                           ; SOURCE LINE # 184
+                                           ; SOURCE LINE # 186
+0000 22                RET     
+             ; FUNCTION PF_LOMDIS_ON (END)
+
+             ; FUNCTION PF_LOMDIS_OFF (BEGIN)
+                                           ; SOURCE LINE # 188
+                                           ; SOURCE LINE # 189
+                                           ; SOURCE LINE # 191
+0000 22                RET     
+             ; FUNCTION PF_LOMDIS_OFF (END)
+
+             ; FUNCTION PF_LANPOWER_ON (BEGIN)
+                                           ; SOURCE LINE # 193
+                                           ; SOURCE LINE # 194
+                                           ; SOURCE LINE # 196
+0000 22                RET     
+             ; FUNCTION PF_LANPOWER_ON (END)
+
+             ; FUNCTION PF_LANPOWER_OFF (BEGIN)
+                                           ; SOURCE LINE # 198
+                                           ; SOURCE LINE # 199
+                                           ; SOURCE LINE # 201
+0000 22                RET     
+             ; FUNCTION PF_LANPOWER_OFF (END)
+
+             ; FUNCTION PF_VOLMUTE_ON (BEGIN)
+                                           ; SOURCE LINE # 203
+                                           ; SOURCE LINE # 204
+                                           ; SOURCE LINE # 205
+0000 900000      E     MOV     DPTR,#KSOH1
+0003 E0                MOVX    A,@DPTR
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 206
+0005 22                RET     
+             ; FUNCTION PF_VOLMUTE_ON (END)
+
+             ; FUNCTION PF_VOLMUTE_OFF (BEGIN)
+                                           ; SOURCE LINE # 208
+                                           ; SOURCE LINE # 209
+                                           ; SOURCE LINE # 210
+0000 900000      E     MOV     DPTR,#KSOH1
+0003 E0                MOVX    A,@DPTR
+0004 4408              ORL     A,#08H
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 211
+0007 22                RET     
+             ; FUNCTION PF_VOLMUTE_OFF (END)
+
+             ; FUNCTION PF_USB_ON (BEGIN)
+                                           ; SOURCE LINE # 213
+                                           ; SOURCE LINE # 214
+                                           ; SOURCE LINE # 215
+0000 900000      E     MOV     DPTR,#GPDRF
+0003 E0                MOVX    A,@DPTR
+0004 4480              ORL     A,#080H
+0006 F0                MOVX    @DPTR,A
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 31  
+
+                                           ; SOURCE LINE # 216
+0007 22                RET     
+             ; FUNCTION PF_USB_ON (END)
+
+             ; FUNCTION PF_USB_OFF (BEGIN)
+                                           ; SOURCE LINE # 218
+                                           ; SOURCE LINE # 219
+                                           ; SOURCE LINE # 220
+0000 900000      E     MOV     DPTR,#GPDRF
+0003 E0                MOVX    A,@DPTR
+0004 547F              ANL     A,#07FH
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 221
+0007 22                RET     
+             ; FUNCTION PF_USB_OFF (END)
+
+             ; FUNCTION PF_WLan_Power_ON (BEGIN)
+                                           ; SOURCE LINE # 223
+                                           ; SOURCE LINE # 224
+                                           ; SOURCE LINE # 225
+0000 900000      E     MOV     DPTR,#GPDRF
+0003 E0                MOVX    A,@DPTR
+0004 54F7              ANL     A,#0F7H
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 226
+0007 22                RET     
+             ; FUNCTION PF_WLan_Power_ON (END)
+
+             ; FUNCTION PF_WLan_Power_OFF (BEGIN)
+                                           ; SOURCE LINE # 228
+                                           ; SOURCE LINE # 229
+                                           ; SOURCE LINE # 230
+0000 900000      E     MOV     DPTR,#GPDRF
+0003 E0                MOVX    A,@DPTR
+0004 4408              ORL     A,#08H
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 231
+0007 22                RET     
+             ; FUNCTION PF_WLan_Power_OFF (END)
+
+             ; FUNCTION PF_EC_ODD_EN_ON (BEGIN)
+                                           ; SOURCE LINE # 233
+                                           ; SOURCE LINE # 234
+                                           ; SOURCE LINE # 236
+0000 22                RET     
+             ; FUNCTION PF_EC_ODD_EN_ON (END)
+
+             ; FUNCTION PF_EC_ODD_EN_OFF (BEGIN)
+                                           ; SOURCE LINE # 238
+                                           ; SOURCE LINE # 239
+                                           ; SOURCE LINE # 241
+0000 22                RET     
+             ; FUNCTION PF_EC_ODD_EN_OFF (END)
+
+             ; FUNCTION PF_Disable_HSPI (BEGIN)
+                                           ; SOURCE LINE # 243
+                                           ; SOURCE LINE # 244
+                                           ; SOURCE LINE # 245
+0000 22                RET     
+             ; FUNCTION PF_Disable_HSPI (END)
+
+             ; FUNCTION PF_DGPU_ON (BEGIN)
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 32  
+
+                                           ; SOURCE LINE # 248
+                                           ; SOURCE LINE # 249
+                                           ; SOURCE LINE # 250
+0000 900000      E     MOV     DPTR,#GPDRC
+0003 E0                MOVX    A,@DPTR
+0004 20E007            JB      ACC.0,?C0039
+                                           ; SOURCE LINE # 251
+                                           ; SOURCE LINE # 252
+0007 900000      E     MOV     DPTR,#GPDRG
+000A E0                MOVX    A,@DPTR
+000B 4440              ORL     A,#040H
+000D F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 253
+000E         ?C0039:
+                                           ; SOURCE LINE # 255
+000E 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 256
+0010         ?C0040:
+0010 22                RET     
+             ; FUNCTION PF_DGPU_ON (END)
+
+             ; FUNCTION PF_DGPU_OK (BEGIN)
+                                           ; SOURCE LINE # 258
+                                           ; SOURCE LINE # 259
+                                           ; SOURCE LINE # 260
+0000 900000      E     MOV     DPTR,#GPDRC
+0003 E0                MOVX    A,@DPTR
+0004 20E00D            JB      ACC.0,?C0041
+                                           ; SOURCE LINE # 261
+0007 900000      E     MOV     DPTR,#GPDRH
+000A E0                MOVX    A,@DPTR
+000B 30E103            JNB     ACC.1,?C0042
+                                           ; SOURCE LINE # 262
+000E 7F01              MOV     R7,#01H
+0010 22                RET     
+0011         ?C0042:
+                                           ; SOURCE LINE # 263
+0011 7F00              MOV     R7,#00H
+0013 22                RET     
+                                           ; SOURCE LINE # 264
+0014         ?C0041:
+                                           ; SOURCE LINE # 265
+0014 7F01              MOV     R7,#01H
+                                           ; SOURCE LINE # 266
+                                           ; SOURCE LINE # 267
+0016         ?C0043:
+0016 22                RET     
+             ; FUNCTION PF_DGPU_OK (END)
+
+             ; FUNCTION PF_DGPU_OFF (BEGIN)
+                                           ; SOURCE LINE # 269
+                                           ; SOURCE LINE # 270
+                                           ; SOURCE LINE # 271
+0000 900000      E     MOV     DPTR,#GPDRG
+0003 E0                MOVX    A,@DPTR
+0004 54BF              ANL     A,#0BFH
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 272
+0007 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 273
+0009         ?C0045:
+0009 22                RET     
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 33  
+
+             ; FUNCTION PF_DGPU_OFF (END)
+
+             ; FUNCTION PF_FAN_ON (BEGIN)
+                                           ; SOURCE LINE # 275
+                                           ; SOURCE LINE # 276
+                                           ; SOURCE LINE # 277
+0000 E4                CLR     A
+0001 900000      E     MOV     DPTR,#SmBusI2CAddress
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 278
+0005 FF                MOV     R7,A
+0006 120000      E     LCALL   _ResetSMBus
+                                           ; SOURCE LINE # 280
+0009 900000      E     MOV     DPTR,#ZTIER
+000C E0                MOVX    A,@DPTR
+000D 4402              ORL     A,#02H
+000F F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 281
+0010 900000      E     MOV     DPTR,#DCR0
+0013 74A0              MOV     A,#0A0H
+0015 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 282
+0016 900000      E     MOV     DPTR,#DCR1
+0019 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 283
+001A 900000      E     MOV     DPTR,#GCR5
+001D E0                MOVX    A,@DPTR
+001E 4402              ORL     A,#02H
+0020 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 284
+0021 E4                CLR     A
+0022 900000      E     MOV     DPTR,#DebugforceFan1RPM
+0025 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 286
+0026 900000      E     MOV     DPTR,#CLK6MSEL
+0029 E0                MOVX    A,@DPTR
+002A 4401              ORL     A,#01H
+002C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 289
+002D 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 290
+002F         ?C0046:
+002F 22                RET     
+             ; FUNCTION PF_FAN_ON (END)
+
+             ; FUNCTION OEM_SX_S0CommVar (BEGIN)
+                                           ; SOURCE LINE # 433
+                                           ; SOURCE LINE # 434
+                                           ; SOURCE LINE # 435
+0000 E4                CLR     A
+0001 900000      E     MOV     DPTR,#CheckPowerStateIndex
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 436
+0005 22                RET     
+             ; FUNCTION OEM_SX_S0CommVar (END)
+
+             ; FUNCTION SX_S0CommVar (BEGIN)
+                                           ; SOURCE LINE # 441
+                                           ; SOURCE LINE # 442
+                                           ; SOURCE LINE # 443
+0000 900000      E     MOV     DPTR,#SysPowState
+0003 7410              MOV     A,#010H
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 34  
+
+0005 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 445
+0006 120000      E     LCALL   InitThermalTable1
+                                           ; SOURCE LINE # 446
+0009 120000      E     LCALL   InitThermalTable2
+                                           ; SOURCE LINE # 447
+000C 120000      E     LCALL   ResetSCIEvent
+                                           ; SOURCE LINE # 448
+000F 120000      R     LCALL   OEM_SX_S0CommVar
+                                           ; SOURCE LINE # 451
+0012 900000      E     MOV     DPTR,#DCR1
+0015 74A0              MOV     A,#0A0H
+0017 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 452
+0018 900000      E     MOV     DPTR,#DCR0
+001B F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 456
+001C 900000      E     MOV     DPTR,#KSOH1
+001F E0                MOVX    A,@DPTR
+0020 4408              ORL     A,#08H
+0022 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 457
+0023 22                RET     
+             ; FUNCTION SX_S0CommVar (END)
+
+             ; FUNCTION S5_S0Variable (BEGIN)
+                                           ; SOURCE LINE # 462
+                                           ; SOURCE LINE # 463
+                                           ; SOURCE LINE # 464
+0000 020000      R     LJMP    SX_S0CommVar
+             ; FUNCTION S5_S0Variable (END)
+
+             ; FUNCTION S4_S0Variable (BEGIN)
+                                           ; SOURCE LINE # 470
+                                           ; SOURCE LINE # 471
+                                           ; SOURCE LINE # 472
+0000 020000      R     LJMP    SX_S0CommVar
+             ; FUNCTION S4_S0Variable (END)
+
+             ; FUNCTION S3_S0Variable (BEGIN)
+                                           ; SOURCE LINE # 479
+                                           ; SOURCE LINE # 480
+                                           ; SOURCE LINE # 481
+0000 020000      R     LJMP    SX_S0CommVar
+             ; FUNCTION S3_S0Variable (END)
+
+             ; FUNCTION OEM_S0_SXCommVar (BEGIN)
+                                           ; SOURCE LINE # 488
+                                           ; SOURCE LINE # 489
+                                           ; SOURCE LINE # 490
+0000 E4                CLR     A
+0001 900000      E     MOV     DPTR,#CheckPowerStateIndex
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 491
+0005 900000      E     MOV     DPTR,#SYS_MISC1
+0008 E0                MOVX    A,@DPTR
+0009 54FE              ANL     A,#0FEH
+000B F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 492
+000C 22                RET     
+             ; FUNCTION OEM_S0_SXCommVar (END)
+
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 35  
+
+             ; FUNCTION S0_SXCommVar (BEGIN)
+                                           ; SOURCE LINE # 497
+                                           ; SOURCE LINE # 498
+                                           ; SOURCE LINE # 500
+0000 120000      E     LCALL   PECI_ClearPSTVariables
+                                           ; SOURCE LINE # 504
+0003 120000      E     LCALL   PowerOffClearTPPendingData
+                                           ; SOURCE LINE # 506
+0006 900000      E     MOV     DPTR,#KBHISR
+0009 E0                MOVX    A,@DPTR
+000A 54FB              ANL     A,#0FBH
+000C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 507
+000D C200        E     CLR     Ccb42_SYS_FLAG
+                                           ; SOURCE LINE # 508
+000F 120000      E     LCALL   Hook_KBRSTON
+                                           ; SOURCE LINE # 509
+0012 120000      E     LCALL   Hook_A20OFF
+                                           ; SOURCE LINE # 512
+0015 120000      R     LCALL   OEM_S0_SXCommVar
+                                           ; SOURCE LINE # 514
+0018 E4                CLR     A
+0019 900000      E     MOV     DPTR,#DCR0
+001C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 515
+001D 900000      E     MOV     DPTR,#DCR1
+0020 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 518
+0021 22                RET     
+             ; FUNCTION S0_SXCommVar (END)
+
+             ; FUNCTION S0_S5Variable (BEGIN)
+                                           ; SOURCE LINE # 523
+                                           ; SOURCE LINE # 524
+                                           ; SOURCE LINE # 525
+0000 900000      E     MOV     DPTR,#SysPowState
+0003 7455              MOV     A,#055H
+0005 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 526
+0006 020000      R     LJMP    S0_SXCommVar
+             ; FUNCTION S0_S5Variable (END)
+
+             ; FUNCTION S0_S4Variable (BEGIN)
+                                           ; SOURCE LINE # 533
+                                           ; SOURCE LINE # 534
+                                           ; SOURCE LINE # 535
+0000 900000      E     MOV     DPTR,#SysPowState
+0003 7444              MOV     A,#044H
+0005 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 536
+0006 020000      R     LJMP    S0_SXCommVar
+             ; FUNCTION S0_S4Variable (END)
+
+             ; FUNCTION S0_S3Variable (BEGIN)
+                                           ; SOURCE LINE # 543
+                                           ; SOURCE LINE # 544
+                                           ; SOURCE LINE # 545
+0000 900000      E     MOV     DPTR,#SysPowState
+0003 7433              MOV     A,#033H
+0005 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 546
+0006 020000      R     LJMP    S0_SXCommVar
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 36  
+
+             ; FUNCTION S0_S3Variable (END)
+
+             ; FUNCTION Oem_TriggerS3S0 (BEGIN)
+                                           ; SOURCE LINE # 553
+                                           ; SOURCE LINE # 554
+                                           ; SOURCE LINE # 555
+0000 120000      R     LCALL   L?0240
+0003 6005              JZ      ?C0058
+                                           ; SOURCE LINE # 556
+                                           ; SOURCE LINE # 558
+0005         ?C0057:
+                                           ; SOURCE LINE # 560
+0005 7430              MOV     A,#030H
+                                           ; SOURCE LINE # 561
+                                           ; SOURCE LINE # 562
+0007 120000      R     LCALL   L?0232
+                                           ; SOURCE LINE # 563
+000A         ?C0058:
+000A 22                RET     
+             ; FUNCTION Oem_TriggerS3S0 (END)
+
+             ; FUNCTION Oem_TriggerS4S0 (BEGIN)
+                                           ; SOURCE LINE # 568
+                                           ; SOURCE LINE # 569
+                                           ; SOURCE LINE # 570
+0000 120000      R     LCALL   L?0240
+0003 6005              JZ      ?C0060
+                                           ; SOURCE LINE # 571
+                                           ; SOURCE LINE # 573
+0005         ?C0059:
+                                           ; SOURCE LINE # 575
+0005 7440              MOV     A,#040H
+                                           ; SOURCE LINE # 576
+                                           ; SOURCE LINE # 577
+0007 120000      R     LCALL   L?0232
+                                           ; SOURCE LINE # 578
+000A         ?C0060:
+000A 22                RET     
+             ; FUNCTION Oem_TriggerS4S0 (END)
+
+             ; FUNCTION Oem_TriggerS5S0 (BEGIN)
+                                           ; SOURCE LINE # 583
+                                           ; SOURCE LINE # 584
+                                           ; SOURCE LINE # 585
+0000 120000      R     LCALL   L?0241
+0003 6008              JZ      ?C0062
+                                           ; SOURCE LINE # 586
+                                           ; SOURCE LINE # 588
+0005         ?C0061:
+                                           ; SOURCE LINE # 590
+0005 900000      E     MOV     DPTR,#SysPowState
+0008 7450              MOV     A,#050H
+                                           ; SOURCE LINE # 591
+                                           ; SOURCE LINE # 592
+000A 120000      R     LCALL   L?0233
+                                           ; SOURCE LINE # 593
+000D         ?C0062:
+000D 22                RET     
+             ; FUNCTION Oem_TriggerS5S0 (END)
+
+             ; FUNCTION Oem_S5S0Sequence (BEGIN)
+                                           ; SOURCE LINE # 598
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 37  
+
+                                           ; SOURCE LINE # 599
+                                           ; SOURCE LINE # 600
+0000 900000      E     MOV     DPTR,#PowSeqDelay
+0003 E0                MOVX    A,@DPTR
+0004 7002              JNZ     ?C0198
+0006 A3                INC     DPTR
+0007 E0                MOVX    A,@DPTR
+0008         ?C0198:
+0008 6009              JZ      ?C0066
+                                           ; SOURCE LINE # 601
+                                           ; SOURCE LINE # 602
+                                           ; SOURCE LINE # 603
+000A 120000      R     LCALL   L?0234
+000D 7002              JNZ     ?C0199
+000F A3                INC     DPTR
+0010 E0                MOVX    A,@DPTR
+0011         ?C0199:
+0011 703B              JNZ     ?C0065
+                                           ; SOURCE LINE # 604
+                                           ; SOURCE LINE # 606
+0013         ?C0064:
+                                           ; SOURCE LINE # 607
+0013         ?C0066:
+                                           ; SOURCE LINE # 609
+0013 900000      E     MOV     DPTR,#PWSeqStep
+0016 E0                MOVX    A,@DPTR
+0017 C3                CLR     C
+0018 9412              SUBB    A,#012H
+001A 5032              JNC     ?C0065
+                                           ; SOURCE LINE # 610
+                                           ; SOURCE LINE # 611
+001C E0                MOVX    A,@DPTR
+001D 75F005            MOV     B,#05H
+0020 A4                MUL     AB
+0021 2400        R     ADD     A,#LOW asPowerSEQS5S0+04H
+0023 F582              MOV     DPL,A
+0025 E4                CLR     A
+0026 3400        R     ADDC    A,#HIGH asPowerSEQS5S0+04H
+0028 F583              MOV     DPH,A
+002A E4                CLR     A
+002B 93                MOVC    A,@A+DPTR
+002C 7014              JNZ     ?C0068
+                                           ; SOURCE LINE # 612
+                                           ; SOURCE LINE # 613
+002E 120000      R     LCALL   L?0229
+0031 120000      R     LCALL   L?0230
+                                           ; SOURCE LINE # 614
+                                           ; SOURCE LINE # 615
+0034 120000      R     LCALL   L?0225
+                                           ; SOURCE LINE # 616
+0037 900000      E     MOV     DPTR,#PowSeqDelay
+003A E0                MOVX    A,@DPTR
+003B 7002              JNZ     ?C0200
+003D A3                INC     DPTR
+003E E0                MOVX    A,@DPTR
+003F         ?C0200:
+003F 60D2              JZ      ?C0066
+                                           ; SOURCE LINE # 617
+                                           ; SOURCE LINE # 618
+0041 22                RET     
+                                           ; SOURCE LINE # 619
+0042         ?C0068:
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 38  
+
+                                           ; SOURCE LINE # 622
+                                           ; SOURCE LINE # 623
+0042 120000      R     LCALL   L?0229
+0045 120000      R     LCALL   L?0230
+0048 EF                MOV     A,R7
+0049 6003              JZ      ?C0065
+                                           ; SOURCE LINE # 624
+                                           ; SOURCE LINE # 625
+                                           ; SOURCE LINE # 626
+004B 120000      R     LCALL   L?0225
+                                           ; SOURCE LINE # 627
+                                           ; SOURCE LINE # 628
+                                           ; SOURCE LINE # 629
+                                           ; SOURCE LINE # 630
+                                           ; SOURCE LINE # 631
+004E         ?C0065:
+004E 22                RET     
+             ; FUNCTION Oem_S5S0Sequence (END)
+
+             ; FUNCTION Oem_S4S0Sequence (BEGIN)
+                                           ; SOURCE LINE # 636
+                                           ; SOURCE LINE # 637
+                                           ; SOURCE LINE # 638
+0000 900000      E     MOV     DPTR,#PowSeqDelay
+0003 E0                MOVX    A,@DPTR
+0004 7002              JNZ     ?C0201
+0006 A3                INC     DPTR
+0007 E0                MOVX    A,@DPTR
+0008         ?C0201:
+0008 6009              JZ      ?C0075
+                                           ; SOURCE LINE # 639
+                                           ; SOURCE LINE # 640
+                                           ; SOURCE LINE # 641
+000A 120000      R     LCALL   L?0234
+000D 7002              JNZ     ?C0202
+000F A3                INC     DPTR
+0010 E0                MOVX    A,@DPTR
+0011         ?C0202:
+0011 705A              JNZ     ?C0074
+                                           ; SOURCE LINE # 642
+                                           ; SOURCE LINE # 644
+0013         ?C0073:
+                                           ; SOURCE LINE # 645
+0013         ?C0075:
+                                           ; SOURCE LINE # 647
+0013 900000      E     MOV     DPTR,#PWSeqStep
+0016 E0                MOVX    A,@DPTR
+0017 C3                CLR     C
+0018 9418              SUBB    A,#018H
+001A 5051              JNC     ?C0074
+                                           ; SOURCE LINE # 648
+                                           ; SOURCE LINE # 649
+001C E0                MOVX    A,@DPTR
+001D 75F005            MOV     B,#05H
+0020 A4                MUL     AB
+0021 2400        R     ADD     A,#LOW asPowerSEQS4S0+04H
+0023 F582              MOV     DPL,A
+0025 E4                CLR     A
+0026 3400        R     ADDC    A,#HIGH asPowerSEQS4S0+04H
+0028 F583              MOV     DPH,A
+002A E4                CLR     A
+002B 93                MOVC    A,@A+DPTR
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 39  
+
+002C 7022              JNZ     ?C0077
+                                           ; SOURCE LINE # 650
+                                           ; SOURCE LINE # 651
+002E 120000      R     LCALL   L?0229
+0031 2400        R     ADD     A,#LOW asPowerSEQS4S0
+0033 F582              MOV     DPL,A
+0035 E4                CLR     A
+0036 3400        R     ADDC    A,#HIGH asPowerSEQS4S0
+                                           ; SOURCE LINE # 652
+0038 120000      R     LCALL   L?0227
+003B 2400        R     ADD     A,#LOW asPowerSEQS4S0+02H
+003D F582              MOV     DPL,A
+003F E4                CLR     A
+0040 3400        R     ADDC    A,#HIGH asPowerSEQS4S0+02H
+                                           ; SOURCE LINE # 653
+0042 120000      R     LCALL   L?0226
+                                           ; SOURCE LINE # 654
+0045 900000      E     MOV     DPTR,#PowSeqDelay
+0048 E0                MOVX    A,@DPTR
+0049 7002              JNZ     ?C0203
+004B A3                INC     DPTR
+004C E0                MOVX    A,@DPTR
+004D         ?C0203:
+004D 60C4              JZ      ?C0075
+                                           ; SOURCE LINE # 655
+                                           ; SOURCE LINE # 656
+004F 22                RET     
+                                           ; SOURCE LINE # 657
+0050         ?C0077:
+                                           ; SOURCE LINE # 660
+                                           ; SOURCE LINE # 661
+0050 120000      R     LCALL   L?0229
+0053 2400        R     ADD     A,#LOW asPowerSEQS4S0
+0055 F582              MOV     DPL,A
+0057 E4                CLR     A
+0058 3400        R     ADDC    A,#HIGH asPowerSEQS4S0
+005A 120000      R     LCALL   L?0231
+005D EF                MOV     A,R7
+005E 600D              JZ      ?C0074
+                                           ; SOURCE LINE # 662
+                                           ; SOURCE LINE # 663
+0060 120000      R     LCALL   L?0229
+0063 2400        R     ADD     A,#LOW asPowerSEQS4S0+02H
+0065 F582              MOV     DPL,A
+0067 E4                CLR     A
+0068 3400        R     ADDC    A,#HIGH asPowerSEQS4S0+02H
+                                           ; SOURCE LINE # 664
+006A 120000      R     LCALL   L?0226
+                                           ; SOURCE LINE # 665
+                                           ; SOURCE LINE # 666
+                                           ; SOURCE LINE # 667
+                                           ; SOURCE LINE # 668
+                                           ; SOURCE LINE # 669
+006D         ?C0074:
+006D 22                RET     
+             ; FUNCTION Oem_S4S0Sequence (END)
+
+             ; FUNCTION Oem_S3S0Sequence (BEGIN)
+                                           ; SOURCE LINE # 674
+                                           ; SOURCE LINE # 675
+                                           ; SOURCE LINE # 676
+0000 900000      E     MOV     DPTR,#PowSeqDelay
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 40  
+
+0003 E0                MOVX    A,@DPTR
+0004 7002              JNZ     ?C0204
+0006 A3                INC     DPTR
+0007 E0                MOVX    A,@DPTR
+0008         ?C0204:
+0008 6009              JZ      ?C0084
+                                           ; SOURCE LINE # 677
+                                           ; SOURCE LINE # 678
+                                           ; SOURCE LINE # 679
+000A 120000      R     LCALL   L?0235
+000D 7002              JNZ     ?C0205
+000F A3                INC     DPTR
+0010 E0                MOVX    A,@DPTR
+0011         ?C0205:
+0011 705A              JNZ     ?C0083
+                                           ; SOURCE LINE # 680
+                                           ; SOURCE LINE # 682
+0013         ?C0082:
+                                           ; SOURCE LINE # 683
+0013         ?C0084:
+                                           ; SOURCE LINE # 685
+0013 900000      E     MOV     DPTR,#PWSeqStep
+0016 E0                MOVX    A,@DPTR
+0017 C3                CLR     C
+0018 940A              SUBB    A,#0AH
+001A 5051              JNC     ?C0083
+                                           ; SOURCE LINE # 686
+                                           ; SOURCE LINE # 687
+001C E0                MOVX    A,@DPTR
+001D 75F005            MOV     B,#05H
+0020 A4                MUL     AB
+0021 2400        R     ADD     A,#LOW asPowerSEQS3S0+04H
+0023 F582              MOV     DPL,A
+0025 E4                CLR     A
+0026 3400        R     ADDC    A,#HIGH asPowerSEQS3S0+04H
+0028 F583              MOV     DPH,A
+002A E4                CLR     A
+002B 93                MOVC    A,@A+DPTR
+002C 7022              JNZ     ?C0086
+                                           ; SOURCE LINE # 688
+                                           ; SOURCE LINE # 689
+002E 120000      R     LCALL   L?0229
+0031 2400        R     ADD     A,#LOW asPowerSEQS3S0
+0033 F582              MOV     DPL,A
+0035 E4                CLR     A
+0036 3400        R     ADDC    A,#HIGH asPowerSEQS3S0
+                                           ; SOURCE LINE # 690
+0038 120000      R     LCALL   L?0227
+003B 2400        R     ADD     A,#LOW asPowerSEQS3S0+02H
+003D F582              MOV     DPL,A
+003F E4                CLR     A
+0040 3400        R     ADDC    A,#HIGH asPowerSEQS3S0+02H
+                                           ; SOURCE LINE # 691
+0042 120000      R     LCALL   L?0226
+                                           ; SOURCE LINE # 692
+0045 900000      E     MOV     DPTR,#PowSeqDelay
+0048 E0                MOVX    A,@DPTR
+0049 7002              JNZ     ?C0206
+004B A3                INC     DPTR
+004C E0                MOVX    A,@DPTR
+004D         ?C0206:
+004D 60C4              JZ      ?C0084
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 41  
+
+                                           ; SOURCE LINE # 693
+                                           ; SOURCE LINE # 694
+004F 22                RET     
+                                           ; SOURCE LINE # 695
+0050         ?C0086:
+                                           ; SOURCE LINE # 698
+                                           ; SOURCE LINE # 699
+0050 120000      R     LCALL   L?0229
+0053 2400        R     ADD     A,#LOW asPowerSEQS3S0
+0055 F582              MOV     DPL,A
+0057 E4                CLR     A
+0058 3400        R     ADDC    A,#HIGH asPowerSEQS3S0
+005A 120000      R     LCALL   L?0231
+005D EF                MOV     A,R7
+005E 600D              JZ      ?C0083
+                                           ; SOURCE LINE # 700
+                                           ; SOURCE LINE # 701
+0060 120000      R     LCALL   L?0229
+0063 2400        R     ADD     A,#LOW asPowerSEQS3S0+02H
+0065 F582              MOV     DPL,A
+0067 E4                CLR     A
+0068 3400        R     ADDC    A,#HIGH asPowerSEQS3S0+02H
+                                           ; SOURCE LINE # 702
+006A 120000      R     LCALL   L?0226
+                                           ; SOURCE LINE # 703
+                                           ; SOURCE LINE # 704
+                                           ; SOURCE LINE # 705
+                                           ; SOURCE LINE # 706
+                                           ; SOURCE LINE # 707
+006D         ?C0083:
+006D 22                RET     
+             ; FUNCTION Oem_S3S0Sequence (END)
+
+             ; FUNCTION CheckSLP_S3 (BEGIN)
+                                           ; SOURCE LINE # 715
+                                           ; SOURCE LINE # 716
+                                           ; SOURCE LINE # 717
+0000 900000      E     MOV     DPTR,#POWER_FLAG2
+0003 E0                MOVX    A,@DPTR
+0004 54FE              ANL     A,#0FEH
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 718
+0007 900000      E     MOV     DPTR,#GPDRI
+000A E0                MOVX    A,@DPTR
+000B 30E207            JNB     ACC.2,?C0091
+                                           ; SOURCE LINE # 719
+                                           ; SOURCE LINE # 720
+000E 900000      E     MOV     DPTR,#POWER_FLAG2
+0011 E0                MOVX    A,@DPTR
+0012 4401              ORL     A,#01H
+0014 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 721
+                                           ; SOURCE LINE # 722
+0015         ?C0091:
+0015 22                RET     
+             ; FUNCTION CheckSLP_S3 (END)
+
+             ; FUNCTION CheckSLP_S4 (BEGIN)
+                                           ; SOURCE LINE # 727
+                                           ; SOURCE LINE # 728
+                                           ; SOURCE LINE # 729
+0000 900000      E     MOV     DPTR,#POWER_FLAG2
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 42  
+
+0003 E0                MOVX    A,@DPTR
+0004 54FD              ANL     A,#0FDH
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 730
+0007 900000      E     MOV     DPTR,#KSIGDMRR
+000A E0                MOVX    A,@DPTR
+000B 30E007            JNB     ACC.0,?C0093
+                                           ; SOURCE LINE # 731
+                                           ; SOURCE LINE # 732
+000E 900000      E     MOV     DPTR,#POWER_FLAG2
+0011 E0                MOVX    A,@DPTR
+0012 4402              ORL     A,#02H
+0014 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 733
+                                           ; SOURCE LINE # 734
+0015         ?C0093:
+0015 22                RET     
+             ; FUNCTION CheckSLP_S4 (END)
+
+             ; FUNCTION CheckSLP_S5 (BEGIN)
+                                           ; SOURCE LINE # 739
+                                           ; SOURCE LINE # 740
+                                           ; SOURCE LINE # 741
+0000 900000      E     MOV     DPTR,#POWER_FLAG2
+0003 E0                MOVX    A,@DPTR
+0004 54FB              ANL     A,#0FBH
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 742
+0007 900000      E     MOV     DPTR,#KSIGDMRR
+000A E0                MOVX    A,@DPTR
+000B 30E007            JNB     ACC.0,?C0095
+                                           ; SOURCE LINE # 743
+                                           ; SOURCE LINE # 744
+000E 900000      E     MOV     DPTR,#POWER_FLAG2
+0011 E0                MOVX    A,@DPTR
+0012 4404              ORL     A,#04H
+0014 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 745
+                                           ; SOURCE LINE # 746
+0015         ?C0095:
+0015 22                RET     
+             ; FUNCTION CheckSLP_S5 (END)
+
+             ; FUNCTION DoPowerStatus (BEGIN)
+                                           ; SOURCE LINE # 748
+                                           ; SOURCE LINE # 749
+                                           ; SOURCE LINE # 752
+0000 900000      E     MOV     DPTR,#POWER_FLAG2
+0003 E0                MOVX    A,@DPTR
+0004 5405              ANL     A,#05H
+0006 FF                MOV     R7,A
+;---- Variable 'presentstatus' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 753
+0007 900000      E     MOV     DPTR,#PowerStatusBK
+000A E0                MOVX    A,@DPTR
+000B 6F                XRL     A,R7
+000C 6003              JZ      ?C0096
+                                           ; SOURCE LINE # 754
+                                           ; SOURCE LINE # 755
+000E EF                MOV     A,R7
+000F F0                MOVX    @DPTR,A
+0010 22                RET     
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 43  
+
+                                           ; SOURCE LINE # 757
+0011         ?C0096:
+                                           ; SOURCE LINE # 759
+0011 900000      E     MOV     DPTR,#POWER_FLAG2
+0014 E0                MOVX    A,@DPTR
+0015 5405              ANL     A,#05H
+0017 24FC              ADD     A,#0FCH
+0019 602E              JZ      ?C0107
+001B 14                DEC     A
+001C 6019              JZ      ?C0103
+001E 2405              ADD     A,#05H
+0020 7034              JNZ     ?C0097
+                                           ; SOURCE LINE # 760
+                                           ; SOURCE LINE # 761
+0022         ?C0099:
+                                           ; SOURCE LINE # 762
+0022 900000      E     MOV     DPTR,#SysPowState
+0025 E0                MOVX    A,@DPTR
+0026 24CD              ADD     A,#0CDH
+0028 6008              JZ      ?C0102
+002A 2423              ADD     A,#023H
+002C 7028              JNZ     ?C0097
+                                           ; SOURCE LINE # 763
+                                           ; SOURCE LINE # 764
+002E         ?C0101:
+                                           ; SOURCE LINE # 765
+002E 7F01              MOV     R7,#01H
+                                           ; SOURCE LINE # 766
+0030 8002              SJMP    ?C0218
+                                           ; SOURCE LINE # 768
+0032         ?C0102:
+                                           ; SOURCE LINE # 769
+0032 7F02              MOV     R7,#02H
+0034         ?C0218:
+0034 020000      R     LJMP    _Oem_TriggerS0S5
+                                           ; SOURCE LINE # 770
+                                           ; SOURCE LINE # 771
+                                           ; SOURCE LINE # 772
+                                           ; SOURCE LINE # 774
+0037         ?C0103:
+                                           ; SOURCE LINE # 775
+0037 900000      E     MOV     DPTR,#SysPowState
+003A E0                MOVX    A,@DPTR
+003B 24AB              ADD     A,#0ABH
+003D 6007              JZ      ?C0106
+003F 2422              ADD     A,#022H
+0041 7013              JNZ     ?C0097
+                                           ; SOURCE LINE # 776
+                                           ; SOURCE LINE # 777
+0043         ?C0105:
+                                           ; SOURCE LINE # 778
+0043 020000      R     LJMP    Oem_TriggerS3S0
+                                           ; SOURCE LINE # 779
+                                           ; SOURCE LINE # 781
+0046         ?C0106:
+                                           ; SOURCE LINE # 782
+0046 020000      R     LJMP    Oem_TriggerS5S0
+                                           ; SOURCE LINE # 783
+                                           ; SOURCE LINE # 784
+                                           ; SOURCE LINE # 785
+                                           ; SOURCE LINE # 787
+0049         ?C0107:
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 44  
+
+                                           ; SOURCE LINE # 788
+0049 900000      E     MOV     DPTR,#SysPowState
+004C E0                MOVX    A,@DPTR
+004D 24F0              ADD     A,#0F0H
+004F 7005              JNZ     ?C0097
+                                           ; SOURCE LINE # 789
+                                           ; SOURCE LINE # 790
+0051         ?C0109:
+                                           ; SOURCE LINE # 791
+0051 7F30              MOV     R7,#030H
+0053 120000      R     LCALL   _Oem_TriggerS0S3
+                                           ; SOURCE LINE # 792
+                                           ; SOURCE LINE # 793
+                                           ; SOURCE LINE # 794
+                                           ; SOURCE LINE # 795
+                                           ; SOURCE LINE # 796
+0056         ?C0097:
+0056 22                RET     
+             ; FUNCTION DoPowerStatus (END)
+
+             ; FUNCTION CheckPowerState (BEGIN)
+                                           ; SOURCE LINE # 799
+                                           ; SOURCE LINE # 800
+                                           ; SOURCE LINE # 801
+0000 900000      E     MOV     DPTR,#CheckPowerStateIndex
+0003 E0                MOVX    A,@DPTR
+0004 14                DEC     A
+0005 600C              JZ      ?C0112
+0007 14                DEC     A
+0008 6013              JZ      ?C0113
+000A 2402              ADD     A,#02H
+000C 7014              JNZ     ?C0114
+                                           ; SOURCE LINE # 802
+                                           ; SOURCE LINE # 803
+000E         ?C0111:
+                                           ; SOURCE LINE # 804
+000E 120000      R     LCALL   CheckSLP_S3
+                                           ; SOURCE LINE # 805
+                                           ; SOURCE LINE # 806
+0011 8003              SJMP    ?C0219
+                                           ; SOURCE LINE # 808
+0013         ?C0112:
+                                           ; SOURCE LINE # 809
+0013 120000      R     LCALL   CheckSLP_S5
+                                           ; SOURCE LINE # 810
+0016         ?C0219:
+0016 900000      E     MOV     DPTR,#CheckPowerStateIndex
+0019 E0                MOVX    A,@DPTR
+001A 04                INC     A
+001B F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 811
+001C 22                RET     
+                                           ; SOURCE LINE # 813
+001D         ?C0113:
+                                           ; SOURCE LINE # 814
+001D 120000      R     LCALL   DoPowerStatus
+                                           ; SOURCE LINE # 815
+                                           ; SOURCE LINE # 816
+0020 8000              SJMP    ?C0220
+                                           ; SOURCE LINE # 818
+0022         ?C0114:
+                                           ; SOURCE LINE # 819
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 45  
+
+0022         ?C0220:
+0022 E4                CLR     A
+0023 900000      E     MOV     DPTR,#CheckPowerStateIndex
+0026 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 820
+                                           ; SOURCE LINE # 821
+                                           ; SOURCE LINE # 822
+0027         ?C0115:
+0027 22                RET     
+             ; FUNCTION CheckPowerState (END)
+
+             ; FUNCTION _Oem_TriggerS0S3 (BEGIN)
+                                           ; SOURCE LINE # 828
+;---- Variable 'causecode' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 829
+                                           ; SOURCE LINE # 830
+0000 900000      E     MOV     DPTR,#SysPowState
+0003 E0                MOVX    A,@DPTR
+0004 6433              XRL     A,#033H
+0006 6008              JZ      ?C0117
+                                           ; SOURCE LINE # 831
+                                           ; SOURCE LINE # 833
+0008         ?C0116:
+                                           ; SOURCE LINE # 835
+                                           ; SOURCE LINE # 836
+0008 120000      R     LCALL   L?0238
+000B 7403              MOV     A,#03H
+                                           ; SOURCE LINE # 837
+                                           ; SOURCE LINE # 838
+000D 120000      R     LCALL   L?0233
+                                           ; SOURCE LINE # 839
+0010         ?C0117:
+0010 22                RET     
+             ; FUNCTION _Oem_TriggerS0S3 (END)
+
+             ; FUNCTION _Oem_TriggerS0S4 (BEGIN)
+                                           ; SOURCE LINE # 845
+;---- Variable 'causecode' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 846
+                                           ; SOURCE LINE # 847
+0000 900000      E     MOV     DPTR,#SysPowState
+0003 E0                MOVX    A,@DPTR
+0004 6444              XRL     A,#044H
+0006 6008              JZ      ?C0119
+                                           ; SOURCE LINE # 848
+                                           ; SOURCE LINE # 850
+0008         ?C0118:
+                                           ; SOURCE LINE # 852
+                                           ; SOURCE LINE # 853
+0008 120000      R     LCALL   L?0238
+000B 7404              MOV     A,#04H
+                                           ; SOURCE LINE # 854
+                                           ; SOURCE LINE # 855
+000D 120000      R     LCALL   L?0233
+                                           ; SOURCE LINE # 856
+0010         ?C0119:
+0010 22                RET     
+             ; FUNCTION _Oem_TriggerS0S4 (END)
+
+             ; FUNCTION _Oem_TriggerS0S5 (BEGIN)
+                                           ; SOURCE LINE # 862
+;---- Variable 'causecode' assigned to Register 'R7' ----
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 46  
+
+                                           ; SOURCE LINE # 863
+                                           ; SOURCE LINE # 864
+0000 900000      E     MOV     DPTR,#SysPowState
+0003 E0                MOVX    A,@DPTR
+0004 6455              XRL     A,#055H
+0006 6008              JZ      ?C0121
+                                           ; SOURCE LINE # 865
+                                           ; SOURCE LINE # 867
+0008         ?C0120:
+                                           ; SOURCE LINE # 869
+                                           ; SOURCE LINE # 870
+0008 120000      R     LCALL   L?0239
+000B 7405              MOV     A,#05H
+                                           ; SOURCE LINE # 871
+                                           ; SOURCE LINE # 872
+000D 120000      R     LCALL   L?0233
+                                           ; SOURCE LINE # 873
+0010         ?C0121:
+0010 22                RET     
+             ; FUNCTION _Oem_TriggerS0S5 (END)
+
+             ; FUNCTION Oem_S0S3Sequence (BEGIN)
+                                           ; SOURCE LINE # 897
+                                           ; SOURCE LINE # 898
+                                           ; SOURCE LINE # 899
+0000 900000      E     MOV     DPTR,#PowSeqDelay
+0003 E0                MOVX    A,@DPTR
+0004 7002              JNZ     ?C0207
+0006 A3                INC     DPTR
+0007 E0                MOVX    A,@DPTR
+0008         ?C0207:
+0008 6009              JZ      ?C0125
+                                           ; SOURCE LINE # 900
+                                           ; SOURCE LINE # 901
+                                           ; SOURCE LINE # 902
+000A 120000      R     LCALL   L?0235
+000D 7002              JNZ     ?C0208
+000F A3                INC     DPTR
+0010 E0                MOVX    A,@DPTR
+0011         ?C0208:
+0011 705A              JNZ     ?C0124
+                                           ; SOURCE LINE # 903
+                                           ; SOURCE LINE # 905
+0013         ?C0123:
+                                           ; SOURCE LINE # 906
+0013         ?C0125:
+                                           ; SOURCE LINE # 908
+0013 900000      E     MOV     DPTR,#PWSeqStep
+0016 E0                MOVX    A,@DPTR
+0017 C3                CLR     C
+0018 9407              SUBB    A,#07H
+001A 5051              JNC     ?C0124
+                                           ; SOURCE LINE # 909
+                                           ; SOURCE LINE # 910
+001C E0                MOVX    A,@DPTR
+001D 75F005            MOV     B,#05H
+0020 A4                MUL     AB
+0021 2400        R     ADD     A,#LOW asPowerSEQS0S3+04H
+0023 F582              MOV     DPL,A
+0025 E4                CLR     A
+0026 3400        R     ADDC    A,#HIGH asPowerSEQS0S3+04H
+0028 F583              MOV     DPH,A
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 47  
+
+002A E4                CLR     A
+002B 93                MOVC    A,@A+DPTR
+002C 7022              JNZ     ?C0127
+                                           ; SOURCE LINE # 911
+                                           ; SOURCE LINE # 912
+002E 120000      R     LCALL   L?0229
+0031 2400        R     ADD     A,#LOW asPowerSEQS0S3
+0033 F582              MOV     DPL,A
+0035 E4                CLR     A
+0036 3400        R     ADDC    A,#HIGH asPowerSEQS0S3
+                                           ; SOURCE LINE # 913
+0038 120000      R     LCALL   L?0228
+003B 2400        R     ADD     A,#LOW asPowerSEQS0S3+02H
+003D F582              MOV     DPL,A
+003F E4                CLR     A
+0040 3400        R     ADDC    A,#HIGH asPowerSEQS0S3+02H
+                                           ; SOURCE LINE # 914
+0042 120000      R     LCALL   L?0226
+                                           ; SOURCE LINE # 915
+0045 900000      E     MOV     DPTR,#PowSeqDelay
+0048 E0                MOVX    A,@DPTR
+0049 7002              JNZ     ?C0209
+004B A3                INC     DPTR
+004C E0                MOVX    A,@DPTR
+004D         ?C0209:
+004D 60C4              JZ      ?C0125
+                                           ; SOURCE LINE # 916
+                                           ; SOURCE LINE # 917
+004F 22                RET     
+                                           ; SOURCE LINE # 918
+0050         ?C0127:
+                                           ; SOURCE LINE # 921
+                                           ; SOURCE LINE # 922
+0050 120000      R     LCALL   L?0229
+0053 2400        R     ADD     A,#LOW asPowerSEQS0S3
+0055 F582              MOV     DPL,A
+0057 E4                CLR     A
+0058 3400        R     ADDC    A,#HIGH asPowerSEQS0S3
+005A 120000      R     LCALL   L?0231
+005D EF                MOV     A,R7
+005E 600D              JZ      ?C0124
+                                           ; SOURCE LINE # 923
+                                           ; SOURCE LINE # 924
+0060 120000      R     LCALL   L?0229
+0063 2400        R     ADD     A,#LOW asPowerSEQS0S3+02H
+0065 F582              MOV     DPL,A
+0067 E4                CLR     A
+0068 3400        R     ADDC    A,#HIGH asPowerSEQS0S3+02H
+                                           ; SOURCE LINE # 925
+006A 120000      R     LCALL   L?0226
+                                           ; SOURCE LINE # 926
+                                           ; SOURCE LINE # 927
+                                           ; SOURCE LINE # 928
+                                           ; SOURCE LINE # 929
+                                           ; SOURCE LINE # 930
+006D         ?C0124:
+006D 22                RET     
+             ; FUNCTION Oem_S0S3Sequence (END)
+
+             ; FUNCTION Oem_S0S4Sequence (BEGIN)
+                                           ; SOURCE LINE # 936
+                                           ; SOURCE LINE # 937
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 48  
+
+                                           ; SOURCE LINE # 938
+0000 900000      E     MOV     DPTR,#PowSeqDelay
+0003 E0                MOVX    A,@DPTR
+0004 7002              JNZ     ?C0210
+0006 A3                INC     DPTR
+0007 E0                MOVX    A,@DPTR
+0008         ?C0210:
+0008 6009              JZ      ?C0134
+                                           ; SOURCE LINE # 939
+                                           ; SOURCE LINE # 940
+                                           ; SOURCE LINE # 941
+000A 120000      R     LCALL   L?0235
+000D 7002              JNZ     ?C0211
+000F A3                INC     DPTR
+0010 E0                MOVX    A,@DPTR
+0011         ?C0211:
+0011 705A              JNZ     ?C0133
+                                           ; SOURCE LINE # 942
+                                           ; SOURCE LINE # 944
+0013         ?C0132:
+                                           ; SOURCE LINE # 945
+0013         ?C0134:
+                                           ; SOURCE LINE # 947
+0013 900000      E     MOV     DPTR,#PWSeqStep
+0016 E0                MOVX    A,@DPTR
+0017 C3                CLR     C
+0018 9410              SUBB    A,#010H
+001A 5051              JNC     ?C0133
+                                           ; SOURCE LINE # 948
+                                           ; SOURCE LINE # 949
+001C E0                MOVX    A,@DPTR
+001D 75F005            MOV     B,#05H
+0020 A4                MUL     AB
+0021 2400        R     ADD     A,#LOW asPowerSEQS0S4+04H
+0023 F582              MOV     DPL,A
+0025 E4                CLR     A
+0026 3400        R     ADDC    A,#HIGH asPowerSEQS0S4+04H
+0028 F583              MOV     DPH,A
+002A E4                CLR     A
+002B 93                MOVC    A,@A+DPTR
+002C 7022              JNZ     ?C0136
+                                           ; SOURCE LINE # 950
+                                           ; SOURCE LINE # 951
+002E 120000      R     LCALL   L?0229
+0031 2400        R     ADD     A,#LOW asPowerSEQS0S4
+0033 F582              MOV     DPL,A
+0035 E4                CLR     A
+0036 3400        R     ADDC    A,#HIGH asPowerSEQS0S4
+                                           ; SOURCE LINE # 952
+0038 120000      R     LCALL   L?0228
+003B 2400        R     ADD     A,#LOW asPowerSEQS0S4+02H
+003D F582              MOV     DPL,A
+003F E4                CLR     A
+0040 3400        R     ADDC    A,#HIGH asPowerSEQS0S4+02H
+                                           ; SOURCE LINE # 953
+0042 120000      R     LCALL   L?0226
+                                           ; SOURCE LINE # 954
+0045 900000      E     MOV     DPTR,#PowSeqDelay
+0048 E0                MOVX    A,@DPTR
+0049 7002              JNZ     ?C0212
+004B A3                INC     DPTR
+004C E0                MOVX    A,@DPTR
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 49  
+
+004D         ?C0212:
+004D 60C4              JZ      ?C0134
+                                           ; SOURCE LINE # 955
+                                           ; SOURCE LINE # 956
+004F 22                RET     
+                                           ; SOURCE LINE # 957
+0050         ?C0136:
+                                           ; SOURCE LINE # 960
+                                           ; SOURCE LINE # 961
+0050 120000      R     LCALL   L?0229
+0053 2400        R     ADD     A,#LOW asPowerSEQS0S4
+0055 F582              MOV     DPL,A
+0057 E4                CLR     A
+0058 3400        R     ADDC    A,#HIGH asPowerSEQS0S4
+005A 120000      R     LCALL   L?0231
+005D EF                MOV     A,R7
+005E 600D              JZ      ?C0133
+                                           ; SOURCE LINE # 962
+                                           ; SOURCE LINE # 963
+0060 120000      R     LCALL   L?0229
+0063 2400        R     ADD     A,#LOW asPowerSEQS0S4+02H
+0065 F582              MOV     DPL,A
+0067 E4                CLR     A
+0068 3400        R     ADDC    A,#HIGH asPowerSEQS0S4+02H
+                                           ; SOURCE LINE # 964
+006A 120000      R     LCALL   L?0226
+                                           ; SOURCE LINE # 965
+                                           ; SOURCE LINE # 966
+                                           ; SOURCE LINE # 967
+                                           ; SOURCE LINE # 968
+                                           ; SOURCE LINE # 969
+006D         ?C0133:
+006D 22                RET     
+             ; FUNCTION Oem_S0S4Sequence (END)
+
+             ; FUNCTION Oem_S0S5Sequence (BEGIN)
+                                           ; SOURCE LINE # 974
+                                           ; SOURCE LINE # 975
+                                           ; SOURCE LINE # 976
+0000 900000      E     MOV     DPTR,#PowSeqDelay
+0003 E0                MOVX    A,@DPTR
+0004 7002              JNZ     ?C0213
+0006 A3                INC     DPTR
+0007 E0                MOVX    A,@DPTR
+0008         ?C0213:
+0008 6009              JZ      ?C0143
+                                           ; SOURCE LINE # 977
+                                           ; SOURCE LINE # 978
+                                           ; SOURCE LINE # 979
+000A 120000      R     LCALL   L?0235
+000D 7002              JNZ     ?C0214
+000F A3                INC     DPTR
+0010 E0                MOVX    A,@DPTR
+0011         ?C0214:
+0011 705A              JNZ     ?C0142
+                                           ; SOURCE LINE # 980
+                                           ; SOURCE LINE # 982
+0013         ?C0141:
+                                           ; SOURCE LINE # 983
+0013         ?C0143:
+                                           ; SOURCE LINE # 985
+0013 900000      E     MOV     DPTR,#PWSeqStep
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 50  
+
+0016 E0                MOVX    A,@DPTR
+0017 C3                CLR     C
+0018 940C              SUBB    A,#0CH
+001A 5051              JNC     ?C0142
+                                           ; SOURCE LINE # 986
+                                           ; SOURCE LINE # 987
+001C E0                MOVX    A,@DPTR
+001D 75F005            MOV     B,#05H
+0020 A4                MUL     AB
+0021 2400        R     ADD     A,#LOW asPowerSEQS0S5+04H
+0023 F582              MOV     DPL,A
+0025 E4                CLR     A
+0026 3400        R     ADDC    A,#HIGH asPowerSEQS0S5+04H
+0028 F583              MOV     DPH,A
+002A E4                CLR     A
+002B 93                MOVC    A,@A+DPTR
+002C 7022              JNZ     ?C0145
+                                           ; SOURCE LINE # 988
+                                           ; SOURCE LINE # 989
+002E 120000      R     LCALL   L?0229
+0031 2400        R     ADD     A,#LOW asPowerSEQS0S5
+0033 F582              MOV     DPL,A
+0035 E4                CLR     A
+0036 3400        R     ADDC    A,#HIGH asPowerSEQS0S5
+                                           ; SOURCE LINE # 990
+0038 120000      R     LCALL   L?0228
+003B 2400        R     ADD     A,#LOW asPowerSEQS0S5+02H
+003D F582              MOV     DPL,A
+003F E4                CLR     A
+0040 3400        R     ADDC    A,#HIGH asPowerSEQS0S5+02H
+                                           ; SOURCE LINE # 991
+0042 120000      R     LCALL   L?0226
+                                           ; SOURCE LINE # 992
+0045 900000      E     MOV     DPTR,#PowSeqDelay
+0048 E0                MOVX    A,@DPTR
+0049 7002              JNZ     ?C0215
+004B A3                INC     DPTR
+004C E0                MOVX    A,@DPTR
+004D         ?C0215:
+004D 60C4              JZ      ?C0143
+                                           ; SOURCE LINE # 993
+                                           ; SOURCE LINE # 994
+004F 22                RET     
+                                           ; SOURCE LINE # 995
+0050         ?C0145:
+                                           ; SOURCE LINE # 998
+                                           ; SOURCE LINE # 999
+0050 120000      R     LCALL   L?0229
+0053 2400        R     ADD     A,#LOW asPowerSEQS0S5
+0055 F582              MOV     DPL,A
+0057 E4                CLR     A
+0058 3400        R     ADDC    A,#HIGH asPowerSEQS0S5
+005A 120000      R     LCALL   L?0231
+005D EF                MOV     A,R7
+005E 600D              JZ      ?C0142
+                                           ; SOURCE LINE # 1000
+                                           ; SOURCE LINE # 1001
+0060 120000      R     LCALL   L?0229
+0063 2400        R     ADD     A,#LOW asPowerSEQS0S5+02H
+0065 F582              MOV     DPL,A
+0067 E4                CLR     A
+0068 3400        R     ADDC    A,#HIGH asPowerSEQS0S5+02H
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 51  
+
+                                           ; SOURCE LINE # 1002
+006A 120000      R     LCALL   L?0226
+                                           ; SOURCE LINE # 1003
+                                           ; SOURCE LINE # 1004
+                                           ; SOURCE LINE # 1005
+                                           ; SOURCE LINE # 1006
+                                           ; SOURCE LINE # 1007
+006D         ?C0142:
+006D 22                RET     
+             ; FUNCTION Oem_S0S5Sequence (END)
+
+             ; FUNCTION CheckEnterDeepSleep (BEGIN)
+                                           ; SOURCE LINE # 1013
+                                           ; SOURCE LINE # 1014
+                                           ; SOURCE LINE # 1016
+;---- Variable 'resault' assigned to Register 'R7' ----
+0000 E4                CLR     A
+0001 FF                MOV     R7,A
+                                           ; SOURCE LINE # 1018
+0002 900000      E     MOV     DPTR,#SysPowState
+0005 E0                MOVX    A,@DPTR
+0006 B41001            CJNE    A,#010H,?C0149
+                                           ; SOURCE LINE # 1019
+0009 0F                INC     R7
+000A         ?C0149:
+                                           ; SOURCE LINE # 1020
+000A 900000      E     MOV     DPTR,#SysPowState
+000D E0                MOVX    A,@DPTR
+000E B43302            CJNE    A,#033H,?C0150
+                                           ; SOURCE LINE # 1021
+0011 7F01              MOV     R7,#01H
+0013         ?C0150:
+                                           ; SOURCE LINE # 1022
+0013 900000      E     MOV     DPTR,#POWER_FLAG1
+0016 E0                MOVX    A,@DPTR
+0017 30E002            JNB     ACC.0,?C0151
+                                           ; SOURCE LINE # 1023
+001A 7F01              MOV     R7,#01H
+001C         ?C0151:
+                                           ; SOURCE LINE # 1025
+001C EF                MOV     A,R7
+001D 7014              JNZ     ?C0152
+                                           ; SOURCE LINE # 1026
+                                           ; SOURCE LINE # 1027
+001F 900000      E     MOV     DPTR,#DeepSleepCunt
+0022 E0                MOVX    A,@DPTR
+0023 C3                CLR     C
+0024 940A              SUBB    A,#0AH
+0026 5007              JNC     ?C0153
+                                           ; SOURCE LINE # 1028
+                                           ; SOURCE LINE # 1029
+0028 E0                MOVX    A,@DPTR
+0029 04                INC     A
+002A F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1030
+002B 7F02              MOV     R7,#02H
+                                           ; SOURCE LINE # 1031
+002D 8009              SJMP    ?C0155
+002F         ?C0153:
+                                           ; SOURCE LINE # 1033
+                                           ; SOURCE LINE # 1034
+002F E4                CLR     A
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 52  
+
+0030 FF                MOV     R7,A
+                                           ; SOURCE LINE # 1035
+                                           ; SOURCE LINE # 1036
+                                           ; SOURCE LINE # 1037
+0031 8001              SJMP    ?C0221
+0033         ?C0152:
+                                           ; SOURCE LINE # 1039
+                                           ; SOURCE LINE # 1040
+0033 E4                CLR     A
+0034         ?C0221:
+0034 900000      E     MOV     DPTR,#DeepSleepCunt
+0037 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1041
+0038         ?C0155:
+                                           ; SOURCE LINE # 1043
+0038 EF                MOV     A,R7
+0039 14                DEC     A
+003A 600A              JZ      ?C0159
+003C 14                DEC     A
+003D 600E              JZ      ?C0156
+003F 2402              ADD     A,#02H
+0041 700A              JNZ     ?C0156
+                                           ; SOURCE LINE # 1044
+                                           ; SOURCE LINE # 1045
+0043         ?C0157:
+                                           ; SOURCE LINE # 1046
+0043 7F01              MOV     R7,#01H
+0045 22                RET     
+                                           ; SOURCE LINE # 1047
+                                           ; SOURCE LINE # 1049
+0046         ?C0159:
+                                           ; SOURCE LINE # 1050
+0046 E4                CLR     A
+0047 900000      E     MOV     DPTR,#DeepSleepCunt
+004A F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1051
+004B FF                MOV     R7,A
+004C 22                RET     
+                                           ; SOURCE LINE # 1052
+                                           ; SOURCE LINE # 1054
+                                           ; SOURCE LINE # 1056
+                                           ; SOURCE LINE # 1057
+004D         ?C0156:
+                                           ; SOURCE LINE # 1058
+004D 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 1059
+004F         ?C0158:
+004F 22                RET     
+             ; FUNCTION CheckEnterDeepSleep (END)
+
+             ; FUNCTION EnterDeepSleep (BEGIN)
+                                           ; SOURCE LINE # 1064
+                                           ; SOURCE LINE # 1065
+                                           ; SOURCE LINE # 1066
+0000 E4                CLR     A
+                                           ; SOURCE LINE # 1067
+                                           ; SOURCE LINE # 1068
+                                           ; SOURCE LINE # 1069
+                                           ; SOURCE LINE # 1070
+0001 120000      R     LCALL   L?0236
+                                           ; SOURCE LINE # 1072
+0004 120000      E     LCALL   DisableAllInterrupt
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 53  
+
+                                           ; SOURCE LINE # 1076
+0007 900000      E     MOV     DPTR,#DACPWRDN
+000A 743F              MOV     A,#03FH
+000C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1078
+000D 900000      E     MOV     DPTR,#KSOL
+0010 74FF              MOV     A,#0FFH
+0012 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1079
+0013 900000      E     MOV     DPTR,#KSOH1
+0016 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1080
+0017 900000      E     MOV     DPTR,#KSOH2
+001A F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1085
+001B E4                CLR     A
+001C 900000      E     MOV     DPTR,#GPCRD0
+                                           ; SOURCE LINE # 1086
+                                           ; SOURCE LINE # 1087
+                                           ; SOURCE LINE # 1088
+001F 120000      R     LCALL   L?0242
+0022 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1091
+0023 900000      E     MOV     DPTR,#CGCTRL1R
+0026 74FF              MOV     A,#0FFH
+                                           ; SOURCE LINE # 1092
+                                           ; SOURCE LINE # 1093
+0028 120000      R     LCALL   L?0247
+                                           ; SOURCE LINE # 1098
+002B 900000      E     MOV     DPTR,#WUENR2
+002E 7423              MOV     A,#023H
+0030 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1102
+0031 900000      E     MOV     DPTR,#WUEMR2
+0034 7420              MOV     A,#020H
+0036 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1106
+0037 900000      E     MOV     DPTR,#WUENR4
+003A 7401              MOV     A,#01H
+003C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1107
+003D 900000      E     MOV     DPTR,#WUEMR4
+0040 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1109
+0041 900000      E     MOV     DPTR,#IER0
+0044 E0                MOVX    A,@DPTR
+0045 4422              ORL     A,#022H
+0047 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1111
+0048 900000      E     MOV     DPTR,#IER1
+004B E0                MOVX    A,@DPTR
+004C 4440              ORL     A,#040H
+004E F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1112
+004F 900000      E     MOV     DPTR,#IER3
+0052 E0                MOVX    A,@DPTR
+0053 4480              ORL     A,#080H
+0055 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1114
+0056 900000      E     MOV     DPTR,#ISR0
+0059 7422              MOV     A,#022H
+005B F0                MOVX    @DPTR,A
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 54  
+
+                                           ; SOURCE LINE # 1116
+005C 900000      E     MOV     DPTR,#ISR1
+005F 7440              MOV     A,#040H
+0061 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1117
+0062 900000      E     MOV     DPTR,#ISR3
+0065 7480              MOV     A,#080H
+                                           ; SOURCE LINE # 1120
+                                           ; SOURCE LINE # 1121
+                                           ; SOURCE LINE # 1122
+                                           ; SOURCE LINE # 1123
+0067 120000      R     LCALL   L?0237
+                                           ; SOURCE LINE # 1125
+006A 00                NOP     
+                                           ; SOURCE LINE # 1126
+006B 00                NOP     
+                                           ; SOURCE LINE # 1128
+006C 120000      E     LCALL   EnableAllInterrupt
+                                           ; SOURCE LINE # 1129
+006F 900000      E     MOV     DPTR,#PLLCTRL
+0072 7401              MOV     A,#01H
+0074 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1130
+0075 758702            MOV     PCON,#02H
+                                           ; SOURCE LINE # 1132
+0078 00                NOP     
+                                           ; SOURCE LINE # 1133
+0079 00                NOP     
+                                           ; SOURCE LINE # 1134
+007A 00                NOP     
+                                           ; SOURCE LINE # 1135
+007B 00                NOP     
+                                           ; SOURCE LINE # 1136
+007C 00                NOP     
+                                           ; SOURCE LINE # 1137
+007D 00                NOP     
+                                           ; SOURCE LINE # 1138
+007E 00                NOP     
+                                           ; SOURCE LINE # 1139
+007F 00                NOP     
+                                           ; SOURCE LINE # 1141
+0080 E4                CLR     A
+0081 900000      E     MOV     DPTR,#WUENR1
+0084 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1142
+0085 900000      E     MOV     DPTR,#WUENR2
+0088 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1143
+0089 900000      E     MOV     DPTR,#WUENR3
+008C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1144
+008D 900000      E     MOV     DPTR,#WUENR4
+0090 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1146
+                                           ; SOURCE LINE # 1147
+                                           ; SOURCE LINE # 1148
+                                           ; SOURCE LINE # 1149
+                                           ; SOURCE LINE # 1150
+0091 120000      R     LCALL   L?0236
+                                           ; SOURCE LINE # 1155
+0094 900000      E     MOV     DPTR,#GPCRD0
+0097 7480              MOV     A,#080H
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 55  
+
+                                           ; SOURCE LINE # 1156
+                                           ; SOURCE LINE # 1157
+                                           ; SOURCE LINE # 1158
+0099 120000      R     LCALL   L?0242
+                                           ; SOURCE LINE # 1161
+                                           ; SOURCE LINE # 1162
+                                           ; SOURCE LINE # 1163
+                                           ; SOURCE LINE # 1164
+009C 120000      R     LCALL   L?0237
+                                           ; SOURCE LINE # 1166
+009F E4                CLR     A
+00A0 900000      E     MOV     DPTR,#CGCTRL1R
+                                           ; SOURCE LINE # 1167
+                                           ; SOURCE LINE # 1168
+00A3 120000      R     LCALL   L?0247
+                                           ; SOURCE LINE # 1174
+00A6 900000      E     MOV     DPTR,#DACPWRDN
+00A9 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1175
+00AA 120000      E     LCALL   Enable_Any_Key_Irq
+                                           ; SOURCE LINE # 1176
+00AD 020000      E     LJMP    Init_Timers
+             ; FUNCTION EnterDeepSleep (END)
+
+             ; FUNCTION MoniterHWPG (BEGIN)
+                                           ; SOURCE LINE # 1182
+                                           ; SOURCE LINE # 1183
+                                           ; SOURCE LINE # 1200
+0000 22                RET     
+             ; FUNCTION MoniterHWPG (END)
+
+             ; FUNCTION CheckAutoS5S0 (BEGIN)
+                                           ; SOURCE LINE # 1205
+                                           ; SOURCE LINE # 1206
+                                           ; SOURCE LINE # 1207
+0000 900000      E     MOV     DPTR,#ECAutoPowerOn
+0003 E0                MOVX    A,@DPTR
+0004 B4010F            CJNE    A,#01H,?C0163
+                                           ; SOURCE LINE # 1208
+                                           ; SOURCE LINE # 1209
+0007 E4                CLR     A
+0008 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1210
+0009 900000      E     MOV     DPTR,#DelayDoPowerSeq
+000C 7403              MOV     A,#03H
+000E F0                MOVX    @DPTR,A
+000F A3                INC     DPTR
+0010 74E8              MOV     A,#0E8H
+0012 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1211
+0013 120000      R     LCALL   Oem_TriggerS5S0
+                                           ; SOURCE LINE # 1212
+0016         ?C0163:
+                                           ; SOURCE LINE # 1214
+0016 900000      E     MOV     DPTR,#ECWDTRSTNow
+0019 E0                MOVX    A,@DPTR
+001A 6008              JZ      ?C0165
+                                           ; SOURCE LINE # 1215
+                                           ; SOURCE LINE # 1216
+001C E4                CLR     A
+001D F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1217
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 56  
+
+001E 900000      E     MOV     DPTR,#SysPowState
+0021 74FF              MOV     A,#0FFH
+0023 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1218
+                                           ; SOURCE LINE # 1219
+0024         ?C0165:
+0024 22                RET     
+             ; FUNCTION CheckAutoS5S0 (END)
+
+             ; FUNCTION Oem_SysPowerContrl (BEGIN)
+                                           ; SOURCE LINE # 1225
+                                           ; SOURCE LINE # 1226
+                                           ; SOURCE LINE # 1227
+0000 900000      E     MOV     DPTR,#SysPowState
+0003 E0                MOVX    A,@DPTR
+0004 FF                MOV     R7,A
+                                           ; SOURCE LINE # 1228
+                                           ; SOURCE LINE # 1233
+0005         ?C0166:
+                                           ; SOURCE LINE # 1236
+0005 900000      E     MOV     DPTR,#DelayDoPowerSeq
+0008 E0                MOVX    A,@DPTR
+0009 7002              JNZ     ?C0216
+000B A3                INC     DPTR
+000C E0                MOVX    A,@DPTR
+000D         ?C0216:
+000D 6014              JZ      ?C0167
+                                           ; SOURCE LINE # 1237
+                                           ; SOURCE LINE # 1238
+000F 900000      E     MOV     DPTR,#DelayDoPowerSeq
+0012 74FF              MOV     A,#0FFH
+0014 F5F0              MOV     B,A
+0016 120000      E     LCALL   ?C?IILDX
+                                           ; SOURCE LINE # 1239
+0019 900000      E     MOV     DPTR,#DelayDoPowerSeq
+001C E0                MOVX    A,@DPTR
+001D 7002              JNZ     ?C0217
+001F A3                INC     DPTR
+0020 E0                MOVX    A,@DPTR
+0021         ?C0217:
+0021 704F              JNZ     ?C0169
+                                           ; SOURCE LINE # 1240
+                                           ; SOURCE LINE # 1242
+0023         ?C0168:
+                                           ; SOURCE LINE # 1243
+0023         ?C0167:
+                                           ; SOURCE LINE # 1245
+0023 120000      R     LCALL   L?0241
+0026 6009              JZ      ?C0171
+0028 E0                MOVX    A,@DPTR
+0029 6433              XRL     A,#033H
+002B 6004              JZ      ?C0171
+002D E0                MOVX    A,@DPTR
+002E B45503            CJNE    A,#055H,?C0170
+0031         ?C0171:
+                                           ; SOURCE LINE # 1246
+                                           ; SOURCE LINE # 1247
+0031 120000      R     LCALL   CheckPowerState
+                                           ; SOURCE LINE # 1248
+0034         ?C0170:
+                                           ; SOURCE LINE # 1251
+0034 900000      E     MOV     DPTR,#SysPowState
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 57  
+
+0037 E0                MOVX    A,@DPTR
+0038 120000      E     LCALL   ?C?CCASE
+003B 0000        R     DW      ?C0178
+003D 03                DB      03H
+003E 0000        R     DW      ?C0179
+0040 05                DB      05H
+0041 0000        R     DW      ?C0173
+0043 10                DB      010H
+0044 0000        R     DW      ?C0177
+0046 30                DB      030H
+0047 0000        R     DW      ?C0169
+0049 33                DB      033H
+004A 0000        R     DW      ?C0176
+004C 50                DB      050H
+004D 0000        R     DW      ?C0175
+004F 55                DB      055H
+0050 0000        R     DW      ?C0180
+0052 FF                DB      0FFH
+0053 0000              DW      00H
+0055 0000        R     DW      ?C0181
+                                           ; SOURCE LINE # 1252
+                                           ; SOURCE LINE # 1253
+0057         ?C0173:
+                                           ; SOURCE LINE # 1254
+0057 020000      R     LJMP    MoniterHWPG
+                                           ; SOURCE LINE # 1255
+                                           ; SOURCE LINE # 1257
+                                           ; SOURCE LINE # 1258
+                                           ; SOURCE LINE # 1260
+005A         ?C0175:
+                                           ; SOURCE LINE # 1261
+005A 020000      R     LJMP    CheckAutoS5S0
+                                           ; SOURCE LINE # 1262
+                                           ; SOURCE LINE # 1264
+005D         ?C0176:
+                                           ; SOURCE LINE # 1265
+005D 020000      R     LJMP    Oem_S5S0Sequence
+                                           ; SOURCE LINE # 1266
+                                           ; SOURCE LINE # 1268
+0060         ?C0177:
+                                           ; SOURCE LINE # 1269
+0060 020000      R     LJMP    Oem_S3S0Sequence
+                                           ; SOURCE LINE # 1270
+                                           ; SOURCE LINE # 1272
+0063         ?C0178:
+                                           ; SOURCE LINE # 1273
+0063 020000      R     LJMP    Oem_S0S3Sequence
+                                           ; SOURCE LINE # 1274
+                                           ; SOURCE LINE # 1276
+0066         ?C0179:
+                                           ; SOURCE LINE # 1277
+0066 020000      R     LJMP    Oem_S0S5Sequence
+                                           ; SOURCE LINE # 1278
+                                           ; SOURCE LINE # 1280
+0069         ?C0180:
+                                           ; SOURCE LINE # 1281
+0069 020000      E     LJMP    InternalWDTNow
+                                           ; SOURCE LINE # 1282
+                                           ; SOURCE LINE # 1284
+006C         ?C0181:
+                                           ; SOURCE LINE # 1285
+006C 900000      E     MOV     DPTR,#SysPowState
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 58  
+
+006F 7455              MOV     A,#055H
+0071 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1286
+                                           ; SOURCE LINE # 1287
+                                           ; SOURCE LINE # 1288
+0072         ?C0169:
+0072 22                RET     
+             ; FUNCTION Oem_SysPowerContrl (END)
+
+             ; FUNCTION CheckResetSource (BEGIN)
+                                           ; SOURCE LINE # 1291
+                                           ; SOURCE LINE # 1292
+                                           ; SOURCE LINE # 1293
+0000 900000      E     MOV     DPTR,#RSTStatus
+0003 E0                MOVX    A,@DPTR
+0004 5403              ANL     A,#03H
+0006 14                DEC     A
+0007 600A              JZ      ?C0184
+0009 14                DEC     A
+000A 6013              JZ      ?C0187
+000C 14                DEC     A
+000D 601C              JZ      ?C0190
+000F 2403              ADD     A,#03H
+0011 7025              JNZ     ?C0193
+                                           ; SOURCE LINE # 1294
+                                           ; SOURCE LINE # 1295
+                                           ; SOURCE LINE # 1296
+0013         ?C0184:
+                                           ; SOURCE LINE # 1297
+0013 120000      R     LCALL   L?0245
+0016 B48404            CJNE    A,#084H,?C0185
+                                           ; SOURCE LINE # 1298
+                                           ; SOURCE LINE # 1299
+0019 74FC              MOV     A,#0FCH
+001B F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1300
+001C 22                RET     
+001D         ?C0185:
+                                           ; SOURCE LINE # 1302
+                                           ; SOURCE LINE # 1303
+                                           ; SOURCE LINE # 1304
+                                           ; SOURCE LINE # 1305
+001D 8016              SJMP    ?C0223
+                                           ; SOURCE LINE # 1307
+001F         ?C0187:
+                                           ; SOURCE LINE # 1308
+001F 120000      R     LCALL   L?0245
+0022 B48404            CJNE    A,#084H,?C0188
+                                           ; SOURCE LINE # 1309
+                                           ; SOURCE LINE # 1310
+0025 74FE              MOV     A,#0FEH
+0027 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1311
+0028 22                RET     
+0029         ?C0188:
+                                           ; SOURCE LINE # 1313
+                                           ; SOURCE LINE # 1314
+0029         ?C0222:
+                                           ; SOURCE LINE # 1315
+                                           ; SOURCE LINE # 1316
+0029 800A              SJMP    ?C0223
+                                           ; SOURCE LINE # 1318
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 59  
+
+002B         ?C0190:
+                                           ; SOURCE LINE # 1319
+002B 120000      R     LCALL   L?0246
+002E B48404            CJNE    A,#084H,?C0191
+                                           ; SOURCE LINE # 1320
+                                           ; SOURCE LINE # 1321
+0031 74FF              MOV     A,#0FFH
+0033 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1322
+0034 22                RET     
+0035         ?C0191:
+                                           ; SOURCE LINE # 1324
+                                           ; SOURCE LINE # 1325
+0035         ?C0223:
+0035 74EC              MOV     A,#0ECH
+0037 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1326
+                                           ; SOURCE LINE # 1328
+                                           ; SOURCE LINE # 1329
+                                           ; SOURCE LINE # 1330
+0038         ?C0193:
+0038 22                RET     
+             ; FUNCTION CheckResetSource (END)
+
+             ; FUNCTION PulseSBPowerButton (BEGIN)
+                                           ; SOURCE LINE # 1335
+                                           ; SOURCE LINE # 1336
+                                           ; SOURCE LINE # 1337
+0000 900000      E     MOV     DPTR,#GPDRG
+0003 E0                MOVX    A,@DPTR
+0004 54FD              ANL     A,#0FDH
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1338
+0007 900000      E     MOV     DPTR,#SBSWReleaseCunt
+000A 7414              MOV     A,#014H
+000C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1339
+000D 22                RET     
+             ; FUNCTION PulseSBPowerButton (END)
+
+             ; FUNCTION CheckSBPowerButton (BEGIN)
+                                           ; SOURCE LINE # 1344
+                                           ; SOURCE LINE # 1345
+                                           ; SOURCE LINE # 1346
+0000 900000      E     MOV     DPTR,#SBSWReleaseCunt
+0003 E0                MOVX    A,@DPTR
+0004 600D              JZ      ?C0197
+                                           ; SOURCE LINE # 1347
+                                           ; SOURCE LINE # 1348
+0006 E0                MOVX    A,@DPTR
+0007 14                DEC     A
+0008 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1349
+0009 E0                MOVX    A,@DPTR
+000A 7007              JNZ     ?C0197
+                                           ; SOURCE LINE # 1350
+                                           ; SOURCE LINE # 1351
+000C 900000      E     MOV     DPTR,#GPDRG
+000F E0                MOVX    A,@DPTR
+0010 4402              ORL     A,#02H
+0012 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1352
+C51 COMPILER V9.03   OEM_POWER                                                             02/02/2015 14:30:24 PAGE 60  
+
+                                           ; SOURCE LINE # 1353
+                                           ; SOURCE LINE # 1354
+0013         ?C0197:
+0013 22                RET     
+             ; FUNCTION CheckSBPowerButton (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   2079    ----
+   CONSTANT SIZE    =    435    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,436 @@
+C51 COMPILER V9.03   OEM_GPIO                                                              02/02/2015 14:30:20 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE OEM_GPIO
+OBJECT MODULE PLACED IN Code\OEM\OEM_GPIO.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\OEM\OEM_GPIO.C LA WL(1) CD OT(9,SIZE) NOAREGS OR INCDIR
+                    -(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*-----------------------------------------------------------------------------
+   2           * TITLE: OEM_GPIO.C
+   3           *
+   4           * Author : Dino
+   5           *
+   6           * Note : These functions are reference only.
+   7           *        Please follow your project software specification to do some modification.
+   8           *---------------------------------------------------------------------------*/
+   9           
+  10          #include <CORE_INCLUDE.H>
+  11          #include <OEM_INCLUDE.H>
+  12          
+  13          //-----------------------------------------------------------------
+  14          // External ram GPIO Registers 
+  15          //-----------------------------------------------------------------
+  16          const sInitGPIOReg code asInitGPIOReg[] = 
+  17          {
+  18                  { &GCR,         GCR_Init                },      // 
+  19                  { &GCR2,        GCR2_Init               },      //      
+  20          
+  21                  { &KSIGCTRL,   KSI_GPIO_Control       },        //      
+  22              { &KSIGOEN,    KSI_GPIO_OutputEn      },    //
+  23              { &KSIGDAT,    KSI_Data               },    //
+  24              { &KSOHGCTRL,  KSO_GPIO_Control_15_8  },    //  
+  25              { &KSOHGOEN,   KSO_GPIO_OutputEn_15_8 },    //
+  26              { &KSOH1,      KSO_Data_15_8          }, 
+  27              { &KSOLGCTRL,  KSO_GPIO_Control_7_0   },    //  
+  28              { &KSOLGOEN,   KSO_GPIO_OutputEn_7_0  },    //
+  29              { &KSOL,       KSO_Data_7_0           }, 
+  30          
+  31                  { &GPDRA,       PortA_Init              },      // Port A Data port Init
+  32                  { &GPDRB,       PortB_Init              },      // Port B Data port Init
+  33                  { &GPDRC,       PortC_Init              },      // Port C Data port Init
+  34                  { &GPDRD,       PortD_Init              },      // Port D Data port Init
+  35                  { &GPDRE,       PortE_Init              },      // Port E Data port Init
+  36                  { &GPDRF,       PortF_Init              },      // Port F Data port Init
+  37                  { &GPDRG,       PortG_Init              },      // Port G Data port Init
+  38                  { &GPDRH,       PortH_Init              },      // Port H Data port Init
+  39                  { &GPDRI,       PortI_Init              },      // Port I Data port Init
+  40                  { &GPDRJ,       PortJ_Init              },      // Port J Data port Init
+  41          
+  42                  { &GPCRA0,      PortA0_Ctrl             },
+  43                  { &GPCRA1,      PortA1_Ctrl             },
+  44                  { &GPCRA2,      PortA2_Ctrl             },
+  45                  { &GPCRA3,      PortA3_Ctrl             },
+  46                  { &GPCRA4,      PortA4_Ctrl             },
+  47                  { &GPCRA5,      PortA5_Ctrl             },
+  48                  { &GPCRA6,      PortA6_Ctrl             },
+  49                  { &GPCRA7,      PortA7_Ctrl             },
+  50                  
+  51                  { &GPCRB0,      PortB0_Ctrl             },
+  52                  { &GPCRB1,      PortB1_Ctrl             },
+  53                  { &GPCRB2,      PortB2_Ctrl             },
+  54                  { &GPCRB3,      PortB3_Ctrl             },
+C51 COMPILER V9.03   OEM_GPIO                                                              02/02/2015 14:30:20 PAGE 2   
+
+  55                  { &GPCRB4,      PortB4_Ctrl             },
+  56                  { &GPCRB5,      PortB5_Ctrl             },
+  57                  { &GPCRB6,      PortB6_Ctrl             },
+  58                  { &GPCRB7,      PortB7_Ctrl             },
+  59          
+  60                  { &GPCRC0,      PortC0_Ctrl             },
+  61                  { &GPCRC1,      PortC1_Ctrl             },
+  62                  { &GPCRC2,      PortC2_Ctrl             },
+  63                  { &GPCRC3,      PortC3_Ctrl             },
+  64                  { &GPCRC4,      PortC4_Ctrl             },
+  65                  { &GPCRC5,      PortC5_Ctrl             },
+  66                  { &GPCRC6,      PortC6_Ctrl             },
+  67                  { &GPCRC7,      PortC7_Ctrl             },
+  68          
+  69                  { &GPCRD0,      PortD0_Ctrl             },
+  70                  { &GPCRD1,      PortD1_Ctrl             },
+  71                  { &GPCRD2,      PortD2_Ctrl             },
+  72                  { &GPCRD3,      PortD3_Ctrl             },
+  73                  { &GPCRD4,      PortD4_Ctrl             },
+  74                  { &GPCRD5,      PortD5_Ctrl             },
+  75                  { &GPCRD6,      PortD6_Ctrl             },
+  76                  { &GPCRD7,      PortD7_Ctrl             },
+  77          
+  78                  { &GPCRE0,      PortE0_Ctrl             },
+  79                  { &GPCRE1,      PortE1_Ctrl             },
+  80                  { &GPCRE2,      PortE2_Ctrl             },
+  81                  { &GPCRE3,      PortE3_Ctrl             },
+  82                  { &GPCRE4,      PortE4_Ctrl     },      
+  83                  { &GPCRE5,      PortE5_Ctrl             },
+  84                  { &GPCRE6,      PortE6_Ctrl             },
+  85                  { &GPCRE7,      PortE7_Ctrl             },
+  86          
+  87                  { &GPCRF0,      PortF0_Ctrl             },
+  88                  { &GPCRF1,      PortF1_Ctrl             },
+  89                  { &GPCRF2,      PortF2_Ctrl             },
+  90                  { &GPCRF3,      PortF3_Ctrl             },
+  91                  { &GPCRF4,      PortF4_Ctrl             },
+  92                  { &GPCRF5,      PortF5_Ctrl             },
+  93                  { &GPCRF6,      PortF6_Ctrl             },
+  94                  { &GPCRF7,      PortF7_Ctrl             },
+  95          
+  96                  { &GPCRG0,      PortG0_Ctrl             },
+  97                  { &GPCRG1,      PortG1_Ctrl             },
+  98                  { &GPCRG2,      PortG2_Ctrl             },
+  99                  { &GPCRG3,      PortG3_Ctrl             },
+ 100                  { &GPCRG4,      PortG4_Ctrl             },
+ 101                  { &GPCRG5,      PortG5_Ctrl             },
+ 102                  { &GPCRG6,      PortG6_Ctrl             },
+ 103                  { &GPCRG7,      PortG7_Ctrl             },
+ 104          
+ 105                  { &GPCRH0,      PortH0_Ctrl             },
+ 106                  { &GPCRH1,      PortH1_Ctrl             },
+ 107                  { &GPCRH2,      PortH2_Ctrl             },
+ 108                  { &GPCRH3,      PortH3_Ctrl             },
+ 109                  { &GPCRH4,      PortH4_Ctrl             },
+ 110                  { &GPCRH5,      PortH5_Ctrl             },
+ 111                  { &GPCRH6,      PortH6_Ctrl             },
+ 112          
+ 113                  { &GPCRI0,      PortI0_Ctrl             },
+ 114                  { &GPCRI1,      PortI1_Ctrl             },
+ 115                  { &GPCRI2,      PortI2_Ctrl             },
+ 116                  { &GPCRI3,      PortI3_Ctrl             },
+C51 COMPILER V9.03   OEM_GPIO                                                              02/02/2015 14:30:20 PAGE 3   
+
+ 117                  { &GPCRI4,      PortI4_Ctrl             },
+ 118                  { &GPCRI5,      PortI5_Ctrl             },
+ 119                  { &GPCRI6,      PortI6_Ctrl             },
+ 120                  { &GPCRI7,      PortI7_Ctrl             },
+ 121          
+ 122                  { &GPCRJ0,      PortJ0_Ctrl             },
+ 123                  { &GPCRJ1,      PortJ1_Ctrl             },
+ 124                  { &GPCRJ2,      PortJ2_Ctrl             },
+ 125                  { &GPCRJ3,      PortJ3_Ctrl             },
+ 126                  { &GPCRJ4,      PortJ4_Ctrl             },
+ 127                  { &GPCRJ5,      PortJ5_Ctrl             }
+ 128          
+ 129          };
+ 130          
+ 131          //-----------------------------------------------------------------------------
+ 132          // The function of GPIO register init.
+ 133          //-----------------------------------------------------------------------------
+ 134          void Init_GPIO(void)
+ 135          {
+ 136   1              BYTE index;
+ 137   1              index=0x00;
+ 138   1              while(index<(sizeof(asInitGPIOReg)/sizeof(sInitGPIOReg)))
+ 139   1              {
+ 140   2                      *asInitGPIOReg[index].reg=asInitGPIOReg[index].value;
+ 141   2                      index++;
+ 142   2              }
+ 143   1      }
+ 144          
+ 145          //----------------------------------------------------------------------------
+ 146          // Hook function of SCI high
+ 147          //----------------------------------------------------------------------------
+ 148          void Hook_SCION(void)
+ 149          {
+ 150   1              SCI_ON();
+ 151   1      }
+ 152          
+ 153          //----------------------------------------------------------------------------
+ 154          // Hook function of SCI low
+ 155          //----------------------------------------------------------------------------
+ 156          void Hook_SCIOFF(void)
+ 157          {
+ 158   1              SCI_OFF();
+ 159   1      }
+ 160          
+ 161          //----------------------------------------------------------------------------
+ 162          // Hook function of SMI high
+ 163          //----------------------------------------------------------------------------
+ 164          void Hook_SMION(void)
+ 165          {
+ 166   1              SMI_ON();
+ 167   1      }
+ 168          
+ 169          //----------------------------------------------------------------------------
+ 170          // Hook function of SMI low
+ 171          //----------------------------------------------------------------------------
+ 172          void Hook_SMIOFF(void)
+ 173          {
+ 174   1              SMI_OFF();
+ 175   1      }
+ 176          
+ 177          //----------------------------------------------------------------------------
+ 178          // Hook function of A20 high
+C51 COMPILER V9.03   OEM_GPIO                                                              02/02/2015 14:30:20 PAGE 4   
+
+ 179          //----------------------------------------------------------------------------
+ 180          void Hook_A20ON(void)
+ 181          {
+ 182   1              GATEA20_ON();
+ 183   1      }
+ 184          
+ 185          //----------------------------------------------------------------------------
+ 186          // Hook function of A20 low
+ 187          //----------------------------------------------------------------------------
+ 188          void Hook_A20OFF(void)
+ 189          {
+ 190   1              GATEA20_OFF();
+ 191   1      }
+ 192          
+ 193          //----------------------------------------------------------------------------
+ 194          // Hook function of keyboard reset low
+ 195          //----------------------------------------------------------------------------
+ 196          void Hook_KBRSTON(void)
+ 197          {
+ 198   1      //      KBRST_ON();
+ 199   1      }
+ 200          
+ 201          //----------------------------------------------------------------------------
+ 202          // Hook function of keyboard reset high
+ 203          //----------------------------------------------------------------------------
+ 204          void Hook_KBRSTOFF(void)
+ 205          {
+ 206   1      //      KBRST_OFF();
+ 207   1      }
+ 208          
+ 209          //----------------------------------------------------------------------------
+ 210          // Hook function of NUM LED ON
+ 211          //----------------------------------------------------------------------------
+ 212          void Hook_NUMLED_ON(void)
+ 213          {
+ 214   1       //   NUMLED_ON();
+ 215   1      }
+ 216          
+ 217          //----------------------------------------------------------------------------
+ 218          // Hook function of NUM LED OFF
+ 219          //----------------------------------------------------------------------------
+ 220          void Hook_NUMLED_OFF(void)
+ 221          {
+ 222   1       //   NUMLED_OFF();
+ 223   1      }
+ 224          
+ 225          //----------------------------------------------------------------------------
+ 226          // Hook function of CAP LED ON
+ 227          //----------------------------------------------------------------------------
+ 228          void Hook_CAPLED_ON(void)
+ 229          {
+ 230   1       //   CAPLED_ON();
+ 231   1      }
+ 232          
+ 233          //----------------------------------------------------------------------------
+ 234          // Hook function of CAP LED OFF
+ 235          //----------------------------------------------------------------------------
+ 236          void Hook_CAPLED_OFF(void)
+ 237          {
+ 238   1       //   CAPLED_OFF();
+ 239   1      }
+ 240          
+C51 COMPILER V9.03   OEM_GPIO                                                              02/02/2015 14:30:20 PAGE 5   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION Com0010 (BEGIN)
+0000         L?0017:
+0000 75F003            MOV     B,#03H
+0003 EF                MOV     A,R7
+0004 120000      E     LCALL   ?C?OFFXADD
+0007 E4                CLR     A
+0008 93                MOVC    A,@A+DPTR
+0009 22                RET     
+             ; FUNCTION Com0010 (END)
+
+             ; FUNCTION Init_GPIO (BEGIN)
+                                           ; SOURCE LINE # 134
+                                           ; SOURCE LINE # 135
+                                           ; SOURCE LINE # 137
+;---- Variable 'index' assigned to Register 'R7' ----
+0000 E4                CLR     A
+0001 FF                MOV     R7,A
+0002         ?C0001:
+                                           ; SOURCE LINE # 138
+                                           ; SOURCE LINE # 139
+                                           ; SOURCE LINE # 140
+0002 900000      R     MOV     DPTR,#asInitGPIOReg+02H
+0005 120000      R     LCALL   L?0017
+0008 FE                MOV     R6,A
+0009 900000      R     MOV     DPTR,#asInitGPIOReg
+000C 120000      R     LCALL   L?0017
+000F FC                MOV     R4,A
+0010 7401              MOV     A,#01H
+0012 93                MOVC    A,@A+DPTR
+0013 F582              MOV     DPL,A
+0015 8C83              MOV     DPH,R4
+0017 EE                MOV     A,R6
+0018 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 141
+0019 0F                INC     R7
+                                           ; SOURCE LINE # 142
+001A EF                MOV     A,R7
+001B B462E4            CJNE    A,#062H,?C0001
+                                           ; SOURCE LINE # 143
+001E         ?C0003:
+001E 22                RET     
+             ; FUNCTION Init_GPIO (END)
+
+             ; FUNCTION Hook_SCION (BEGIN)
+                                           ; SOURCE LINE # 148
+                                           ; SOURCE LINE # 149
+                                           ; SOURCE LINE # 150
+0000 900000      E     MOV     DPTR,#GPDRB
+0003 E0                MOVX    A,@DPTR
+0004 54FE              ANL     A,#0FEH
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 151
+0007 22                RET     
+             ; FUNCTION Hook_SCION (END)
+
+             ; FUNCTION Hook_SCIOFF (BEGIN)
+                                           ; SOURCE LINE # 156
+                                           ; SOURCE LINE # 157
+                                           ; SOURCE LINE # 158
+C51 COMPILER V9.03   OEM_GPIO                                                              02/02/2015 14:30:20 PAGE 6   
+
+0000 900000      E     MOV     DPTR,#GPDRB
+0003 E0                MOVX    A,@DPTR
+0004 4401              ORL     A,#01H
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 159
+0007 22                RET     
+             ; FUNCTION Hook_SCIOFF (END)
+
+             ; FUNCTION Hook_SMION (BEGIN)
+                                           ; SOURCE LINE # 164
+                                           ; SOURCE LINE # 165
+                                           ; SOURCE LINE # 166
+0000 900000      E     MOV     DPTR,#GPDRB
+0003 E0                MOVX    A,@DPTR
+0004 54FD              ANL     A,#0FDH
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 167
+0007 22                RET     
+             ; FUNCTION Hook_SMION (END)
+
+             ; FUNCTION Hook_SMIOFF (BEGIN)
+                                           ; SOURCE LINE # 172
+                                           ; SOURCE LINE # 173
+                                           ; SOURCE LINE # 174
+0000 900000      E     MOV     DPTR,#GPDRB
+0003 E0                MOVX    A,@DPTR
+0004 4402              ORL     A,#02H
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 175
+0007 22                RET     
+             ; FUNCTION Hook_SMIOFF (END)
+
+             ; FUNCTION Hook_A20ON (BEGIN)
+                                           ; SOURCE LINE # 180
+                                           ; SOURCE LINE # 181
+                                           ; SOURCE LINE # 182
+0000 900000      E     MOV     DPTR,#GPDRB
+0003 E0                MOVX    A,@DPTR
+0004 4420              ORL     A,#020H
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 183
+0007 22                RET     
+             ; FUNCTION Hook_A20ON (END)
+
+             ; FUNCTION Hook_A20OFF (BEGIN)
+                                           ; SOURCE LINE # 188
+                                           ; SOURCE LINE # 189
+                                           ; SOURCE LINE # 190
+0000 900000      E     MOV     DPTR,#GPDRB
+0003 E0                MOVX    A,@DPTR
+0004 54DF              ANL     A,#0DFH
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 191
+0007 22                RET     
+             ; FUNCTION Hook_A20OFF (END)
+
+             ; FUNCTION Hook_KBRSTON (BEGIN)
+                                           ; SOURCE LINE # 196
+                                           ; SOURCE LINE # 197
+                                           ; SOURCE LINE # 199
+0000 22                RET     
+             ; FUNCTION Hook_KBRSTON (END)
+C51 COMPILER V9.03   OEM_GPIO                                                              02/02/2015 14:30:20 PAGE 7   
+
+
+             ; FUNCTION Hook_KBRSTOFF (BEGIN)
+                                           ; SOURCE LINE # 204
+                                           ; SOURCE LINE # 205
+                                           ; SOURCE LINE # 207
+0000 22                RET     
+             ; FUNCTION Hook_KBRSTOFF (END)
+
+             ; FUNCTION Hook_NUMLED_ON (BEGIN)
+                                           ; SOURCE LINE # 212
+                                           ; SOURCE LINE # 213
+                                           ; SOURCE LINE # 215
+0000 22                RET     
+             ; FUNCTION Hook_NUMLED_ON (END)
+
+             ; FUNCTION Hook_NUMLED_OFF (BEGIN)
+                                           ; SOURCE LINE # 220
+                                           ; SOURCE LINE # 221
+                                           ; SOURCE LINE # 223
+0000 22                RET     
+             ; FUNCTION Hook_NUMLED_OFF (END)
+
+             ; FUNCTION Hook_CAPLED_ON (BEGIN)
+                                           ; SOURCE LINE # 228
+                                           ; SOURCE LINE # 229
+                                           ; SOURCE LINE # 231
+0000 22                RET     
+             ; FUNCTION Hook_CAPLED_ON (END)
+
+             ; FUNCTION Hook_CAPLED_OFF (BEGIN)
+                                           ; SOURCE LINE # 236
+                                           ; SOURCE LINE # 237
+                                           ; SOURCE LINE # 239
+0000 22                RET     
+             ; FUNCTION Hook_CAPLED_OFF (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     95    ----
+   CONSTANT SIZE    =    294    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

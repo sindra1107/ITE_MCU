@@ -1,0 +1,255 @@
+C51 COMPILER V9.03   OEM_HOSTIF                                                            02/02/2015 14:30:28 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE OEM_HOSTIF
+OBJECT MODULE PLACED IN Code\Oem\OEM_HOSTIF.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\Oem\OEM_HOSTIF.C LA WL(1) CD OT(9,SIZE) NOAREGS OR INCD
+                    -IR(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*-----------------------------------------------------------------------------
+   2           * TITLE: OEM_HOSTIF.C
+   3           *
+   4           * Author : Dino
+   5           *
+   6           * Note : These functions are reference only.
+   7           *        Please follow your project software specification to do some modification.
+   8           *---------------------------------------------------------------------------*/
+   9          
+  10          #include <CORE_INCLUDE.H>
+  11          #include <OEM_INCLUDE.H>
+  12          
+  13          const BYTE code initsio_table[]=
+  14          {
+  15                                          // Configure and Enable Logical Device 06h(KBD)
+  16                  0x07 ,0x06,     // Select Logical Device 06h(KBD)
+  17                  0x70 ,0x01,     // Set IRQ=01h for Logical Device 06h(KBD)
+  18                  0x30 ,0x01,     // Enable Logical Device 06h(Mouse)
+  19                                          // Configure and Enable Logical Device 05h(Mouse)
+  20                  0x07 ,0x05,     // Select Logical Device 05h(Mouse)
+  21                  0x70 ,0x0C,     // Set IRQ=0Ch for Logical Device 05h(Mouse)
+  22                  0x30 ,0x01,     // Enable Logical Device 05h(Mouse)
+  23                                          // Enable Logical Device 11h(PM1)
+  24                  0x07 ,0x11,     // Select Logical Device 11h(PM1)
+  25                  0x70 ,0x00,     // Clear IRQ=0 for  Logical Device 11h(PM1)
+  26                  0x30 ,0x01,     // Enable Logical Device 11h(PM1)
+  27                                          // Enable Logical Device 12h(PM2)
+  28                  0x07 ,0x12,     // Select Logical Device 12h(PM2)
+  29                  0x70 ,0x00,     // Clear IRQ=0 for  Logical Device 12h(PM2)
+  30                  0x30 ,0x01,     // Enable Logical Device 12h(PM2)
+  31                                          // Enable Logical Device 04h(MSWC)
+  32                  0x07 ,0x04,     // Logical Device 04h(MSWC)
+  33                  0x30 ,0x00,     // Enable MSWC 
+  34          
+  35          
+  36                  0x07 ,0x10,     // Logical Device 10h(BRAM)
+  37                  0x62 ,0x03,
+  38                  0x63 ,0x80,     // BRAMLD address is 0x380 (index) and 0x381 (data)
+  39              //0xF3 ,0x00, // P80 value begin of BRAM
+  40              //0xF4 ,0x1F, // P80 value end of BRAM
+  41              //0xF5 ,0x20, // P80 value index of BRAM
+  42                  0x30 ,0x01,     // Enable BRAM
+  43                  
+  44                                          // Enable Logical Device 0Fh(Shared Memory)
+  45                  0x07 ,0x0F,     // Logical Device 0Fh(Shared Memory)
+  46          #ifdef SysMemory2ECRam  
+                                              // Define EC internal RAM base address on LPC memory space.
+                      0xF5 ,0xC0,     // H2RAM-HLPC Base Address Bits [15:12] (HLPCRAMBA[15:12]) high nibble  
+                      0xF6 ,0xFF,     // H2RAM-HLPC Base Address Bits [23:16] (HLPCRAMBA[23:16])      
+              #endif
+  51                  0x30 ,0x01,     // MSWC Shared Memory
+  52                  //0xF4 ,0x09,   // MSWC Shared Memory
+  53          
+  54          #ifdef PMC3_Support
+C51 COMPILER V9.03   OEM_HOSTIF                                                            02/02/2015 14:30:28 PAGE 2   
+
+                  0x07 ,0x17, // Select Logical Device 17h(PM3)
+                      0x62 ,0x06, // IO Port 6A4              
+                      0x63 ,0xA4, //
+                      0x60 ,0x06, // IO Port 6A0              
+                      0x61 ,0xA0, //
+                      0x70 ,0x01,     // Clear IRQ=1 for  Logical Device 13h(PM3)
+                      0x30 ,0x01,     // Enable Logical Device 17h(PM3)
+              #endif
+  63          
+  64          };
+  65          //----------------------------------------------------------------------------
+  66          // Init super IO function
+  67          //----------------------------------------------------------------------------
+  68          void InitSio(void)
+  69          {
+  70   1          BYTE code * data_pntr;
+  71   1          BYTE cnt;
+  72   1      
+  73   1              SET_MASK(LSIOHA,LKCFG);
+  74   1              SET_MASK(IBMAE,CFGAE);
+  75   1              SET_MASK(IBCTL,CSAE);
+  76   1      
+  77   1          cnt=0;
+  78   1          data_pntr=initsio_table;
+  79   1          while(cnt < (sizeof(initsio_table)/2) )
+  80   1          {
+  81   2              IHIOA=0;              // Set indirect Host I/O Address
+  82   2              IHD=*data_pntr;
+  83   2              while( IS_MASK_SET(IBCTL,CWIB));
+  84   2              data_pntr ++;
+  85   2      
+  86   2              IHIOA=1;              // Set indirect Host I/O Address
+  87   2              IHD=*data_pntr;
+  88   2              while( IS_MASK_SET(IBCTL,CWIB));
+  89   2              data_pntr ++;
+  90   2              cnt ++;
+  91   2          }
+  92   1      
+  93   1              CLEAR_MASK(LSIOHA,LKCFG);
+  94   1              CLEAR_MASK(IBMAE,CFGAE);
+  95   1              CLEAR_MASK(IBCTL,CSAE);
+  96   1      }
+  97          
+  98          //----------------------------------------------------------------------------
+  99          // Init system memory cycle to EC external ram 
+ 100          //----------------------------------------------------------------------------
+ 101          void InitSysMemory2ECRam(void)
+ 102          {
+ 103   1              HRAMW0BA = 0xA0;                                        // Define RAM window 0 base address 0xA00
+ 104   1              HRAMW0AAS |= HostRamSize256Byte;        // Host RAM Window 0 Size 256 bytes
+ 105   1              //HRAMWC |= Window0En;
+ 106   1      }
+ 107          
+C51 COMPILER V9.03   OEM_HOSTIF                                                            02/02/2015 14:30:28 PAGE 3   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION InitSio (BEGIN)
+                                           ; SOURCE LINE # 68
+                                           ; SOURCE LINE # 69
+                                           ; SOURCE LINE # 73
+0000 900000      E     MOV     DPTR,#LSIOHA
+0003 E0                MOVX    A,@DPTR
+0004 4401              ORL     A,#01H
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 74
+0007 900000      E     MOV     DPTR,#IBMAE
+000A E0                MOVX    A,@DPTR
+000B 4401              ORL     A,#01H
+000D F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 75
+000E 900000      E     MOV     DPTR,#IBCTL
+0011 E0                MOVX    A,@DPTR
+0012 4401              ORL     A,#01H
+0014 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 77
+;---- Variable 'cnt' assigned to Register 'R7' ----
+0015 E4                CLR     A
+0016 FF                MOV     R7,A
+                                           ; SOURCE LINE # 78
+0017 7C00        R     MOV     R4,#HIGH initsio_table
+0019 7D00        R     MOV     R5,#LOW initsio_table
+;---- Variable 'data_pntr' assigned to Register 'R4/R5' ----
+001B         ?C0001:
+                                           ; SOURCE LINE # 79
+                                           ; SOURCE LINE # 80
+                                           ; SOURCE LINE # 81
+001B E4                CLR     A
+001C 900000      E     MOV     DPTR,#IHIOA
+001F F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 82
+0020 8D82              MOV     DPL,R5
+0022 8C83              MOV     DPH,R4
+0024 93                MOVC    A,@A+DPTR
+0025 900000      E     MOV     DPTR,#IHD
+0028 F0                MOVX    @DPTR,A
+0029         ?C0003:
+                                           ; SOURCE LINE # 83
+0029 900000      E     MOV     DPTR,#IBCTL
+002C E0                MOVX    A,@DPTR
+002D 20E2F9            JB      ACC.2,?C0003
+0030         ?C0004:
+                                           ; SOURCE LINE # 84
+0030 0D                INC     R5
+0031 BD0001            CJNE    R5,#00H,?C0009
+0034 0C                INC     R4
+0035         ?C0009:
+                                           ; SOURCE LINE # 86
+0035 900000      E     MOV     DPTR,#IHIOA
+0038 7401              MOV     A,#01H
+003A F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 87
+003B 8D82              MOV     DPL,R5
+003D 8C83              MOV     DPH,R4
+003F E4                CLR     A
+0040 93                MOVC    A,@A+DPTR
+C51 COMPILER V9.03   OEM_HOSTIF                                                            02/02/2015 14:30:28 PAGE 4   
+
+0041 900000      E     MOV     DPTR,#IHD
+0044 F0                MOVX    @DPTR,A
+0045         ?C0005:
+                                           ; SOURCE LINE # 88
+0045 900000      E     MOV     DPTR,#IBCTL
+0048 E0                MOVX    A,@DPTR
+0049 20E2F9            JB      ACC.2,?C0005
+004C         ?C0006:
+                                           ; SOURCE LINE # 89
+004C 0D                INC     R5
+004D BD0001            CJNE    R5,#00H,?C0010
+0050 0C                INC     R4
+0051         ?C0010:
+                                           ; SOURCE LINE # 90
+0051 0F                INC     R7
+                                           ; SOURCE LINE # 91
+0052 EF                MOV     A,R7
+0053 B414C5            CJNE    A,#014H,?C0001
+0056         ?C0002:
+                                           ; SOURCE LINE # 93
+0056 900000      E     MOV     DPTR,#LSIOHA
+0059 E0                MOVX    A,@DPTR
+005A 54FE              ANL     A,#0FEH
+005C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 94
+005D 900000      E     MOV     DPTR,#IBMAE
+0060 E0                MOVX    A,@DPTR
+0061 54FE              ANL     A,#0FEH
+0063 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 95
+0064 900000      E     MOV     DPTR,#IBCTL
+0067 E0                MOVX    A,@DPTR
+0068 54FE              ANL     A,#0FEH
+006A F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 96
+006B 22                RET     
+             ; FUNCTION InitSio (END)
+
+             ; FUNCTION InitSysMemory2ECRam (BEGIN)
+                                           ; SOURCE LINE # 101
+                                           ; SOURCE LINE # 102
+                                           ; SOURCE LINE # 103
+0000 900000      E     MOV     DPTR,#HRAMW0BA
+0003 74A0              MOV     A,#0A0H
+0005 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 104
+0006 900000      E     MOV     DPTR,#HRAMW0AAS
+0009 E0                MOVX    A,@DPTR
+000A 4404              ORL     A,#04H
+000C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 106
+000D 22                RET     
+             ; FUNCTION InitSysMemory2ECRam (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    122    ----
+   CONSTANT SIZE    =     40    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+C51 COMPILER V9.03   OEM_HOSTIF                                                            02/02/2015 14:30:28 PAGE 5   
+
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

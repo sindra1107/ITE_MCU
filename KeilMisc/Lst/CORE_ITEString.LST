@@ -1,0 +1,50 @@
+C51 COMPILER V9.03   CORE_ITESTRING                                                        02/02/2015 14:30:17 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE CORE_ITESTRING
+OBJECT MODULE PLACED IN Code\CHIP\CORE_ITEString.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\CHIP\CORE_ITEString.C LA WL(1) CD OT(9,SIZE) NOAREGS OR
+                    - INCDIR(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*-----------------------------------------------------------------------------
+   2           * TITLE: CORE_ITESTRING.C
+   3           *
+   4           * Author : Dino
+   5           *
+   6           * Copyright (c) ITE INC. All Rights Reserved.
+   7           *
+   8           * To occupy code space 0x40 - 0x6F
+   9           * 0x40 - 0x4F is 16B-Signature
+  10           *---------------------------------------------------------------------------*/
+  11           
+  12          #include <CORE_INCLUDE.H>
+  13          #include <OEM_INCLUDE.H>
+  14          
+  15          const unsigned char code ITEString[] =
+  16          {
+  17              0xA5,0xA5,0xA5,0xA5,0xA5,0xA5,0xA5,EC_Signature_Flag,
+  18              0x85,0x12,0x5A,0x5A,0xAA,EC_Signature_Addr,0x55,0x55,
+  19          };
+  20          
+  21          const unsigned char code VersionString[] =  "ITE EC-V14.5  ";
+C51 COMPILER V9.03   CORE_ITESTRING                                                        02/02/2015 14:30:17 PAGE 2   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =     31    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

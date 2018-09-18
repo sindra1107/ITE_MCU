@@ -1,0 +1,337 @@
+C51 COMPILER V9.03   OEM_INIT                                                              02/02/2015 14:30:28 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE OEM_INIT
+OBJECT MODULE PLACED IN Code\Oem\OEM_INIT.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\Oem\OEM_INIT.C LA WL(1) CD OT(9,SIZE) NOAREGS OR INCDIR
+                    -(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*-----------------------------------------------------------------------------
+   2           * TITLE: OEM_INIT.C
+   3           *
+   4           * Author : Dino
+   5           *
+   6           * Note : These functions are reference only.
+   7           *        Please follow your project software specification to do some modification.
+   8           *---------------------------------------------------------------------------*/
+   9          
+  10          #include <CORE_INCLUDE.H>
+  11          #include <OEM_INCLUDE.H>
+  12          
+  13          //----------------------------------------------------------------------------
+  14          // Oem_StartUp
+  15          //----------------------------------------------------------------------------
+  16          void Oem_StartUp(void)
+  17          {
+  18   1      
+  19   1      }
+  20          
+  21          //----------------------------------------------------------------------------
+  22          // Oem_Initialization - Initialize the registers, data variables, and oem 
+  23          // functions after kernel init. function.
+  24          //----------------------------------------------------------------------------
+  25          void Oem_Initialization(void)
+  26          {
+  27   1          Init_EC_Indirect_Selection(SPI_selection_internal);
+  28   1          //SPI_Read_ID();
+  29   1          //Check_Mirror_Occurs();
+  30   1      
+  31   1          Init_GPIO();
+  32   1      
+  33   1          #ifdef PECI_Support
+  34   1          Init_PECI();
+  35   1          #endif
+  36   1      
+  37   1          Init_OEMVariable();
+  38   1      }
+  39          
+  40          //----------------------------------------------------------------------------
+  41          // The function of clearing external ram for OEM code
+  42          // Clear external ram (0x100~0xFFF)
+  43          //----------------------------------------------------------------------------
+  44          void Init_ClearRam(void)
+  45          {
+  46   1              PORT_BYTE_PNTR byte_register_pntr;
+  47   1      
+  48   1          byte_register_pntr=0x100;
+  49   1          while(byte_register_pntr<0x1000)// Clear external ram (0x100~0xFFF)
+  50   1          {
+  51   2              *byte_register_pntr=0;
+  52   2              byte_register_pntr ++;
+  53   2          }                                                   
+  54   1      }
+C51 COMPILER V9.03   OEM_INIT                                                              02/02/2015 14:30:28 PAGE 2   
+
+  55          
+  56          //----------------------------------------------------------------------------
+  57          // Hook_ECExitFollowMode 
+  58          //----------------------------------------------------------------------------
+  59          void Hook_ECExitFollowMode(void)
+  60          {
+  61   1          
+  62   1      }
+  63          
+  64          //----------------------------------------------------------------------------
+  65          // Check_Mirror_Occurs
+  66          //----------------------------------------------------------------------------
+  67          void Check_Mirror_Occurs(void)
+  68          {
+  69   1              if(IS_MASK_SET(FLHCTRL3R,BIT7))
+  70   1              {
+  71   2                      SET_MASK(FLHCTRL3R,BIT7); // Clear mirror bit
+  72   2          }
+  73   1              
+  74   1              SET_MASK(FLHCTRL3R,BIT0); // FSCK/FSCE#/FMISO/FMOSI are tri-state.
+  75   1      
+  76   1          #if HW_Mirror_Only_Once
+  77   1          if(Read_Eflash_Byte(0x00, 0x00, 0x4D) != 00)
+  78   1          {
+  79   2             Do_Eflash_Write_1Byte(0x00, 0x00, 0x00, 0x4D); // Disable mirror , mirror Size -> 0
+  80   2          }
+  81   1          #endif
+  82   1              
+  83   1          SET_MASK(HINSTC1,BIT6);   //Rescan 16 byte signature
+  84   1      }
+  85          
+  86          //----------------------------------------------------------------------------
+  87          // Function Name : Init_OEMVariable
+  88          // Purpose : setup default variable when EC reset
+  89          //----------------------------------------------------------------------------
+  90          void Init_OEMVariable(void)
+  91          {
+  92   1      //    Init_Brightness();
+  93   1              LED_FLASH_CNT = 0x0001; // for LED control
+  94   1          
+  95   1              SysPowState=SYSTEM_S5;          
+  96   1              if(BRAM[63]==0x55&&ShutDnCause == SC_IntWatchDog)
+  97   1              {
+  98   2                      BRAM[63]=0x00;
+  99   2                      CLEAR_MASK(KBHISR,SYSF);        
+ 100   2                      Ccb42_SYS_FLAG=0;
+ 101   2                      DelayDoPowerSeq=250;
+ 102   2                      Oem_TriggerS5S0();
+ 103   2              }
+ 104   1      }
+ 105          
+ 106          
+ 107          //----------------------------------------------------------------------------
+ 108          // EC leaves follow mode or EC scatch ROM and jump to main function
+ 109          //  Note:
+ 110          //      1. Before jump to main function if want to keep EC setting [return(0x33);] is necessary.
+ 111          //      2. If you don't understand the use of Hook_ECRetunrMainFuncKeepCondition function, 
+ 112          //          don't change anything.
+ 113          //      3. Always at bank0 (0x9000)
+ 114          //----------------------------------------------------------------------------
+ 115          BYTE Hook_ECRetunrMainFuncKeepCondition(void)
+ 116          {
+C51 COMPILER V9.03   OEM_INIT                                                              02/02/2015 14:30:28 PAGE 3   
+
+ 117   1          if(WinFlashMark==0x33)
+ 118   1          {
+ 119   2              return(0x33);
+ 120   2          }
+ 121   1          else
+ 122   1          {
+ 123   2              return(0x00);
+ 124   2          }
+ 125   1      }
+C51 COMPILER V9.03   OEM_INIT                                                              02/02/2015 14:30:28 PAGE 4   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION Oem_StartUp (BEGIN)
+                                           ; SOURCE LINE # 16
+                                           ; SOURCE LINE # 17
+                                           ; SOURCE LINE # 19
+0000 22                RET     
+             ; FUNCTION Oem_StartUp (END)
+
+             ; FUNCTION Oem_Initialization (BEGIN)
+                                           ; SOURCE LINE # 25
+                                           ; SOURCE LINE # 26
+                                           ; SOURCE LINE # 27
+0000 E4                CLR     A
+0001 FF                MOV     R7,A
+0002 120000      E     LCALL   _Init_EC_Indirect_Selection
+                                           ; SOURCE LINE # 31
+0005 120000      E     LCALL   Init_GPIO
+                                           ; SOURCE LINE # 34
+0008 120000      E     LCALL   Init_PECI
+                                           ; SOURCE LINE # 37
+000B 020000      R     LJMP    Init_OEMVariable
+             ; FUNCTION Oem_Initialization (END)
+
+             ; FUNCTION Init_ClearRam (BEGIN)
+                                           ; SOURCE LINE # 44
+                                           ; SOURCE LINE # 45
+                                           ; SOURCE LINE # 48
+;---- Variable 'byte_register_pntr' assigned to Register 'DPTR' ----
+0000 900100            MOV     DPTR,#0100H
+0003         ?C0003:
+                                           ; SOURCE LINE # 49
+0003 AE83              MOV     R6,DPH
+0005 C3                CLR     C
+0006 EE                MOV     A,R6
+0007 9410              SUBB    A,#010H
+0009 5005              JNC     ?C0005
+                                           ; SOURCE LINE # 50
+                                           ; SOURCE LINE # 51
+000B E4                CLR     A
+000C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 52
+000D A3                INC     DPTR
+                                           ; SOURCE LINE # 53
+000E 80F3              SJMP    ?C0003
+                                           ; SOURCE LINE # 54
+0010         ?C0005:
+0010 22                RET     
+             ; FUNCTION Init_ClearRam (END)
+
+             ; FUNCTION Hook_ECExitFollowMode (BEGIN)
+                                           ; SOURCE LINE # 59
+                                           ; SOURCE LINE # 60
+                                           ; SOURCE LINE # 62
+0000 22                RET     
+             ; FUNCTION Hook_ECExitFollowMode (END)
+
+             ; FUNCTION Check_Mirror_Occurs (BEGIN)
+                                           ; SOURCE LINE # 67
+                                           ; SOURCE LINE # 68
+                                           ; SOURCE LINE # 69
+C51 COMPILER V9.03   OEM_INIT                                                              02/02/2015 14:30:28 PAGE 5   
+
+0000 900000      E     MOV     DPTR,#FLHCTRL3R
+0003 E0                MOVX    A,@DPTR
+0004 30E704            JNB     ACC.7,?C0007
+                                           ; SOURCE LINE # 70
+                                           ; SOURCE LINE # 71
+0007 E0                MOVX    A,@DPTR
+0008 4480              ORL     A,#080H
+000A F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 72
+000B         ?C0007:
+                                           ; SOURCE LINE # 74
+000B 900000      E     MOV     DPTR,#FLHCTRL3R
+000E E0                MOVX    A,@DPTR
+000F 4401              ORL     A,#01H
+0011 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 77
+0012 7B4D              MOV     R3,#04DH
+0014 E4                CLR     A
+0015 FD                MOV     R5,A
+0016 FF                MOV     R7,A
+0017 120000      E     LCALL   _Read_Eflash_Byte
+001A EF                MOV     A,R7
+001B 600D              JZ      ?C0008
+                                           ; SOURCE LINE # 78
+                                           ; SOURCE LINE # 79
+001D 900000      E     MOV     DPTR,#?_Do_Eflash_Write_1Byte?BYTE+03H
+0020 744D              MOV     A,#04DH
+0022 F0                MOVX    @DPTR,A
+0023 E4                CLR     A
+0024 FB                MOV     R3,A
+0025 FD                MOV     R5,A
+0026 FF                MOV     R7,A
+0027 120000      E     LCALL   _Do_Eflash_Write_1Byte
+                                           ; SOURCE LINE # 80
+002A         ?C0008:
+                                           ; SOURCE LINE # 83
+002A 900000      E     MOV     DPTR,#HINSTC1
+002D E0                MOVX    A,@DPTR
+002E 4440              ORL     A,#040H
+0030 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 84
+0031 22                RET     
+             ; FUNCTION Check_Mirror_Occurs (END)
+
+             ; FUNCTION Init_OEMVariable (BEGIN)
+                                           ; SOURCE LINE # 90
+                                           ; SOURCE LINE # 91
+                                           ; SOURCE LINE # 93
+0000 900000      E     MOV     DPTR,#LED_FLASH_CNT
+0003 E4                CLR     A
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 04                INC     A
+0007 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 95
+0008 900000      E     MOV     DPTR,#SysPowState
+000B 7455              MOV     A,#055H
+000D F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 96
+000E 900000      E     MOV     DPTR,#BRAM+03FH
+0011 E0                MOVX    A,@DPTR
+0012 B45521            CJNE    A,#055H,?C0011
+C51 COMPILER V9.03   OEM_INIT                                                              02/02/2015 14:30:28 PAGE 6   
+
+0015 900000      E     MOV     DPTR,#ShutDnCause
+0018 E0                MOVX    A,@DPTR
+0019 B4FE1A            CJNE    A,#0FEH,?C0011
+                                           ; SOURCE LINE # 97
+                                           ; SOURCE LINE # 98
+001C E4                CLR     A
+001D 900000      E     MOV     DPTR,#BRAM+03FH
+0020 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 99
+0021 900000      E     MOV     DPTR,#KBHISR
+0024 E0                MOVX    A,@DPTR
+0025 54FB              ANL     A,#0FBH
+0027 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 100
+0028 C200        E     CLR     Ccb42_SYS_FLAG
+                                           ; SOURCE LINE # 101
+002A 900000      E     MOV     DPTR,#DelayDoPowerSeq
+002D E4                CLR     A
+002E F0                MOVX    @DPTR,A
+002F A3                INC     DPTR
+0030 74FA              MOV     A,#0FAH
+0032 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 102
+0033 120000      E     LCALL   Oem_TriggerS5S0
+                                           ; SOURCE LINE # 103
+                                           ; SOURCE LINE # 104
+0036         ?C0011:
+0036 22                RET     
+             ; FUNCTION Init_OEMVariable (END)
+
+             ; FUNCTION Hook_ECRetunrMainFuncKeepCondition (BEGIN)
+                                           ; SOURCE LINE # 115
+                                           ; SOURCE LINE # 116
+                                           ; SOURCE LINE # 117
+0000 900000      E     MOV     DPTR,#WinFlashMark
+0003 E0                MOVX    A,@DPTR
+0004 B43303            CJNE    A,#033H,?C0012
+                                           ; SOURCE LINE # 118
+                                           ; SOURCE LINE # 119
+0007 7F33              MOV     R7,#033H
+0009 22                RET     
+                                           ; SOURCE LINE # 120
+000A         ?C0012:
+                                           ; SOURCE LINE # 122
+                                           ; SOURCE LINE # 123
+000A 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 124
+                                           ; SOURCE LINE # 125
+000C         ?C0013:
+000C 22                RET     
+             ; FUNCTION Hook_ECRetunrMainFuncKeepCondition (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    151    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+C51 COMPILER V9.03   OEM_INIT                                                              02/02/2015 14:30:28 PAGE 7   
+
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

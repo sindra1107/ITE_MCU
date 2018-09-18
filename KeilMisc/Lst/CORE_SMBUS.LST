@@ -1,0 +1,3144 @@
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE CORE_SMBUS
+OBJECT MODULE PLACED IN Code\CORE\CORE_SMBUS.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\CORE\CORE_SMBUS.C LA WL(1) CD OT(9,SIZE) NOAREGS OR INC
+                    -DIR(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*----------------------------------------------------------------------------
+   2           * TITLE: CORE_SMBUS.C - the System Management SMBus Protocol drivers.
+   3           *
+   4           *---------------------------------------------------------------------------*/
+   5           
+   6          #include <CORE_INCLUDE.H>
+   7          #include <OEM_INCLUDE.H>
+   8          
+   9          //----------------------------------------------------------------------------
+  10          // Read/write SMbus byte/word function  
+  11          //----------------------------------------------------------------------------
+  12          const sSMBus code asSMBus[]=
+  13          {
+  14                  { &HOCTL_A, &TRASLA_A, &HOCMD_A, &HOSTA_A, &D0REG_A, &D1REG_A,  &HOBDB_A,       &IER1,  &ISR1,  Int_SMBUS0,   &PE
+             -CERC_A},
+  15                  { &HOCTL_B, &TRASLA_B, &HOCMD_B, &HOSTA_B, &D0REG_B, &D1REG_B,  &HOBDB_B,       &IER1,  &ISR1,  Int_SMBUS1,   &PE
+             -CERC_B},
+  16                  { &HOCTL_C, &TRASLA_C, &HOCMD_C, &HOSTA_C, &D0REG_C, &D1REG_C,  &HOBDB_C,       &IER2,  &ISR2,  Int_SMBUS2,   &PEC
+             -ERC_C},
+  17                  { &HOCTL_D, &TRASLA_D, &HOCMD_D, &HOSTA_D, &D0REG_D, &D1REG_D,  &HOBDB_D,       &IER0,  &ISR0,  Int_SMBUS3,   &PEC
+             -ERC_D}        
+  18          };
+  19          
+  20          const sResetSMBusS code asResetSMBusS[]=
+  21          {
+  22                  { &HOSTA_A, &HOCTL2_A, &SMBPCTL_A, &GPCRB3, &GPCRB4, &GPDRB,    (BIT3+BIT4),   &SMBus1RecoverCunt },
+  23                  { &HOSTA_B, &HOCTL2_B, &SMBPCTL_B, &GPCRC1, &GPCRC2, &GPDRC,    (BIT1+BIT2),   &SMBus2RecoverCunt },
+  24                  { &HOSTA_C, &HOCTL2_C, &SMBPCTL_C, &GPCRF6, &GPCRF7, &GPDRF,    (BIT6+BIT7),   &SMBus3RecoverCunt },
+  25                  { &HOSTA_D, &HOCTL2_D, &SMBPCTL_D, &GPCRH1, &GPCRH2, &GPDRH,    (BIT1+BIT2),   &SMBus4RecoverCunt }
+  26          }; 
+  27          
+  28          //----------------------------------------------------------------------------
+  29          //      
+  30          //----------------------------------------------------------------------------
+  31          void DelayInact(void) 
+  32          {
+  33   1          BYTE index;
+  34   1          BYTE counter;
+  35   1         for(index=0;index<200;index++)
+  36   1         {
+  37   2              counter++;
+  38   2         }
+  39   1      }
+  40          
+  41          //----------------------------------------------------------------------------
+  42          // The function of reseting SMbus       
+  43          //----------------------------------------------------------------------------
+  44          void ResetSMBus(BYTE Channel)
+  45          {
+  46   1          #ifdef PECI_Support
+  47   1          if(Channel==SMbusCh3)
+  48   1          {
+  49   2              return;
+  50   2          }
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 2   
+
+  51   1          #endif
+  52   1      
+  53   1          SET_MASK(*asSMBus[Channel].SMBusCTL,HOCTL_KILL);
+  54   1          CLEAR_MASK(*asSMBus[Channel].SMBusCTL,HOCTL_KILL);
+  55   1              //RSTC3=0x0F;                                               // Reset all SMBus module
+  56   1              *asResetSMBusS[Channel].SMBusSTA = 0xFE;        // clear bits
+  57   1          *asResetSMBusS[Channel].SMBusPin0 = OUTPUT;
+  58   1              *asResetSMBusS[Channel].SMBusPin1 = OUTPUT;
+  59   1              DelayInact();
+  60   1              *asResetSMBusS[Channel].GPIOReg |= asResetSMBusS[Channel].GPIOData;
+  61   1              DelayInact();
+  62   1          *asResetSMBusS[Channel].SMBusPin0 = ALT;
+  63   1              *asResetSMBusS[Channel].SMBusPin1 = ALT;
+  64   1              *asResetSMBusS[Channel].SMBusCTL2 = 0x02;
+  65   1              *asResetSMBusS[Channel].SMBusPinCTL = 0x03;
+  66   1              DelayInact();
+  67   1              *asResetSMBusS[Channel].SMBusPinCTL = 0x07;
+  68   1              *asResetSMBusS[Channel].SMBusCTL2 = 0x01;
+  69   1      
+  70   1          #ifdef SMBusServiceCenterFunc
+                  *asSSC[Channel].inusing=0x00;
+                  CLEAR_MASK(*asSMBus[Channel].SMBusIER, asSMBus[Channel].IERFlag);
+                  *asSMBus[Channel].SMBusISR = asSMBus[Channel].IERFlag;
+                  *asSSC[Channel].serviceflag=0x00;
+                  //Init_SMBus_Regs();
+                  
+                  if(DB_SMBusAck1==ACK_Start)     // For SMBus utility
+                  {
+                      DB_SMBusAddr=0x00;
+                      if(Channel==0x00)
+                      {
+                              DB_SMBusFlag1=0x00;             
+                      }
+                      else if(Channel==0x01)
+                      {
+                          DB_SMBusFlag2=0x00;
+                      }
+                      else if(Channel==0x02)
+                      {
+                          DB_SMBusFlag3=0x00; 
+                      }                               
+                                              
+                          DB_SMBusACDID=0x00; 
+                      DB_SMBusAck1 = ACK_Error;   // For SMBus utility error ACK.
+                  }
+                  #endif
+  97   1      }
+  98          
+  99          //----------------------------------------------------------------------------
+ 100          // SMbus read byte/word and write byte/word function    
+ 101          //----------------------------------------------------------------------------
+ 102          BYTE bRWSMBus(BYTE Channel,BYTE Protocol,BYTE Addr,BYTE Comd,XBYTE *Var,BYTE PECSupport)
+ 103          {       
+ 104   1              BYTE counter;
+ 105   1              BYTE error;
+ 106   1          BYTE status;
+ 107   1          BYTE resutl;
+ 108   1      
+ 109   1          if(CheckSMBusInterfaceCanbeUse(Channel, SMBus_AccessType_Fucn)==SMBus_CanNotUse)
+ 110   1          {
+ 111   2              resutl = FALSE;                             // SMBus interface can't be used.
+ 112   2          }
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 3   
+
+ 113   1          else
+ 114   1          {
+ 115   2              error = 0xEE;                               // Pre-set error
+ 116   2              resutl = FALSE;                             // Pre-set result is fail
+ 117   2          
+ 118   2              SMBCRC8_A=0x00;                             // Clear CRC variable
+ 119   2      
+ 120   2                  if (Protocol&0x80)                          // Write byte function
+ 121   2                  {   
+ 122   3                      if(PECSupport)    
+ 123   3                  {   
+ 124   4                      CalcCRC8(Addr);                     // To calculate crc8
+ 125   4                  }
+ 126   3                          *asSMBus[Channel].SMBusADR = Addr;      // set address with writing bit
+ 127   3                      if(PECSupport)    
+ 128   3                  {   
+ 129   4                      CalcCRC8(Comd);                     // To calculate crc8
+ 130   4                  }
+ 131   3                      *asSMBus[Channel].SMBusCMD=Comd;            // Set command
+ 132   3                          Protocol&=(~0x80);
+ 133   3                  if(PECSupport)    
+ 134   3                  {   
+ 135   4                      CalcCRC8(*Var);                     // To calculate crc8
+ 136   4                  }
+ 137   3                          *asSMBus[Channel].SMBusData0 = *Var;    // set data1
+ 138   3                          if(Protocol==SMbusRW)                           // write word function
+ 139   3                          {
+ 140   4                              if(PECSupport)    
+ 141   4                      {   
+ 142   5                          CalcCRC8(*(Var+0x01));          // To calculate crc8
+ 143   5                      }
+ 144   4                                  *asSMBus[Channel].SMBusData1 = *(Var+0x01);
+ 145   4                          }                                                           // set data2
+ 146   3                  }   
+ 147   2                  else                                                                // Read function
+ 148   2                  {   
+ 149   3                          *asSMBus[Channel].SMBusADR=Addr|0x01;       
+ 150   3                  *asSMBus[Channel].SMBusCMD=Comd;        // Set command
+ 151   3                  }                                                                   // set address with reading bit
+ 152   2      
+ 153   2      
+ 154   2                  *asSMBus[Channel].SMBusSTA=0xFE;                // clear bits
+ 155   2                  if(PECSupport)
+ 156   2              {
+ 157   3                  *asSMBus[Channel].SMBusPEC=SMBCRC8_A;
+ 158   3                      *asSMBus[Channel].SMBusCTL=(Protocol|HOCTL_SRT|HOCTL_PEC_EN);   // Start transaction
+ 159   3              }
+ 160   2              else
+ 161   2              {
+ 162   3                      *asSMBus[Channel].SMBusCTL=(Protocol|HOCTL_SRT);        // Start transaction
+ 163   3              }
+ 164   2      
+ 165   2                  TR1 = 0;                                            // disable timer1
+ 166   2              ET1 = 0;                                        // Disable timer1 interrupt
+ 167   2              _nop_();
+ 168   2              _nop_();
+ 169   2              _nop_();
+ 170   2              _nop_();
+ 171   2              TH1 = Timer_26ms>>8;                        // Set timer1 counter 26ms
+ 172   2              TL1 = Timer_26ms;                           // Set timer1 counter 26ms
+ 173   2              TF1 = 0;                                        // Clear overflow flag
+ 174   2              TR1 = 1;                                        // Enable timer1
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 4   
+
+ 175   2      
+ 176   2                  while (!TF1)
+ 177   2                  {
+ 178   3                  status = *asSMBus[Channel].SMBusSTA;    // Read SMBus Host Status
+ 179   3                  if(IS_MASK_SET(status, (HOSTA_FINTR+HOSTA_DVER+HOSTA_BSER+HOSTA_FAIL+HOSTA_NACK+HOSTA_TMOE )))
+ 180   3                  {
+ 181   4                      TR1=0;
+ 182   4                                  TF1=0;
+ 183   4                      ET1=1;                                  // Enable timer1 interrupt
+ 184   4                      break;
+ 185   4                  }
+ 186   3                  }
+ 187   2              
+ 188   2                  if(TF1)                                     // 26ms time-out and no any status bit is set.
+ 189   2                  {
+ 190   3                  TR1=0;
+ 191   3                          TF1=0;
+ 192   3                  ET1=1;                                  // Enable timer1 interrupt
+ 193   3                  ResetSMBus(Channel);
+ 194   3                  error = 0xEE;
+ 195   3                  }
+ 196   2              else
+ 197   2              {
+ 198   3                  if(IS_MASK_SET(status, (HOSTA_DVER+HOSTA_BSER+HOSTA_FAIL+HOSTA_NACK+HOSTA_TMOE)))
+ 199   3                  {
+ 200   4                      if(IS_MASK_SET(status, (HOSTA_BSER+HOSTA_FAIL)))
+ 201   4                      {
+ 202   5                          ResetSMBus(Channel);
+ 203   5                      }
+ 204   4                      error = 0xEE;
+ 205   4                  }
+ 206   3                  else                                    // Only Finish Interrupt bit is set.
+ 207   3                  {
+ 208   4                      error = 0x00;
+ 209   4                  }
+ 210   3              }
+ 211   2                                                          
+ 212   2                  if(error == 0xEE)                           // Fail
+ 213   2                  {
+ 214   3                          resutl = FALSE;
+ 215   3                  }
+ 216   2              else                                        // OK
+ 217   2              {
+ 218   3                      if ((*asSMBus[Channel].SMBusADR & 0x01 != 0x00)) 
+ 219   3                      {
+ 220   4                              *Var = *asSMBus[Channel].SMBusData0;    // read data1
+ 221   4                              if(Protocol==SMbusRW)
+ 222   4                              {
+ 223   5                                      *(Var+0x01) = *asSMBus[Channel].SMBusData1;
+ 224   5                              }                                                                   // read data2
+ 225   4                      }
+ 226   3                  resutl = TRUE;
+ 227   3              }
+ 228   2      
+ 229   2                  *asSMBus[Channel].SMBusSTA=0xFE;                // clear bits
+ 230   2          }
+ 231   1      
+ 232   1              return(resutl);
+ 233   1      }
+ 234          
+ 235          
+ 236          //----------------------------------------------------------------------------
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 5   
+
+ 237          // Read SMbus block function limit size 
+ 238          //----------------------------------------------------------------------------
+ 239          BYTE bRSMBusBlockLS(BYTE Channel,BYTE Protocol,BYTE Addr,BYTE Comd,XBYTE *Var,BYTE RequestLength)
+ 240          {
+ 241   1              BYTE ack;
+ 242   1          BYTE bcount;
+ 243   1          BYTE status;
+ 244   1      
+ 245   1          if(CheckSMBusInterfaceCanbeUse(Channel, SMBus_AccessType_Fucn)==SMBus_CanNotUse)
+ 246   1          {
+ 247   2              ack = FALSE;                            // SMBus interface can't be used.
+ 248   2          }
+ 249   1          else
+ 250   1          {
+ 251   2                  ack = FALSE;                                                // pr-set flag
+ 252   2                  bcount = 0x00;                                      // clear byte counter
+ 253   2              
+ 254   2                  *asSMBus[Channel].SMBusADR=Addr|0x01;   // set address with reading bit     
+ 255   2                  *asSMBus[Channel].SMBusCMD=Comd;        // Set command
+ 256   2              *asSMBus[Channel].SMBusSTA=0xFE;            // clear bits
+ 257   2              *asSMBus[Channel].SMBusCTL=(Protocol|HOCTL_SRT);    // Start transaction
+ 258   2      
+ 259   2                  TR1 = 0;                                        // disable timer1
+ 260   2              ET1 = 0;                                    // Disable timer1 interrupt
+ 261   2              _nop_();
+ 262   2              _nop_();
+ 263   2              _nop_();
+ 264   2              _nop_();
+ 265   2              TH1 = Timer_26ms>>8;                    // Set timer1 counter 26ms
+ 266   2              TL1 = Timer_26ms;                       // Set timer1 counter 26ms
+ 267   2              TF1 = 0;                                    // Clear overflow flag
+ 268   2              TR1 = 1;                                    // Enable timer1
+ 269   2      
+ 270   2              while(!TF1)                             // Not time out
+ 271   2              {
+ 272   3                  status = *asSMBus[Channel].SMBusSTA;    // Read SMBus Host Status
+ 273   3                  if(IS_MASK_SET(status, (HOSTA_BDS+HOSTA_DVER+HOSTA_BSER+HOSTA_FAIL+HOSTA_NACK+HOSTA_TMOE )))
+ 274   3                  {
+ 275   4                      if(IS_MASK_SET(status, (HOSTA_DVER+HOSTA_BSER+HOSTA_FAIL+HOSTA_NACK+HOSTA_TMOE)))
+ 276   4                      {
+ 277   5                          if(IS_MASK_SET(status, (HOSTA_BSER+HOSTA_FAIL)))
+ 278   5                          {
+ 279   6                              ResetSMBus(Channel);
+ 280   6                          }
+ 281   5                          TR1 = 0;                            // disable timer1
+ 282   5                              TF1 = 0;                                // clear overflow flag
+ 283   5                              ET1 = 1;                                // Enable timer1 interrupt
+ 284   5                              ack = FALSE;
+ 285   5                          break;
+ 286   5                      }
+ 287   4                      else                            // Only Byte Done Status bit is set.
+ 288   4                      {
+ 289   5                              *Var = *asSMBus[Channel].SMBusBData;    // get first data
+ 290   5                              if(bcount ==0x00)
+ 291   5                              {
+ 292   6                                      bcount = *asSMBus[Channel].SMBusData0; // get the data of byte count 
+ 293   6                                      //Hook_GetSMBusReadBlockByteCount(bcount);
+ 294   6                              //SMB_BCNT = bcount;      // For ACPI SMBus EC SMB1 Block Count register
+ 295   6                                                      if (bcount > RequestLength)
+ 296   6                                                      {
+ 297   7                                                              bcount = RequestLength;
+ 298   7                                                      }
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 6   
+
+ 299   6                              }       
+ 300   5                              bcount--;
+ 301   5                              Var++;
+ 302   5          
+ 303   5                              if(bcount == 0x01)
+ 304   5                              {                                                   // set last byte flag
+ 305   6                                      SET_MASK(*asSMBus[Channel].SMBusCTL,HOCTL_LABY);
+ 306   6                              }
+ 307   5          
+ 308   5                              *asSMBus[Channel].SMBusSTA=0xFE;    // clear bits
+ 309   5      
+ 310   5                              if(bcount == 0x00)
+ 311   5                              {
+ 312   6                              TR1 = 0;                            // disable timer1
+ 313   6                                  TF1 = 0;                        // clear overflow flag
+ 314   6                                  ET1 = 1;                        // Enable timer1 interrupt
+ 315   6                              ack = TRUE;
+ 316   6                              break;                  // SMBus read block done.
+ 317   6                          }
+ 318   5                      }
+ 319   4                  }
+ 320   3              }
+ 321   2      
+ 322   2              if(TF1)                                 // time-out
+ 323   2              {
+ 324   3                  TR1 = 0;                                    // disable timer1
+ 325   3                      TF1 = 0;                                        // clear overflow flag
+ 326   3                      ET1 = 1;                                        // Enable timer1 interrupt
+ 327   3                          ResetSMBus(Channel);
+ 328   3                          ack = FALSE;
+ 329   3              }
+ 330   2      
+ 331   2                  CLEAR_MASK(*asSMBus[Channel].SMBusCTL,HOCTL_LABY);    // clear last byte flag
+ 332   2                  *asSMBus[Channel].SMBusSTA=0xFE;        // clear bits
+ 333   2          }
+ 334   1          
+ 335   1              return(ack);    
+ 336   1      }
+ 337          
+ 338          //----------------------------------------------------------------------------
+ 339          // Read SMbus block function    
+ 340          //----------------------------------------------------------------------------
+ 341          BYTE bRSMBusBlock(BYTE Channel,BYTE Protocol,BYTE Addr,BYTE Comd,XBYTE *Var)
+ 342          {
+ 343   1              BYTE ack;
+ 344   1          BYTE bcount;
+ 345   1          BYTE status;
+ 346   1      
+ 347   1          if(CheckSMBusInterfaceCanbeUse(Channel, SMBus_AccessType_Fucn)==SMBus_CanNotUse)
+ 348   1          {
+ 349   2              ack = FALSE;                            // SMBus interface can't be used.
+ 350   2          }
+ 351   1          else
+ 352   1          {
+ 353   2                  ack = FALSE;                                                // pr-set flag
+ 354   2                  bcount = 0x00;                                      // clear byte counter
+ 355   2              
+ 356   2                  *asSMBus[Channel].SMBusADR=Addr|0x01;   // set address with reading bit     
+ 357   2                  *asSMBus[Channel].SMBusCMD=Comd;        // Set command
+ 358   2              *asSMBus[Channel].SMBusSTA=0xFE;            // clear bits
+ 359   2              *asSMBus[Channel].SMBusCTL=(Protocol|HOCTL_SRT);    // Start transaction
+ 360   2      
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 7   
+
+ 361   2                  TR1 = 0;                                        // disable timer1
+ 362   2              ET1 = 0;                                    // Disable timer1 interrupt
+ 363   2              _nop_();
+ 364   2              _nop_();
+ 365   2              _nop_();
+ 366   2              _nop_();
+ 367   2              TH1 = Timer_26ms>>8;                    // Set timer1 counter 26ms
+ 368   2              TL1 = Timer_26ms;                       // Set timer1 counter 26ms
+ 369   2              TF1 = 0;                                    // Clear overflow flag
+ 370   2              TR1 = 1;                                    // Enable timer1
+ 371   2      
+ 372   2              while(!TF1)                             // Not time out
+ 373   2              {
+ 374   3                  status = *asSMBus[Channel].SMBusSTA;    // Read SMBus Host Status
+ 375   3                  if(IS_MASK_SET(status, (HOSTA_BDS+HOSTA_DVER+HOSTA_BSER+HOSTA_FAIL+HOSTA_NACK+HOSTA_TMOE )))
+ 376   3                  {
+ 377   4                      if(IS_MASK_SET(status, (HOSTA_DVER+HOSTA_BSER+HOSTA_FAIL+HOSTA_NACK+HOSTA_TMOE)))
+ 378   4                      {
+ 379   5                          if(IS_MASK_SET(status, (HOSTA_BSER+HOSTA_FAIL)))
+ 380   5                          {
+ 381   6                              ResetSMBus(Channel);
+ 382   6                          }
+ 383   5                          TR1 = 0;                            // disable timer1
+ 384   5                              TF1 = 0;                                // clear overflow flag
+ 385   5                              ET1 = 1;                                // Enable timer1 interrupt
+ 386   5                              ack = FALSE;
+ 387   5                          break;
+ 388   5                      }
+ 389   4                      else                            // Only Byte Done Status bit is set.
+ 390   4                      {
+ 391   5                              *Var = *asSMBus[Channel].SMBusBData;    // get first data
+ 392   5                              if(bcount ==0x00)
+ 393   5                              {
+ 394   6                                      bcount = *asSMBus[Channel].SMBusData0; // get the data of byte count 
+ 395   6                                      Hook_GetSMBusReadBlockByteCount(bcount);
+ 396   6                              //SMB_BCNT = bcount;      // For ACPI SMBus EC SMB1 Block Count register
+ 397   6                              }       
+ 398   5                  
+ 399   5                              bcount--;
+ 400   5                              Var++;
+ 401   5          
+ 402   5                              if(bcount == 0x01)
+ 403   5                              {                                                   // set last byte flag
+ 404   6                                      SET_MASK(*asSMBus[Channel].SMBusCTL,HOCTL_LABY);
+ 405   6                              }
+ 406   5          
+ 407   5                              *asSMBus[Channel].SMBusSTA=0xFE;    // clear bits
+ 408   5      
+ 409   5                              if(bcount == 0x00)
+ 410   5                              {
+ 411   6                              TR1 = 0;                            // disable timer1
+ 412   6                                  TF1 = 0;                        // clear overflow flag
+ 413   6                                  ET1 = 1;                        // Enable timer1 interrupt
+ 414   6                              ack = TRUE;
+ 415   6                              break;                  // SMBus read block done.
+ 416   6                          }
+ 417   5                      }
+ 418   4                  }
+ 419   3              }
+ 420   2      
+ 421   2              if(TF1)                                 // time-out
+ 422   2              {
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 8   
+
+ 423   3                  TR1 = 0;                                    // disable timer1
+ 424   3                      TF1 = 0;                                        // clear overflow flag
+ 425   3                      ET1 = 1;                                        // Enable timer1 interrupt
+ 426   3                          ResetSMBus(Channel);
+ 427   3                          ack = FALSE;
+ 428   3              }
+ 429   2      
+ 430   2                  CLEAR_MASK(*asSMBus[Channel].SMBusCTL,HOCTL_LABY);    // clear last byte flag
+ 431   2                  *asSMBus[Channel].SMBusSTA=0xFE;        // clear bits
+ 432   2          }
+ 433   1          
+ 434   1              return(ack);    
+ 435   1      }
+ 436          
+ 437          //----------------------------------------------------------------------------
+ 438          // Write SMbus block function   
+ 439          //----------------------------------------------------------------------------
+ 440          BYTE bWSMBusBlock(BYTE Channel,BYTE Protocol,BYTE Addr,BYTE Comd,XBYTE *Var,BYTE ByteCont,BYTE PECsupport)
+ 441          {       
+ 442   1              BYTE ack;
+ 443   1          BYTE BCTemp;
+ 444   1          BYTE status;
+ 445   1      
+ 446   1          if(CheckSMBusInterfaceCanbeUse(Channel, SMBus_AccessType_Fucn)==SMBus_CanNotUse)
+ 447   1          {
+ 448   2              ack = FALSE;                            // SMBus interface can't be used.
+ 449   2          }
+ 450   1          else
+ 451   1          {
+ 452   2                  ack = FALSE;                                                // pre-set flag
+ 453   2                  BCTemp = 0x00;                                      // clear byte count
+ 454   2      
+ 455   2              if(PECsupport)
+ 456   2              {   
+ 457   3                  SMBCRC8_A=0x00;
+ 458   3                  CalcCRC8(Addr);
+ 459   3                  CalcCRC8(Comd);
+ 460   3                  CalcCRC8(ByteCont);
+ 461   3                  CalcCRC8(*Var);
+ 462   3              }
+ 463   2          
+ 464   2                  Protocol&=(~0x80);                  
+ 465   2                  *asSMBus[Channel].SMBusADR=Addr;        // set address with writing flag
+ 466   2              *asSMBus[Channel].SMBusCMD=Comd;            // Set command
+ 467   2              *asSMBus[Channel].SMBusData0=ByteCont;  // set byte count
+ 468   2              BCTemp=ByteCont;                            // sync byte count 
+ 469   2              *asSMBus[Channel].SMBusBData=*Var;          // set first data
+ 470   2              *asSMBus[Channel].SMBusSTA=0xFE;            // clear bits
+ 471   2                  if(PECsupport)
+ 472   2              {   
+ 473   3                  *asSMBus[Channel].SMBusCTL=(Protocol|HOCTL_SRT|HOCTL_PEC_EN);// Start transaction
+ 474   3              }
+ 475   2              else
+ 476   2              {
+ 477   3                  *asSMBus[Channel].SMBusCTL=(Protocol|HOCTL_SRT);// Start transaction
+ 478   3              }
+ 479   2      
+ 480   2                  TR1 = 0;                                        // disable timer1
+ 481   2              ET1 = 0;                                    // Disable timer1 interrupt
+ 482   2              _nop_();
+ 483   2              _nop_();
+ 484   2              _nop_();
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 9   
+
+ 485   2              _nop_();
+ 486   2              TH1 = Timer_26ms>>8;                    // Set timer1 counter 26ms
+ 487   2              TL1 = Timer_26ms;                       // Set timer1 counter 26ms
+ 488   2              TF1 = 0;                                    // Clear overflow flag
+ 489   2              TR1 = 1;                                    // Enable timer1
+ 490   2      
+ 491   2              while(!TF1)                             // Not time out
+ 492   2              {
+ 493   3                  status = *asSMBus[Channel].SMBusSTA;    // Read SMBus Host Status
+ 494   3                  if(IS_MASK_SET(status, (HOSTA_BDS+HOSTA_DVER+HOSTA_BSER+HOSTA_FAIL+HOSTA_NACK+HOSTA_TMOE )))
+ 495   3                  {
+ 496   4                      if(IS_MASK_SET(status, (HOSTA_DVER+HOSTA_BSER+HOSTA_FAIL+HOSTA_NACK+HOSTA_TMOE)))
+ 497   4                      {
+ 498   5                          if(IS_MASK_SET(status, (HOSTA_BSER+HOSTA_FAIL)))
+ 499   5                          {
+ 500   6                              ResetSMBus(Channel);
+ 501   6                          }
+ 502   5                          TR1 = 0;                            // disable timer1
+ 503   5                              TF1 = 0;                                // clear overflow flag
+ 504   5                              ET1 = 1;                                // Enable timer1 interrupt
+ 505   5                              ack = FALSE;
+ 506   5                          break;
+ 507   5                      }
+ 508   4                      else                            // Only Byte Done Status bit is set.
+ 509   4                      {
+ 510   5                              BCTemp--;
+ 511   5                              Var++;                                      // point to next address of variable
+ 512   5      
+ 513   5                              if(BCTemp != 0x00)
+ 514   5                              {
+ 515   6                              if(PECsupport)
+ 516   6                              {
+ 517   7                                  *asSMBus[Channel].SMBusBData=*Var;
+ 518   7                                  CalcCRC8(*Var);
+ 519   7                                  if(BCTemp==0x01)    // last byte of byte count
+ 520   7                                  {
+ 521   8                                      *asSMBus[Channel].SMBusPEC = SMBCRC8_A;
+ 522   8                                  }
+ 523   7                              }
+ 524   6                              else
+ 525   6                              {
+ 526   7                                          *asSMBus[Channel].SMBusBData=*Var;
+ 527   7                              }
+ 528   6                              *asSMBus[Channel].SMBusSTA=0xFE;    // clear bits
+ 529   6                              }
+ 530   5                          else                        // write block transaction done
+ 531   5                          {
+ 532   6                                  TR1 = 0;                        // disable timer1
+ 533   6                                  TF1 = 0;                        // clear overflow flag
+ 534   6                                  ET1 = 1;                        // Enable timer1 interrupt
+ 535   6                                  ack = TRUE;
+ 536   6                                  break;
+ 537   6                          }
+ 538   5                      }
+ 539   4                  }
+ 540   3              }
+ 541   2              
+ 542   2              if(TF1)                                 // time-out
+ 543   2              {
+ 544   3                  TR1 = 0;                                    // disable timer1
+ 545   3                      TF1 = 0;                                        // clear overflow flag
+ 546   3                      ET1 = 1;                                        // Enable timer1 interrupt
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 10  
+
+ 547   3                          ResetSMBus(Channel);
+ 548   3                          ack = FALSE;
+ 549   3              }
+ 550   2              
+ 551   2                  *asSMBus[Channel].SMBusSTA=0xFE;        // clear bits
+ 552   2          }
+ 553   1          
+ 554   1              return(ack);
+ 555   1      } 
+ 556          
+ 557          //----------------------------------------------------------------------------
+ 558          // The function of SMbus send byte      
+ 559          //----------------------------------------------------------------------------
+ 560          BYTE bSMBusSendByte(BYTE Channel,BYTE Addr,BYTE SData)
+ 561          {
+ 562   1              BYTE error;
+ 563   1          BYTE result;
+ 564   1          BYTE status;
+ 565   1      
+ 566   1          if(CheckSMBusInterfaceCanbeUse(Channel, SMBus_AccessType_Fucn)==SMBus_CanNotUse)
+ 567   1          {
+ 568   2              result = FALSE;                             // SMBus interface can't be used.
+ 569   2          }
+ 570   1          else
+ 571   1          {
+ 572   2              error = 0xEE;                               // Pre-set error
+ 573   2              result = FALSE;                             // Pre-set result is fail
+ 574   2              
+ 575   2                  *asSMBus[Channel].SMBusADR = Addr;          // set address with writing bit
+ 576   2                  *asSMBus[Channel].SMBusCMD = SData;         // Set command
+ 577   2                  *asSMBus[Channel].SMBusSTA = 0xFE;          // clear bits
+ 578   2                  *asSMBus[Channel].SMBusCTL = (0x04|HOCTL_SRT);  // Start transaction
+ 579   2      
+ 580   2              TR1 = 0;                                    // Disable timer1
+ 581   2              ET1 = 0;                                        // Disable timer1 interrupt
+ 582   2              _nop_();
+ 583   2              _nop_();
+ 584   2              _nop_();
+ 585   2              _nop_();
+ 586   2              TH1 = Timer_26ms>>8;                        // Set timer1 counter 26ms
+ 587   2              TL1 = Timer_26ms;                           // Set timer1 counter 26ms
+ 588   2              TF1 = 0;                                        // Clear overflow flag
+ 589   2              TR1 = 1;                                        // Enable timer1
+ 590   2      
+ 591   2                  while (!TF1)
+ 592   2                  { 
+ 593   3                  status = *asSMBus[Channel].SMBusSTA;    // Read SMBus Host Status
+ 594   3                  if(IS_MASK_SET(status, (HOSTA_FINTR+HOSTA_DVER+HOSTA_BSER+HOSTA_FAIL+HOSTA_NACK+HOSTA_TMOE )))
+ 595   3                  {
+ 596   4                      TR1=0;                              // Disable timer1
+ 597   4                                  TF1=0;                              // Clear overflow flag
+ 598   4                      ET1=1;                                  // Enable timer1 interrupt
+ 599   4                      break;
+ 600   4                  }
+ 601   3                  }
+ 602   2              
+ 603   2                  if(TF1)                                     // 26ms time-out and no any status bit is set.
+ 604   2                  {
+ 605   3                  TR1=0;
+ 606   3                          TF1=0;
+ 607   3                  ET1=1;                                  // Enable timer1 interrupt
+ 608   3                  ResetSMBus(Channel);
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 11  
+
+ 609   3                  error = 0xEE;
+ 610   3                  }
+ 611   2              else
+ 612   2              {
+ 613   3                  if(IS_MASK_SET(status, (HOSTA_DVER+HOSTA_BSER+HOSTA_FAIL+HOSTA_NACK+HOSTA_TMOE)))
+ 614   3                  {
+ 615   4                      if(IS_MASK_SET(status, (HOSTA_BSER+HOSTA_FAIL)))
+ 616   4                      {
+ 617   5                          ResetSMBus(Channel);
+ 618   5                      }
+ 619   4                      error = 0xEE;
+ 620   4                  }
+ 621   3                  else                                    // Only Finish Interrupt bit is set.
+ 622   3                  {
+ 623   4                      error = 0x00;
+ 624   4                  }
+ 625   3              }
+ 626   2          
+ 627   2                  if(error == 0xEE)
+ 628   2                  {
+ 629   3                          result = FALSE;
+ 630   3                  }
+ 631   2              else
+ 632   2              {
+ 633   3                  result = TRUE;
+ 634   3              }
+ 635   2                  *asSMBus[Channel].SMBusSTA=0xFE;    // clear bits
+ 636   2          }
+ 637   1          
+ 638   1              return(result);
+ 639   1      }
+ 640          
+ 641          //----------------------------------------------------------------------------
+ 642          // The function of SMbus receive byte   
+ 643          //----------------------------------------------------------------------------
+ 644          BYTE bSMBusReceiveByte(BYTE Channel,BYTE Addr,XBYTE *Var)
+ 645          {
+ 646   1              BYTE error;
+ 647   1          BYTE result;
+ 648   1          BYTE status;
+ 649   1      
+ 650   1          if(CheckSMBusInterfaceCanbeUse(Channel, SMBus_AccessType_Fucn)==SMBus_CanNotUse)
+ 651   1          {
+ 652   2              result = FALSE;                             // SMBus interface can't be used.
+ 653   2          }
+ 654   1          else
+ 655   1          {
+ 656   2              error = 0xEE;                               // Pre-set error
+ 657   2              result = FALSE;                             // Pre-set result is fail
+ 658   2              
+ 659   2                  *asSMBus[Channel].SMBusADR = (Addr|0x01);   // set address with writing bit
+ 660   2                  *asSMBus[Channel].SMBusSTA = 0xFE;              // clear bits
+ 661   2                  *asSMBus[Channel].SMBusCTL = (0x04|HOCTL_SRT);  // Start transaction
+ 662   2      
+ 663   2                  TR1 = 0;                                            // disable timer1
+ 664   2              ET1 = 0;                                        // Disable timer1 interrupt
+ 665   2              _nop_();
+ 666   2              _nop_();
+ 667   2              _nop_();
+ 668   2              _nop_();
+ 669   2              TH1 = Timer_26ms>>8;                        // Set timer1 counter 26ms
+ 670   2              TL1 = Timer_26ms;                           // Set timer1 counter 26ms
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 12  
+
+ 671   2              TF1 = 0;                                        // Clear overflow flag
+ 672   2              TR1 = 1;                                        // Enable timer1
+ 673   2      
+ 674   2                  while (!TF1)
+ 675   2                  { 
+ 676   3                  status = *asSMBus[Channel].SMBusSTA;    // Read SMBus Host Status
+ 677   3                  if(IS_MASK_SET(status, (HOSTA_FINTR+HOSTA_DVER+HOSTA_BSER+HOSTA_FAIL+HOSTA_NACK+HOSTA_TMOE )))
+ 678   3                  {
+ 679   4                      TR1=0;
+ 680   4                                  TF1=0;
+ 681   4                      ET1=1;                                  // Enable timer1 interrupt
+ 682   4                      break;
+ 683   4                  }
+ 684   3                  }
+ 685   2              
+ 686   2                  if(TF1)                                     // 26ms time-out and no any status bit is set.
+ 687   2                  {
+ 688   3                  TR1=0;
+ 689   3                          TF1=0;
+ 690   3                  ET1=1;                                  // Enable timer1 interrupt
+ 691   3                  ResetSMBus(Channel);
+ 692   3                  error = 0xEE;
+ 693   3                  }
+ 694   2              else
+ 695   2              {
+ 696   3                  if(IS_MASK_SET(status, (HOSTA_DVER+HOSTA_BSER+HOSTA_FAIL+HOSTA_NACK+HOSTA_TMOE)))
+ 697   3                  {
+ 698   4                      if(IS_MASK_SET(status, (HOSTA_BSER+HOSTA_FAIL)))
+ 699   4                      {
+ 700   5                          ResetSMBus(Channel);
+ 701   5                      }
+ 702   4                      error = 0xEE;
+ 703   4                  }
+ 704   3                  else                                    // Only Finish Interrupt bit is set.
+ 705   3                  {
+ 706   4                      error = 0x00;
+ 707   4                  }
+ 708   3              }
+ 709   2               
+ 710   2                  if(error == 0xEE)
+ 711   2                  {
+ 712   3                          result = FALSE; 
+ 713   3                  }   
+ 714   2              else
+ 715   2              {
+ 716   3                      *Var = *asSMBus[Channel].SMBusData0;    // read data
+ 717   3                      result = TRUE; 
+ 718   3              }
+ 719   2                  *asSMBus[Channel].SMBusSTA=0xFE;        // clear bits
+ 720   2          }
+ 721   1          
+ 722   1              return(result);
+ 723   1      }
+ 724          
+ 725          //----------------------------------------------------------------------------
+ 726          //
+ 727          //----------------------------------------------------------------------------
+ 728          void CalcCRC8(BYTE sourcebyte)
+ 729          {
+ 730   1          BYTE temp;
+ 731   1              SMBCRC8_A ^=sourcebyte;
+ 732   1          temp = SMBCRC8_A;
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 13  
+
+ 733   1      
+ 734   1          if(IS_MASK_CLEAR(temp, BIT7))
+ 735   1          {
+ 736   2              temp = temp<<1;
+ 737   2              SMBCRC8_A ^= temp;
+ 738   2          }
+ 739   1          else
+ 740   1          {
+ 741   2              temp = temp<<1;
+ 742   2              SMBCRC8_A ^= 0x09;
+ 743   2              SMBCRC8_A ^= temp;
+ 744   2          }
+ 745   1          
+ 746   1          if(IS_MASK_CLEAR(temp, BIT7))
+ 747   1          {
+ 748   2              temp = temp<<1;
+ 749   2              SMBCRC8_A ^= temp;
+ 750   2          }
+ 751   1          else
+ 752   1          {
+ 753   2              temp = temp<<1;
+ 754   2              SMBCRC8_A ^= 0x07;
+ 755   2              SMBCRC8_A ^= temp;
+ 756   2          }
+ 757   1      }
+ 758          
+ 759          //----------------------------------------------------------------------------
+ 760          // The function of Checking SMbus clock and data pins are both high     
+ 761          //----------------------------------------------------------------------------
+ 762          BYTE CheckSMBusFree(BYTE channel)
+ 763          {
+ 764   1          BYTE pinstatus;
+ 765   1      
+ 766   1          pinstatus = *asResetSMBusS[channel].SMBusPinCTL;
+ 767   1      
+ 768   1          if((pinstatus&=0x03)==0x03) // Check BIT0 and BIT1
+ 769   1          {
+ 770   2              return(SMBus_Free);
+ 771   2          }
+ 772   1          else
+ 773   1          {
+ 774   2              return(SMBus_Busy);
+ 775   2          }
+ 776   1      }
+ 777          
+ 778          //----------------------------------------------------------------------------
+ 779          // The function of Checking SMbus pins are all alt
+ 780          //----------------------------------------------------------------------------
+ 781          BYTE CheckSMBusInterfaceIsALT(BYTE channel)
+ 782          {
+ 783   1          if(((*asResetSMBusS[channel].SMBusPin0 & 0xFB)!=0x00)||((*asResetSMBusS[channel].SMBusPin1 & 0xFB)!=0x
+             -00))
+ 784   1          {
+ 785   2              return(SMBusPin_GPIO);
+ 786   2          }
+ 787   1          else
+ 788   1          {
+ 789   2              return(SMBusPin_ALT);
+ 790   2          }
+ 791   1      }
+ 792          
+ 793          //----------------------------------------------------------------------------
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 14  
+
+ 794          // The function of Checking SMbus pins are all alt
+ 795          //----------------------------------------------------------------------------
+ 796          BYTE CheckSMBusInterfaceCanbeUse(BYTE channel, BYTE accesstype)
+ 797          {
+ 798   1          BYTE checksmbus;
+ 799   1      
+ 800   1          checksmbus = SMBus_CanUse;                  // Pre-set smbus interface can be used
+ 801   1          
+ 802   1          #ifdef PECI_Support
+ 803   1          if(channel==SMbusCh3)                       // If PECI function enable, return.
+ 804   1          {
+ 805   2              checksmbus = SMBus_CanNotUse;           // Interface can't be used
+ 806   2              return(checksmbus);                     // return result
+ 807   2          }
+ 808   1          #endif
+ 809   1          
+ 810   1          if(CheckSMBusInterfaceIsALT(channel)==SMBusPin_GPIO)    // SMBus interface is GPIO function
+ 811   1          {
+ 812   2              checksmbus = SMBus_CanNotUse;           // Interface can't be used
+ 813   2          }
+ 814   1          else                                        // SMBus interface is ALT function
+ 815   1          {
+ 816   2              if(accesstype==SMBus_AccessType_Fucn)
+ 817   2              {
+ 818   3                  #ifdef SMBusServiceCenterFunc
+                          WatiSMBusCHxFree(channel);          // Check smbus is in used or not.
+                          #endif
+ 821   3              }
+ 822   2      
+ 823   2              if(CheckSMBusFree(channel)==SMBus_Busy)
+ 824   2              {
+ 825   3                  checksmbus = SMBus_CanNotUse;       // Interface can't be used
+ 826   3                  if( (*asResetSMBusS[channel].recoverCunt)++ >SMBus_BusyRecover)
+ 827   3                  {
+ 828   4                      ResetSMBus(channel);
+ 829   4                  }
+ 830   3              }
+ 831   2              else
+ 832   2              {
+ 833   3                  *asResetSMBusS[channel].recoverCunt=0x00;
+ 834   3                  checksmbus = SMBus_CanUse;          // smbus interface can be used
+ 835   3              }
+ 836   2          }
+ 837   1      
+ 838   1          return(checksmbus);                         // return result
+ 839   1      }
+ 840          
+ 841          //----------------------------------------------------------------------------
+ 842          // To init. SMBus setting
+ 843          //----------------------------------------------------------------------------
+ 844          void Core_Init_SMBus(void)
+ 845          {
+ 846   1          SMBus_BusyRecover = 20;         // Reset SMBus interface if bus clock pin or data pin is low greater t
+             -han SMBus_BusyRecover times.
+ 847   1      }
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 15  
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION Com007F (BEGIN)
+0000         L?0128:
+0000         L?0129:
+0000 E0                MOVX    A,@DPTR
+0001 FF                MOV     R7,A
+0002 EE                MOV     A,R6
+0003 75F015            MOV     B,#015H
+0006 A4                MUL     AB
+0007 2400        R     ADD     A,#LOW asSMBus+04H
+0009 F582              MOV     DPL,A
+000B E4                CLR     A
+000C 3400        R     ADDC    A,#HIGH asSMBus+04H
+000E         L?0130:
+000E F583              MOV     DPH,A
+0010 E4                CLR     A
+0011 93                MOVC    A,@A+DPTR
+0012 FC                MOV     R4,A
+0013 7401              MOV     A,#01H
+0015 93                MOVC    A,@A+DPTR
+0016 F582              MOV     DPL,A
+0018 8C83              MOV     DPH,R4
+001A EF                MOV     A,R7
+001B         L?0131:
+001B F0                MOVX    @DPTR,A
+001C EE                MOV     A,R6
+001D         L?0132:
+001D 75F015            MOV     B,#015H
+0020 A4                MUL     AB
+0021 2400        R     ADD     A,#LOW asSMBus+06H
+0023 F582              MOV     DPL,A
+0025 E4                CLR     A
+0026 3400        R     ADDC    A,#HIGH asSMBus+06H
+0028         L?0133:
+0028 F583              MOV     DPH,A
+002A E4                CLR     A
+002B 93                MOVC    A,@A+DPTR
+002C FE                MOV     R6,A
+002D 7401              MOV     A,#01H
+002F 93                MOVC    A,@A+DPTR
+0030 F582              MOV     DPL,A
+0032 8E83              MOV     DPH,R6
+0034 22                RET     
+0035         L?0134:
+0035 4440              ORL     A,#040H
+0037 FF                MOV     R7,A
+0038         L?0135:
+0038 E0                MOVX    A,@DPTR
+0039         L?0136:
+0039 75F015            MOV     B,#015H
+003C A4                MUL     AB
+003D 2400        R     ADD     A,#LOW asSMBus
+003F F582              MOV     DPL,A
+0041 E4                CLR     A
+0042 3400        R     ADDC    A,#HIGH asSMBus
+0044         L?0137:
+0044 F583              MOV     DPH,A
+0046 E4                CLR     A
+0047 93                MOVC    A,@A+DPTR
+0048 FC                MOV     R4,A
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 16  
+
+0049 7401              MOV     A,#01H
+004B 93                MOVC    A,@A+DPTR
+004C F582              MOV     DPL,A
+004E 8C83              MOV     DPH,R4
+0050 22                RET     
+0051         L?0138:
+0051 4401              ORL     A,#01H
+0053 FF                MOV     R7,A
+0054         L?0139:
+0054 E0                MOVX    A,@DPTR
+0055 FE                MOV     R6,A
+0056         L?0140:
+0056 75F015            MOV     B,#015H
+0059 A4                MUL     AB
+005A 2400        R     ADD     A,#LOW asSMBus+02H
+005C F582              MOV     DPL,A
+005E E4                CLR     A
+005F 3400        R     ADDC    A,#HIGH asSMBus+02H
+0061 22                RET     
+0062         L?0141:
+0062         L?0142:
+0062 C28E              CLR     TR1
+0064 C28F              CLR     TF1
+0066 D2AB              SETB    ET1
+0068 22                RET     
+0069         L?0143:
+0069         L?0144:
+0069 EF                MOV     A,R7
+006A         L?0145:
+006A 75F015            MOV     B,#015H
+006D A4                MUL     AB
+006E 2400        R     ADD     A,#LOW asSMBus+08H
+0070 F582              MOV     DPL,A
+0072 E4                CLR     A
+0073 3400        R     ADDC    A,#HIGH asSMBus+08H
+0075 22                RET     
+0076         L?0146:
+0076         L?0147:
+0076 E0                MOVX    A,@DPTR
+0077 FF                MOV     R7,A
+0078         L?0148:
+0078 75F015            MOV     B,#015H
+007B A4                MUL     AB
+007C 2400        R     ADD     A,#LOW asSMBus+06H
+007E F582              MOV     DPL,A
+0080 E4                CLR     A
+0081 3400        R     ADDC    A,#HIGH asSMBus+06H
+0083 22                RET     
+0084         L?0149:
+0084 900000      R     MOV     DPTR,#Channel
+0087 E0                MOVX    A,@DPTR
+0088         L?0150:
+0088 75F015            MOV     B,#015H
+008B A4                MUL     AB
+008C 2400        R     ADD     A,#LOW asSMBus+0CH
+008E F582              MOV     DPL,A
+0090 E4                CLR     A
+0091 3400        R     ADDC    A,#HIGH asSMBus+0CH
+0093 22                RET     
+0094         L?0151:
+0094         L?0152:
+0094 758DB2            MOV     TH1,#0B2H
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 17  
+
+0097 758B19            MOV     TL1,#019H
+009A C28F              CLR     TF1
+009C D28E              SETB    TR1
+009E 22                RET     
+009F         L?0153:
+009F         L?0154:
+009F 900000      R     MOV     DPTR,#Var
+00A2         L?0155:
+00A2 E0                MOVX    A,@DPTR
+00A3 FE                MOV     R6,A
+00A4 A3                INC     DPTR
+00A5 E0                MOVX    A,@DPTR
+00A6 F582              MOV     DPL,A
+00A8 8E83              MOV     DPH,R6
+00AA E0                MOVX    A,@DPTR
+00AB FF                MOV     R7,A
+00AC 22                RET     
+00AD         L?0156:
+00AD E4                CLR     A
+00AE         L?0157:
+00AE F0                MOVX    @DPTR,A
+00AF EE                MOV     A,R6
+00B0 75F00F            MOV     B,#0FH
+00B3 A4                MUL     AB
+00B4 22                RET     
+00B5         L?0158:
+00B5 E0                MOVX    A,@DPTR
+00B6 FF                MOV     R7,A
+00B7 EE                MOV     A,R6
+00B8         L?0159:
+00B8 75F015            MOV     B,#015H
+00BB A4                MUL     AB
+00BC 2400        R     ADD     A,#LOW asSMBus+04H
+00BE F582              MOV     DPL,A
+00C0 E4                CLR     A
+00C1 3400        R     ADDC    A,#HIGH asSMBus+04H
+00C3 22                RET     
+00C4         L?0160:
+00C4         L?0161:
+00C4 F583              MOV     DPH,A
+00C6 E4                CLR     A
+00C7 93                MOVC    A,@A+DPTR
+00C8 FA                MOV     R2,A
+00C9 7401              MOV     A,#01H
+00CB 93                MOVC    A,@A+DPTR
+00CC F582              MOV     DPL,A
+00CE 8A83              MOV     DPH,R2
+00D0 22                RET     
+00D1         L?0162:
+00D1         L?0163:
+00D1 E0                MOVX    A,@DPTR
+00D2 75F015            MOV     B,#015H
+00D5 A4                MUL     AB
+00D6 2400        R     ADD     A,#LOW asSMBus
+00D8 F582              MOV     DPL,A
+00DA E4                CLR     A
+00DB 3400        R     ADDC    A,#HIGH asSMBus
+00DD 22                RET     
+00DE         L?0164:
+00DE 75F00F            MOV     B,#0FH
+00E1 A4                MUL     AB
+00E2         L?0165:
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 18  
+
+00E2 2400        R     ADD     A,#LOW asResetSMBusS+06H
+00E4 F582              MOV     DPL,A
+00E6 E4                CLR     A
+00E7 3400        R     ADDC    A,#HIGH asResetSMBusS+06H
+00E9 22                RET     
+00EA         L?0166:
+00EA 75F00F            MOV     B,#0FH
+00ED A4                MUL     AB
+00EE         L?0167:
+00EE 2400        R     ADD     A,#LOW asResetSMBusS+04H
+00F0 F582              MOV     DPL,A
+00F2 E4                CLR     A
+00F3 3400        R     ADDC    A,#HIGH asResetSMBusS+04H
+00F5 22                RET     
+00F6         L?0168:
+00F6 900000      R     MOV     DPTR,#Channel
+00F9 E0                MOVX    A,@DPTR
+00FA 75F015            MOV     B,#015H
+00FD A4                MUL     AB
+00FE 2400        R     ADD     A,#LOW asSMBus+0AH
+0100 F582              MOV     DPL,A
+0102 E4                CLR     A
+0103 3400        R     ADDC    A,#HIGH asSMBus+0AH
+0105 22                RET     
+0106         L?0169:
+0106 FE                MOV     R6,A
+0107         L?0170:
+0107 E0                MOVX    A,@DPTR
+0108 FC                MOV     R4,A
+0109 A3                INC     DPTR
+010A E0                MOVX    A,@DPTR
+010B F582              MOV     DPL,A
+010D 8C83              MOV     DPH,R4
+010F 22                RET     
+0110         L?0171:
+0110 EB                MOV     A,R3
+0111 75F00F            MOV     B,#0FH
+0114 A4                MUL     AB
+0115 2400        R     ADD     A,#LOW asResetSMBusS+0DH
+0117 F582              MOV     DPL,A
+0119 E4                CLR     A
+011A 3400        R     ADDC    A,#HIGH asResetSMBusS+0DH
+011C 22                RET     
+011D         L?0172:
+011D         L?0173:
+011D 2400        R     ADD     A,#LOW asResetSMBusS+08H
+011F F582              MOV     DPL,A
+0121 E4                CLR     A
+0122 3400        R     ADDC    A,#HIGH asResetSMBusS+08H
+0124 22                RET     
+0125         L?0174:
+0125 E0                MOVX    A,@DPTR
+0126 FE                MOV     R6,A
+0127 A3                INC     DPTR
+0128 E0                MOVX    A,@DPTR
+0129 FF                MOV     R7,A
+012A F582              MOV     DPL,A
+012C 8E83              MOV     DPH,R6
+012E E0                MOVX    A,@DPTR
+012F FD                MOV     R5,A
+0130 22                RET     
+0131         L?0175:
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 19  
+
+0131 75F015            MOV     B,#015H
+0134 A4                MUL     AB
+0135 2400        R     ADD     A,#LOW asSMBus+013H
+0137 F582              MOV     DPL,A
+0139 E4                CLR     A
+013A 3400        R     ADDC    A,#HIGH asSMBus+013H
+013C 22                RET     
+013D         L?0176:
+013D         L?0177:
+013D E4                CLR     A
+013E 75F001            MOV     B,#01H
+0141 020000      E     LJMP    ?C?IILDX
+             ; FUNCTION Com007F (END)
+
+             ; FUNCTION DelayInact (BEGIN)
+                                           ; SOURCE LINE # 31
+                                           ; SOURCE LINE # 32
+                                           ; SOURCE LINE # 35
+;---- Variable 'index' assigned to Register 'R7' ----
+0000 E4                CLR     A
+0001 FF                MOV     R7,A
+0002         ?C0001:
+                                           ; SOURCE LINE # 36
+                                           ; SOURCE LINE # 37
+0002 900000      R     MOV     DPTR,#counter
+0005 E0                MOVX    A,@DPTR
+0006 04                INC     A
+0007 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 38
+0008 0F                INC     R7
+0009 EF                MOV     A,R7
+000A B4C8F5            CJNE    A,#0C8H,?C0001
+                                           ; SOURCE LINE # 39
+000D         ?C0004:
+000D 22                RET     
+             ; FUNCTION DelayInact (END)
+
+             ; FUNCTION _ResetSMBus (BEGIN)
+                                           ; SOURCE LINE # 44
+;---- Variable 'Channel' assigned to Register 'R6' ----
+0000 CE                XCH     A,R6
+0001 EF                MOV     A,R7
+0002 CE                XCH     A,R6
+                                           ; SOURCE LINE # 45
+                                           ; SOURCE LINE # 47
+0003 EE                MOV     A,R6
+0004 6402              XRL     A,#02H
+0006 7003              JNZ     $ + 5H
+0008 020000      R     LJMP    ?C0006
+                                           ; SOURCE LINE # 48
+                                           ; SOURCE LINE # 50
+000B         ?C0005:
+                                           ; SOURCE LINE # 53
+000B EE                MOV     A,R6
+000C 120000      R     LCALL   L?0136
+000F E0                MOVX    A,@DPTR
+0010 4402              ORL     A,#02H
+0012 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 54
+0013 E0                MOVX    A,@DPTR
+0014 54FD              ANL     A,#0FDH
+                                           ; SOURCE LINE # 56
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 20  
+
+0016 120000      R     LCALL   L?0157
+0019 2400        R     ADD     A,#LOW asResetSMBusS
+001B F582              MOV     DPL,A
+001D E4                CLR     A
+001E 3400        R     ADDC    A,#HIGH asResetSMBusS
+0020 120000      R     LCALL   L?0137
+0023 74FE              MOV     A,#0FEH
+                                           ; SOURCE LINE # 57
+0025 120000      R     LCALL   L?0157
+0028 120000      R     LCALL   L?0165
+002B 120000      R     LCALL   L?0137
+002E 7440              MOV     A,#040H
+                                           ; SOURCE LINE # 58
+0030 120000      R     LCALL   L?0157
+0033 120000      R     LCALL   L?0172
+0036 120000      R     LCALL   L?0137
+0039 7440              MOV     A,#040H
+003B F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 59
+003C 120000      R     LCALL   DelayInact
+                                           ; SOURCE LINE # 60
+003F EE                MOV     A,R6
+0040 75F00F            MOV     B,#0FH
+0043 A4                MUL     AB
+0044 2400        R     ADD     A,#LOW asResetSMBusS+0AH
+0046 F582              MOV     DPL,A
+0048 E4                CLR     A
+0049 3400        R     ADDC    A,#HIGH asResetSMBusS+0AH
+004B 120000      R     LCALL   L?0137
+004E C083              PUSH    DPH
+0050 C082              PUSH    DPL
+0052 E0                MOVX    A,@DPTR
+0053 FF                MOV     R7,A
+0054 EE                MOV     A,R6
+0055 75F00F            MOV     B,#0FH
+0058 A4                MUL     AB
+0059 2400        R     ADD     A,#LOW asResetSMBusS+0CH
+005B F582              MOV     DPL,A
+005D E4                CLR     A
+005E 3400        R     ADDC    A,#HIGH asResetSMBusS+0CH
+0060 F583              MOV     DPH,A
+0062 E4                CLR     A
+0063 93                MOVC    A,@A+DPTR
+0064 FD                MOV     R5,A
+0065 EF                MOV     A,R7
+0066 4D                ORL     A,R5
+0067 D082              POP     DPL
+0069 D083              POP     DPH
+006B F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 61
+006C 120000      R     LCALL   DelayInact
+                                           ; SOURCE LINE # 62
+006F EE                MOV     A,R6
+0070 120000      R     LCALL   L?0164
+0073 120000      R     LCALL   L?0137
+                                           ; SOURCE LINE # 63
+0076 120000      R     LCALL   L?0156
+0079 120000      R     LCALL   L?0172
+007C 120000      R     LCALL   L?0137
+                                           ; SOURCE LINE # 64
+007F 120000      R     LCALL   L?0156
+0082 2400        R     ADD     A,#LOW asResetSMBusS+02H
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 21  
+
+0084 F582              MOV     DPL,A
+0086 E4                CLR     A
+0087 3400        R     ADDC    A,#HIGH asResetSMBusS+02H
+0089 120000      R     LCALL   L?0137
+008C 7402              MOV     A,#02H
+                                           ; SOURCE LINE # 65
+008E 120000      R     LCALL   L?0157
+0091 120000      R     LCALL   L?0167
+0094 120000      R     LCALL   L?0137
+0097 7403              MOV     A,#03H
+0099 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 66
+009A 120000      R     LCALL   DelayInact
+                                           ; SOURCE LINE # 67
+009D EE                MOV     A,R6
+009E 120000      R     LCALL   L?0166
+00A1 120000      R     LCALL   L?0137
+00A4 7407              MOV     A,#07H
+                                           ; SOURCE LINE # 68
+00A6 120000      R     LCALL   L?0157
+00A9 2400        R     ADD     A,#LOW asResetSMBusS+02H
+00AB F582              MOV     DPL,A
+00AD E4                CLR     A
+00AE 3400        R     ADDC    A,#HIGH asResetSMBusS+02H
+00B0 120000      R     LCALL   L?0133
+00B3 7401              MOV     A,#01H
+00B5 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 97
+00B6         ?C0006:
+00B6 22                RET     
+             ; FUNCTION _ResetSMBus (END)
+
+             ; FUNCTION _bRWSMBus (BEGIN)
+                                           ; SOURCE LINE # 102
+0000 900000      R     MOV     DPTR,#Protocol
+0003 ED                MOV     A,R5
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 EB                MOV     A,R3
+0007 F0                MOVX    @DPTR,A
+0008 900000      R     MOV     DPTR,#Channel
+000B EF                MOV     A,R7
+000C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 103
+                                           ; SOURCE LINE # 109
+000D 7D01              MOV     R5,#01H
+000F 120000      R     LCALL   _CheckSMBusInterfaceCanbeUse
+0012 EF                MOV     A,R7
+0013 7007              JNZ     ?C0007
+                                           ; SOURCE LINE # 110
+                                           ; SOURCE LINE # 111
+0015 900000      R     MOV     DPTR,#resutl
+0018 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 112
+0019 020000      R     LJMP    ?C0008
+001C         ?C0007:
+                                           ; SOURCE LINE # 114
+                                           ; SOURCE LINE # 115
+001C 900000      R     MOV     DPTR,#error
+001F 74EE              MOV     A,#0EEH
+0021 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 116
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 22  
+
+0022 E4                CLR     A
+0023 900000      R     MOV     DPTR,#resutl
+0026 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 118
+0027 7800        E     MOV     R0,#LOW SMBCRC8_A
+0029 F6                MOV     @R0,A
+                                           ; SOURCE LINE # 120
+002A 900000      R     MOV     DPTR,#Protocol
+002D E0                MOVX    A,@DPTR
+002E 20E703            JB      ACC.7,$ + 6H
+0031 020000      R     LJMP    ?C0009
+                                           ; SOURCE LINE # 121
+                                           ; SOURCE LINE # 122
+0034 900000      R     MOV     DPTR,#PECSupport
+0037 E0                MOVX    A,@DPTR
+0038 6008              JZ      ?C0010
+                                           ; SOURCE LINE # 123
+                                           ; SOURCE LINE # 124
+003A 900000      R     MOV     DPTR,#Addr
+003D E0                MOVX    A,@DPTR
+003E FF                MOV     R7,A
+003F 120000      R     LCALL   _CalcCRC8
+                                           ; SOURCE LINE # 125
+0042         ?C0010:
+                                           ; SOURCE LINE # 126
+0042 900000      R     MOV     DPTR,#Addr
+0045 E0                MOVX    A,@DPTR
+0046 FF                MOV     R7,A
+0047 900000      R     MOV     DPTR,#Channel
+004A E0                MOVX    A,@DPTR
+004B 120000      R     LCALL   L?0140
+004E 120000      R     LCALL   L?0137
+0051 EF                MOV     A,R7
+0052 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 127
+0053 900000      R     MOV     DPTR,#PECSupport
+0056 E0                MOVX    A,@DPTR
+0057 6008              JZ      ?C0011
+                                           ; SOURCE LINE # 128
+                                           ; SOURCE LINE # 129
+0059 900000      R     MOV     DPTR,#Comd
+005C E0                MOVX    A,@DPTR
+005D FF                MOV     R7,A
+005E 120000      R     LCALL   _CalcCRC8
+                                           ; SOURCE LINE # 130
+0061         ?C0011:
+                                           ; SOURCE LINE # 131
+0061 900000      R     MOV     DPTR,#Comd
+0064 E0                MOVX    A,@DPTR
+0065 FF                MOV     R7,A
+0066 900000      R     MOV     DPTR,#Channel
+0069 E0                MOVX    A,@DPTR
+006A 120000      R     LCALL   L?0159
+006D 120000      R     LCALL   L?0137
+0070 EF                MOV     A,R7
+0071 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 132
+0072 900000      R     MOV     DPTR,#Protocol
+0075 E0                MOVX    A,@DPTR
+0076 547F              ANL     A,#07FH
+0078 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 133
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 23  
+
+0079 900000      R     MOV     DPTR,#PECSupport
+007C E0                MOVX    A,@DPTR
+007D 6009              JZ      ?C0012
+                                           ; SOURCE LINE # 134
+                                           ; SOURCE LINE # 135
+007F 900000      R     MOV     DPTR,#Var
+0082 120000      R     LCALL   L?0155
+0085 120000      R     LCALL   _CalcCRC8
+                                           ; SOURCE LINE # 136
+0088         ?C0012:
+                                           ; SOURCE LINE # 137
+0088 900000      R     MOV     DPTR,#Var
+008B 120000      R     LCALL   L?0174
+008E 900000      R     MOV     DPTR,#Channel
+0091 E0                MOVX    A,@DPTR
+0092 120000      R     LCALL   L?0145
+0095 120000      R     LCALL   L?0160
+0098 ED                MOV     A,R5
+0099 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 138
+009A 900000      R     MOV     DPTR,#Protocol
+009D E0                MOVX    A,@DPTR
+009E 640C              XRL     A,#0CH
+00A0 7042              JNZ     ?C0015
+                                           ; SOURCE LINE # 139
+                                           ; SOURCE LINE # 140
+00A2 900000      R     MOV     DPTR,#PECSupport
+00A5 E0                MOVX    A,@DPTR
+00A6 600A              JZ      ?C0014
+                                           ; SOURCE LINE # 141
+                                           ; SOURCE LINE # 142
+00A8 8F82              MOV     DPL,R7
+00AA 8E83              MOV     DPH,R6
+00AC A3                INC     DPTR
+00AD E0                MOVX    A,@DPTR
+00AE FF                MOV     R7,A
+00AF 120000      R     LCALL   _CalcCRC8
+                                           ; SOURCE LINE # 143
+00B2         ?C0014:
+                                           ; SOURCE LINE # 144
+00B2 900000      R     MOV     DPTR,#Var
+00B5 E0                MOVX    A,@DPTR
+00B6 FE                MOV     R6,A
+00B7 A3                INC     DPTR
+00B8 E0                MOVX    A,@DPTR
+00B9 F582              MOV     DPL,A
+00BB 8E83              MOV     DPH,R6
+00BD A3                INC     DPTR
+00BE E0                MOVX    A,@DPTR
+00BF FF                MOV     R7,A
+00C0 120000      R     LCALL   L?0168
+00C3 120000      R     LCALL   L?0137
+00C6 EF                MOV     A,R7
+00C7 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 145
+                                           ; SOURCE LINE # 146
+00C8 801A              SJMP    ?C0015
+00CA         ?C0009:
+                                           ; SOURCE LINE # 148
+                                           ; SOURCE LINE # 149
+00CA 900000      R     MOV     DPTR,#Addr
+00CD E0                MOVX    A,@DPTR
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 24  
+
+00CE 900000      R     MOV     DPTR,#Channel
+00D1 120000      R     LCALL   L?0138
+00D4 120000      R     LCALL   L?0137
+00D7 EF                MOV     A,R7
+00D8 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 150
+00D9 900000      R     MOV     DPTR,#Comd
+00DC 120000      R     LCALL   L?0158
+00DF 120000      R     LCALL   L?0137
+00E2 EF                MOV     A,R7
+00E3 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 151
+00E4         ?C0015:
+                                           ; SOURCE LINE # 154
+00E4 900000      R     MOV     DPTR,#Channel
+00E7 120000      R     LCALL   L?0146
+00EA 120000      R     LCALL   L?0137
+00ED 74FE              MOV     A,#0FEH
+00EF F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 155
+00F0 900000      R     MOV     DPTR,#PECSupport
+00F3 E0                MOVX    A,@DPTR
+00F4 601B              JZ      ?C0016
+                                           ; SOURCE LINE # 156
+                                           ; SOURCE LINE # 157
+00F6 7800        E     MOV     R0,#LOW SMBCRC8_A
+00F8 E6                MOV     A,@R0
+00F9 FE                MOV     R6,A
+00FA 900000      R     MOV     DPTR,#Channel
+00FD E0                MOVX    A,@DPTR
+00FE FD                MOV     R5,A
+00FF 120000      R     LCALL   L?0175
+0102 120000      R     LCALL   L?0160
+0105 EE                MOV     A,R6
+0106 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 158
+0107 900000      R     MOV     DPTR,#Protocol
+010A E0                MOVX    A,@DPTR
+010B 44C0              ORL     A,#0C0H
+010D FE                MOV     R6,A
+010E ED                MOV     A,R5
+                                           ; SOURCE LINE # 159
+010F 8008              SJMP    ?C0123
+0111         ?C0016:
+                                           ; SOURCE LINE # 161
+                                           ; SOURCE LINE # 162
+0111 900000      R     MOV     DPTR,#Protocol
+0114 E0                MOVX    A,@DPTR
+0115 4440              ORL     A,#040H
+0117 FE                MOV     R6,A
+0118 EF                MOV     A,R7
+0119         ?C0123:
+0119 120000      R     LCALL   L?0136
+011C EE                MOV     A,R6
+011D F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 163
+011E         ?C0017:
+                                           ; SOURCE LINE # 165
+011E C28E              CLR     TR1
+                                           ; SOURCE LINE # 166
+0120 C2AB              CLR     ET1
+                                           ; SOURCE LINE # 167
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 25  
+
+0122 00                NOP     
+                                           ; SOURCE LINE # 168
+0123 00                NOP     
+                                           ; SOURCE LINE # 169
+0124 00                NOP     
+                                           ; SOURCE LINE # 170
+0125 00                NOP     
+                                           ; SOURCE LINE # 171
+                                           ; SOURCE LINE # 172
+                                           ; SOURCE LINE # 173
+                                           ; SOURCE LINE # 174
+0126 120000      R     LCALL   L?0151
+0129         ?C0018:
+                                           ; SOURCE LINE # 176
+0129 208F14            JB      TF1,?C0019
+                                           ; SOURCE LINE # 177
+                                           ; SOURCE LINE # 178
+012C 900000      R     MOV     DPTR,#Channel
+012F E0                MOVX    A,@DPTR
+0130 120000      R     LCALL   L?0132
+0133 E0                MOVX    A,@DPTR
+0134 900000      R     MOV     DPTR,#status
+0137 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 179
+0138 E0                MOVX    A,@DPTR
+0139 547E              ANL     A,#07EH
+013B 60EC              JZ      ?C0018
+                                           ; SOURCE LINE # 180
+                                           ; SOURCE LINE # 181
+                                           ; SOURCE LINE # 182
+                                           ; SOURCE LINE # 183
+013D 120000      R     LCALL   L?0141
+                                           ; SOURCE LINE # 184
+                                           ; SOURCE LINE # 185
+                                           ; SOURCE LINE # 186
+0140         ?C0019:
+                                           ; SOURCE LINE # 188
+0140 308F0D            JNB     TF1,?C0021
+                                           ; SOURCE LINE # 189
+                                           ; SOURCE LINE # 190
+                                           ; SOURCE LINE # 191
+                                           ; SOURCE LINE # 192
+0143 120000      R     LCALL   L?0141
+                                           ; SOURCE LINE # 193
+0146 900000      R     MOV     DPTR,#Channel
+0149 E0                MOVX    A,@DPTR
+014A FF                MOV     R7,A
+014B 120000      R     LCALL   _ResetSMBus
+                                           ; SOURCE LINE # 194
+                                           ; SOURCE LINE # 195
+014E 8016              SJMP    ?C0124
+0150         ?C0021:
+                                           ; SOURCE LINE # 197
+                                           ; SOURCE LINE # 198
+0150 900000      R     MOV     DPTR,#status
+0153 E0                MOVX    A,@DPTR
+0154 FF                MOV     R7,A
+0155 547C              ANL     A,#07CH
+0157 6015              JZ      ?C0023
+                                           ; SOURCE LINE # 199
+                                           ; SOURCE LINE # 200
+0159 EF                MOV     A,R7
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 26  
+
+015A 5418              ANL     A,#018H
+015C 6008              JZ      ?C0024
+                                           ; SOURCE LINE # 201
+                                           ; SOURCE LINE # 202
+015E 900000      R     MOV     DPTR,#Channel
+0161 E0                MOVX    A,@DPTR
+0162 FF                MOV     R7,A
+0163 120000      R     LCALL   _ResetSMBus
+                                           ; SOURCE LINE # 203
+0166         ?C0024:
+                                           ; SOURCE LINE # 204
+0166         ?C0124:
+0166 900000      R     MOV     DPTR,#error
+0169 74EE              MOV     A,#0EEH
+016B F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 205
+016C 8005              SJMP    ?C0022
+016E         ?C0023:
+                                           ; SOURCE LINE # 207
+                                           ; SOURCE LINE # 208
+016E E4                CLR     A
+016F 900000      R     MOV     DPTR,#error
+0172 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 209
+                                           ; SOURCE LINE # 210
+0173         ?C0022:
+                                           ; SOURCE LINE # 212
+0173 900000      R     MOV     DPTR,#error
+0176 E0                MOVX    A,@DPTR
+0177 B4EE07            CJNE    A,#0EEH,?C0026
+                                           ; SOURCE LINE # 213
+                                           ; SOURCE LINE # 214
+017A E4                CLR     A
+017B 900000      R     MOV     DPTR,#resutl
+017E F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 215
+017F 803F              SJMP    ?C0027
+0181         ?C0026:
+                                           ; SOURCE LINE # 217
+                                           ; SOURCE LINE # 218
+0181 900000      R     MOV     DPTR,#Channel
+0184 E0                MOVX    A,@DPTR
+0185 FF                MOV     R7,A
+0186 120000      R     LCALL   L?0140
+0189 120000      R     LCALL   L?0137
+018C E0                MOVX    A,@DPTR
+018D 30E02A            JNB     ACC.0,?C0028
+                                           ; SOURCE LINE # 219
+                                           ; SOURCE LINE # 220
+0190 120000      R     LCALL   L?0143
+0193 120000      R     LCALL   L?0133
+0196 E0                MOVX    A,@DPTR
+0197 FF                MOV     R7,A
+0198 900000      R     MOV     DPTR,#Var
+019B E0                MOVX    A,@DPTR
+019C FC                MOV     R4,A
+019D A3                INC     DPTR
+019E E0                MOVX    A,@DPTR
+019F FD                MOV     R5,A
+01A0 F582              MOV     DPL,A
+01A2 8C83              MOV     DPH,R4
+01A4 EF                MOV     A,R7
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 27  
+
+01A5 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 221
+01A6 900000      R     MOV     DPTR,#Protocol
+01A9 E0                MOVX    A,@DPTR
+01AA B40C0D            CJNE    A,#0CH,?C0028
+                                           ; SOURCE LINE # 222
+                                           ; SOURCE LINE # 223
+01AD 120000      R     LCALL   L?0168
+01B0 120000      R     LCALL   L?0133
+01B3 E0                MOVX    A,@DPTR
+01B4 8D82              MOV     DPL,R5
+01B6 8C83              MOV     DPH,R4
+01B8 A3                INC     DPTR
+01B9 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 224
+                                           ; SOURCE LINE # 225
+01BA         ?C0028:
+                                           ; SOURCE LINE # 226
+01BA 900000      R     MOV     DPTR,#resutl
+01BD 7401              MOV     A,#01H
+01BF F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 227
+01C0         ?C0027:
+                                           ; SOURCE LINE # 229
+01C0 900000      R     MOV     DPTR,#Channel
+01C3 E0                MOVX    A,@DPTR
+01C4 120000      R     LCALL   L?0132
+01C7 74FE              MOV     A,#0FEH
+01C9 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 230
+01CA         ?C0008:
+                                           ; SOURCE LINE # 232
+01CA 900000      R     MOV     DPTR,#resutl
+01CD E0                MOVX    A,@DPTR
+01CE FF                MOV     R7,A
+                                           ; SOURCE LINE # 233
+01CF         ?C0030:
+01CF 22                RET     
+             ; FUNCTION _bRWSMBus (END)
+
+             ; FUNCTION _bRSMBusBlockLS (BEGIN)
+                                           ; SOURCE LINE # 239
+0000 900000      R     MOV     DPTR,#Protocol
+0003 ED                MOV     A,R5
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 EB                MOV     A,R3
+0007 F0                MOVX    @DPTR,A
+0008 900000      R     MOV     DPTR,#Channel
+000B EF                MOV     A,R7
+000C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 240
+                                           ; SOURCE LINE # 245
+000D 7D01              MOV     R5,#01H
+000F 120000      R     LCALL   _CheckSMBusInterfaceCanbeUse
+0012 EF                MOV     A,R7
+0013 7007              JNZ     ?C0031
+                                           ; SOURCE LINE # 246
+                                           ; SOURCE LINE # 247
+0015 900000      R     MOV     DPTR,#ack
+0018 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 248
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 28  
+
+0019 020000      R     LJMP    ?C0032
+001C         ?C0031:
+                                           ; SOURCE LINE # 250
+                                           ; SOURCE LINE # 251
+001C E4                CLR     A
+001D 900000      R     MOV     DPTR,#ack
+0020 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 252
+;---- Variable 'bcount' assigned to Register 'R3' ----
+0021 FB                MOV     R3,A
+                                           ; SOURCE LINE # 254
+0022 900000      R     MOV     DPTR,#Addr
+0025 E0                MOVX    A,@DPTR
+0026 900000      R     MOV     DPTR,#Channel
+0029 120000      R     LCALL   L?0138
+002C 120000      R     LCALL   L?0137
+002F EF                MOV     A,R7
+0030 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 255
+0031 900000      R     MOV     DPTR,#Comd
+                                           ; SOURCE LINE # 256
+0034 120000      R     LCALL   L?0128
+0037 74FE              MOV     A,#0FEH
+0039 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 257
+003A 900000      R     MOV     DPTR,#Protocol
+003D E0                MOVX    A,@DPTR
+003E 900000      R     MOV     DPTR,#Channel
+0041 120000      R     LCALL   L?0134
+0044 EF                MOV     A,R7
+0045 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 259
+0046 C28E              CLR     TR1
+                                           ; SOURCE LINE # 260
+0048 C2AB              CLR     ET1
+                                           ; SOURCE LINE # 261
+004A 00                NOP     
+                                           ; SOURCE LINE # 262
+004B 00                NOP     
+                                           ; SOURCE LINE # 263
+004C 00                NOP     
+                                           ; SOURCE LINE # 264
+004D 00                NOP     
+                                           ; SOURCE LINE # 265
+                                           ; SOURCE LINE # 266
+                                           ; SOURCE LINE # 267
+                                           ; SOURCE LINE # 268
+004E 120000      R     LCALL   L?0151
+0051         ?C0033:
+                                           ; SOURCE LINE # 270
+0051 308F03            JNB     TF1,$ + 6H
+0054 020000      R     LJMP    ?C0034
+                                           ; SOURCE LINE # 271
+                                           ; SOURCE LINE # 272
+0057 900000      R     MOV     DPTR,#Channel
+005A 120000      R     LCALL   L?0146
+005D 120000      R     LCALL   L?0137
+0060 E0                MOVX    A,@DPTR
+0061 FE                MOV     R6,A
+;---- Variable 'status' assigned to Register 'R6' ----
+                                           ; SOURCE LINE # 273
+0062 54FC              ANL     A,#0FCH
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 29  
+
+0064 60EB              JZ      ?C0033
+                                           ; SOURCE LINE # 274
+                                           ; SOURCE LINE # 275
+0066 EE                MOV     A,R6
+0067 547C              ANL     A,#07CH
+0069 6013              JZ      ?C0036
+                                           ; SOURCE LINE # 276
+                                           ; SOURCE LINE # 277
+006B EE                MOV     A,R6
+006C 5418              ANL     A,#018H
+006E 6003              JZ      ?C0037
+                                           ; SOURCE LINE # 278
+                                           ; SOURCE LINE # 279
+0070 120000      R     LCALL   _ResetSMBus
+                                           ; SOURCE LINE # 280
+0073         ?C0037:
+                                           ; SOURCE LINE # 281
+                                           ; SOURCE LINE # 282
+                                           ; SOURCE LINE # 283
+0073 120000      R     LCALL   L?0142
+                                           ; SOURCE LINE # 284
+0076 E4                CLR     A
+0077 900000      R     MOV     DPTR,#ack
+007A F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 285
+007B 020000      R     LJMP    ?C0034
+                                           ; SOURCE LINE # 286
+007E         ?C0036:
+                                           ; SOURCE LINE # 288
+                                           ; SOURCE LINE # 289
+007E 900000      R     MOV     DPTR,#Channel
+0081 E0                MOVX    A,@DPTR
+0082 FF                MOV     R7,A
+0083 120000      R     LCALL   L?0150
+0086 120000      R     LCALL   L?0137
+0089 E0                MOVX    A,@DPTR
+008A 900000      R     MOV     DPTR,#Var
+008D 120000      R     LCALL   L?0169
+0090 EE                MOV     A,R6
+0091 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 290
+0092 EB                MOV     A,R3
+0093 7015              JNZ     ?C0039
+                                           ; SOURCE LINE # 291
+                                           ; SOURCE LINE # 292
+0095 120000      R     LCALL   L?0143
+0098 120000      R     LCALL   L?0133
+009B E0                MOVX    A,@DPTR
+009C FB                MOV     R3,A
+                                           ; SOURCE LINE # 295
+009D 900000      R     MOV     DPTR,#RequestLength
+00A0 E0                MOVX    A,@DPTR
+00A1 FF                MOV     R7,A
+00A2 EB                MOV     A,R3
+00A3 D3                SETB    C
+00A4 9F                SUBB    A,R7
+00A5 4003              JC      ?C0039
+                                           ; SOURCE LINE # 296
+                                           ; SOURCE LINE # 297
+00A7 CB                XCH     A,R3
+00A8 EF                MOV     A,R7
+00A9 CB                XCH     A,R3
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 30  
+
+                                           ; SOURCE LINE # 298
+                                           ; SOURCE LINE # 299
+00AA         ?C0039:
+                                           ; SOURCE LINE # 300
+00AA 1B                DEC     R3
+                                           ; SOURCE LINE # 301
+00AB 900000      R     MOV     DPTR,#Var
+00AE 120000      R     LCALL   L?0176
+                                           ; SOURCE LINE # 303
+00B1 EB                MOV     A,R3
+00B2 B4010D            CJNE    A,#01H,?C0041
+                                           ; SOURCE LINE # 304
+                                           ; SOURCE LINE # 305
+00B5 900000      R     MOV     DPTR,#Channel
+00B8 120000      R     LCALL   L?0162
+00BB 120000      R     LCALL   L?0133
+00BE E0                MOVX    A,@DPTR
+00BF 4420              ORL     A,#020H
+00C1 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 306
+00C2         ?C0041:
+                                           ; SOURCE LINE # 308
+00C2 900000      R     MOV     DPTR,#Channel
+00C5 E0                MOVX    A,@DPTR
+00C6 120000      R     LCALL   L?0132
+00C9 74FE              MOV     A,#0FEH
+00CB F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 310
+00CC EB                MOV     A,R3
+00CD 7082              JNZ     ?C0033
+                                           ; SOURCE LINE # 311
+                                           ; SOURCE LINE # 312
+                                           ; SOURCE LINE # 313
+                                           ; SOURCE LINE # 314
+00CF 120000      R     LCALL   L?0142
+                                           ; SOURCE LINE # 315
+00D2 900000      R     MOV     DPTR,#ack
+00D5 04                INC     A
+00D6 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 316
+                                           ; SOURCE LINE # 317
+                                           ; SOURCE LINE # 318
+                                           ; SOURCE LINE # 319
+                                           ; SOURCE LINE # 320
+00D7         ?C0034:
+                                           ; SOURCE LINE # 322
+00D7 308F10            JNB     TF1,?C0043
+                                           ; SOURCE LINE # 323
+                                           ; SOURCE LINE # 324
+                                           ; SOURCE LINE # 325
+                                           ; SOURCE LINE # 326
+00DA 120000      R     LCALL   L?0142
+                                           ; SOURCE LINE # 327
+00DD 900000      R     MOV     DPTR,#Channel
+00E0 E0                MOVX    A,@DPTR
+00E1 FF                MOV     R7,A
+00E2 120000      R     LCALL   _ResetSMBus
+                                           ; SOURCE LINE # 328
+00E5 E4                CLR     A
+00E6 900000      R     MOV     DPTR,#ack
+00E9 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 329
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 31  
+
+00EA         ?C0043:
+                                           ; SOURCE LINE # 331
+00EA 900000      R     MOV     DPTR,#Channel
+00ED E0                MOVX    A,@DPTR
+00EE FF                MOV     R7,A
+00EF 120000      R     LCALL   L?0136
+00F2 E0                MOVX    A,@DPTR
+00F3 54DF              ANL     A,#0DFH
+00F5 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 332
+00F6 EF                MOV     A,R7
+00F7 120000      R     LCALL   L?0132
+00FA 74FE              MOV     A,#0FEH
+00FC F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 333
+00FD         ?C0032:
+                                           ; SOURCE LINE # 335
+00FD 900000      R     MOV     DPTR,#ack
+0100 E0                MOVX    A,@DPTR
+0101 FF                MOV     R7,A
+                                           ; SOURCE LINE # 336
+0102         ?C0044:
+0102 22                RET     
+             ; FUNCTION _bRSMBusBlockLS (END)
+
+             ; FUNCTION _bRSMBusBlock (BEGIN)
+                                           ; SOURCE LINE # 341
+0000 900000      R     MOV     DPTR,#Protocol
+0003 ED                MOV     A,R5
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 EB                MOV     A,R3
+0007 F0                MOVX    @DPTR,A
+0008 900000      R     MOV     DPTR,#Channel
+000B EF                MOV     A,R7
+000C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 342
+                                           ; SOURCE LINE # 347
+000D 7D01              MOV     R5,#01H
+000F 120000      R     LCALL   _CheckSMBusInterfaceCanbeUse
+0012 EF                MOV     A,R7
+0013 7007              JNZ     ?C0045
+                                           ; SOURCE LINE # 348
+                                           ; SOURCE LINE # 349
+0015 900000      R     MOV     DPTR,#ack
+0018 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 350
+0019 020000      R     LJMP    ?C0046
+001C         ?C0045:
+                                           ; SOURCE LINE # 352
+                                           ; SOURCE LINE # 353
+001C E4                CLR     A
+001D 900000      R     MOV     DPTR,#ack
+0020 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 354
+0021 A3                INC     DPTR
+0022 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 356
+0023 900000      R     MOV     DPTR,#Addr
+0026 E0                MOVX    A,@DPTR
+0027 4401              ORL     A,#01H
+0029 FF                MOV     R7,A
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 32  
+
+002A 900000      R     MOV     DPTR,#Channel
+002D 120000      R     LCALL   L?0139
+0030 120000      R     LCALL   L?0137
+0033 EF                MOV     A,R7
+0034 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 357
+0035 900000      R     MOV     DPTR,#Comd
+                                           ; SOURCE LINE # 358
+0038 120000      R     LCALL   L?0128
+003B 74FE              MOV     A,#0FEH
+003D F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 359
+003E 900000      R     MOV     DPTR,#Protocol
+0041 E0                MOVX    A,@DPTR
+0042 900000      R     MOV     DPTR,#Channel
+0045 120000      R     LCALL   L?0134
+0048 EF                MOV     A,R7
+0049 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 361
+004A C28E              CLR     TR1
+                                           ; SOURCE LINE # 362
+004C C2AB              CLR     ET1
+                                           ; SOURCE LINE # 363
+004E 00                NOP     
+                                           ; SOURCE LINE # 364
+004F 00                NOP     
+                                           ; SOURCE LINE # 365
+0050 00                NOP     
+                                           ; SOURCE LINE # 366
+0051 00                NOP     
+                                           ; SOURCE LINE # 367
+                                           ; SOURCE LINE # 368
+                                           ; SOURCE LINE # 369
+                                           ; SOURCE LINE # 370
+0052 120000      R     LCALL   L?0152
+0055         ?C0047:
+                                           ; SOURCE LINE # 372
+0055 308F03            JNB     TF1,$ + 6H
+0058 020000      R     LJMP    ?C0048
+                                           ; SOURCE LINE # 373
+                                           ; SOURCE LINE # 374
+005B 900000      R     MOV     DPTR,#Channel
+005E 120000      R     LCALL   L?0147
+0061 120000      R     LCALL   L?0137
+0064 E0                MOVX    A,@DPTR
+0065 FE                MOV     R6,A
+;---- Variable 'status' assigned to Register 'R6' ----
+                                           ; SOURCE LINE # 375
+0066 54FC              ANL     A,#0FCH
+0068 60EB              JZ      ?C0047
+                                           ; SOURCE LINE # 376
+                                           ; SOURCE LINE # 377
+006A EE                MOV     A,R6
+006B 547C              ANL     A,#07CH
+006D 6013              JZ      ?C0050
+                                           ; SOURCE LINE # 378
+                                           ; SOURCE LINE # 379
+006F EE                MOV     A,R6
+0070 5418              ANL     A,#018H
+0072 6003              JZ      ?C0051
+                                           ; SOURCE LINE # 380
+                                           ; SOURCE LINE # 381
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 33  
+
+0074 120000      R     LCALL   _ResetSMBus
+                                           ; SOURCE LINE # 382
+0077         ?C0051:
+                                           ; SOURCE LINE # 383
+                                           ; SOURCE LINE # 384
+                                           ; SOURCE LINE # 385
+0077 120000      R     LCALL   L?0142
+                                           ; SOURCE LINE # 386
+007A E4                CLR     A
+007B 900000      R     MOV     DPTR,#ack
+007E F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 387
+007F 020000      R     LJMP    ?C0048
+                                           ; SOURCE LINE # 388
+0082         ?C0050:
+                                           ; SOURCE LINE # 390
+                                           ; SOURCE LINE # 391
+0082 900000      R     MOV     DPTR,#Channel
+0085 E0                MOVX    A,@DPTR
+0086 FF                MOV     R7,A
+0087 120000      R     LCALL   L?0150
+008A 120000      R     LCALL   L?0137
+008D E0                MOVX    A,@DPTR
+008E 900000      R     MOV     DPTR,#Var
+0091 120000      R     LCALL   L?0169
+0094 EE                MOV     A,R6
+0095 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 392
+0096 900000      R     MOV     DPTR,#bcount
+0099 E0                MOVX    A,@DPTR
+009A 7010              JNZ     ?C0053
+                                           ; SOURCE LINE # 393
+                                           ; SOURCE LINE # 394
+009C 120000      R     LCALL   L?0144
+009F 120000      R     LCALL   L?0133
+00A2 E0                MOVX    A,@DPTR
+00A3 900000      R     MOV     DPTR,#bcount
+00A6 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 395
+00A7 E0                MOVX    A,@DPTR
+00A8 FF                MOV     R7,A
+00A9 120000      E     LCALL   _Hook_GetSMBusReadBlockByteCount
+                                           ; SOURCE LINE # 397
+00AC         ?C0053:
+                                           ; SOURCE LINE # 399
+00AC 900000      R     MOV     DPTR,#bcount
+00AF E0                MOVX    A,@DPTR
+00B0 14                DEC     A
+00B1 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 400
+00B2 900000      R     MOV     DPTR,#Var
+00B5 120000      R     LCALL   L?0176
+                                           ; SOURCE LINE # 402
+00B8 900000      R     MOV     DPTR,#bcount
+00BB E0                MOVX    A,@DPTR
+00BC FF                MOV     R7,A
+00BD B4010A            CJNE    A,#01H,?C0054
+                                           ; SOURCE LINE # 403
+                                           ; SOURCE LINE # 404
+00C0 900000      R     MOV     DPTR,#Channel
+00C3 120000      R     LCALL   L?0135
+00C6 E0                MOVX    A,@DPTR
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 34  
+
+00C7 4420              ORL     A,#020H
+00C9 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 405
+00CA         ?C0054:
+                                           ; SOURCE LINE # 407
+00CA 900000      R     MOV     DPTR,#Channel
+00CD E0                MOVX    A,@DPTR
+00CE 120000      R     LCALL   L?0148
+00D1 120000      R     LCALL   L?0137
+00D4 74FE              MOV     A,#0FEH
+00D6 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 409
+00D7 EF                MOV     A,R7
+00D8 6003              JZ      $ + 5H
+00DA 020000      R     LJMP    ?C0047
+                                           ; SOURCE LINE # 410
+                                           ; SOURCE LINE # 411
+                                           ; SOURCE LINE # 412
+                                           ; SOURCE LINE # 413
+00DD 120000      R     LCALL   L?0142
+                                           ; SOURCE LINE # 414
+00E0 900000      R     MOV     DPTR,#ack
+00E3 04                INC     A
+00E4 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 415
+                                           ; SOURCE LINE # 416
+                                           ; SOURCE LINE # 417
+                                           ; SOURCE LINE # 418
+                                           ; SOURCE LINE # 419
+00E5         ?C0048:
+                                           ; SOURCE LINE # 421
+00E5 308F10            JNB     TF1,?C0056
+                                           ; SOURCE LINE # 422
+                                           ; SOURCE LINE # 423
+                                           ; SOURCE LINE # 424
+                                           ; SOURCE LINE # 425
+00E8 120000      R     LCALL   L?0142
+                                           ; SOURCE LINE # 426
+00EB 900000      R     MOV     DPTR,#Channel
+00EE E0                MOVX    A,@DPTR
+00EF FF                MOV     R7,A
+00F0 120000      R     LCALL   _ResetSMBus
+                                           ; SOURCE LINE # 427
+00F3 E4                CLR     A
+00F4 900000      R     MOV     DPTR,#ack
+00F7 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 428
+00F8         ?C0056:
+                                           ; SOURCE LINE # 430
+00F8 900000      R     MOV     DPTR,#Channel
+00FB E0                MOVX    A,@DPTR
+00FC FF                MOV     R7,A
+00FD 120000      R     LCALL   L?0136
+0100 E0                MOVX    A,@DPTR
+0101 54DF              ANL     A,#0DFH
+0103 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 431
+0104 EF                MOV     A,R7
+0105 120000      R     LCALL   L?0132
+0108 74FE              MOV     A,#0FEH
+010A F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 432
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 35  
+
+010B         ?C0046:
+                                           ; SOURCE LINE # 434
+010B 900000      R     MOV     DPTR,#ack
+010E E0                MOVX    A,@DPTR
+010F FF                MOV     R7,A
+                                           ; SOURCE LINE # 435
+0110         ?C0057:
+0110 22                RET     
+             ; FUNCTION _bRSMBusBlock (END)
+
+             ; FUNCTION _bWSMBusBlock (BEGIN)
+                                           ; SOURCE LINE # 440
+0000 900000      R     MOV     DPTR,#Protocol
+0003 ED                MOV     A,R5
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 EB                MOV     A,R3
+0007 F0                MOVX    @DPTR,A
+0008 900000      R     MOV     DPTR,#Channel
+000B EF                MOV     A,R7
+000C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 441
+                                           ; SOURCE LINE # 446
+000D 7D01              MOV     R5,#01H
+000F 120000      R     LCALL   _CheckSMBusInterfaceCanbeUse
+0012 EF                MOV     A,R7
+0013 7007              JNZ     ?C0058
+                                           ; SOURCE LINE # 447
+                                           ; SOURCE LINE # 448
+0015 900000      R     MOV     DPTR,#ack
+0018 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 449
+0019 020000      R     LJMP    ?C0059
+001C         ?C0058:
+                                           ; SOURCE LINE # 451
+                                           ; SOURCE LINE # 452
+001C E4                CLR     A
+001D 900000      R     MOV     DPTR,#ack
+0020 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 453
+0021 A3                INC     DPTR
+0022 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 455
+0023 900000      R     MOV     DPTR,#PECsupport
+0026 E0                MOVX    A,@DPTR
+0027 6022              JZ      ?C0060
+                                           ; SOURCE LINE # 456
+                                           ; SOURCE LINE # 457
+0029 E4                CLR     A
+002A 7800        E     MOV     R0,#LOW SMBCRC8_A
+002C F6                MOV     @R0,A
+                                           ; SOURCE LINE # 458
+002D 900000      R     MOV     DPTR,#Addr
+0030 E0                MOVX    A,@DPTR
+0031 FF                MOV     R7,A
+0032 120000      R     LCALL   _CalcCRC8
+                                           ; SOURCE LINE # 459
+0035 900000      R     MOV     DPTR,#Comd
+0038 E0                MOVX    A,@DPTR
+0039 FF                MOV     R7,A
+003A 120000      R     LCALL   _CalcCRC8
+                                           ; SOURCE LINE # 460
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 36  
+
+003D 900000      R     MOV     DPTR,#ByteCont
+0040 E0                MOVX    A,@DPTR
+0041 FF                MOV     R7,A
+0042 120000      R     LCALL   _CalcCRC8
+                                           ; SOURCE LINE # 461
+0045 120000      R     LCALL   L?0153
+0048 120000      R     LCALL   _CalcCRC8
+                                           ; SOURCE LINE # 462
+004B         ?C0060:
+                                           ; SOURCE LINE # 464
+004B 900000      R     MOV     DPTR,#Protocol
+004E E0                MOVX    A,@DPTR
+004F 547F              ANL     A,#07FH
+0051 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 465
+0052 A3                INC     DPTR
+0053 E0                MOVX    A,@DPTR
+0054 FF                MOV     R7,A
+0055 900000      R     MOV     DPTR,#Channel
+0058 120000      R     LCALL   L?0139
+005B 120000      R     LCALL   L?0137
+005E EF                MOV     A,R7
+005F F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 466
+0060 900000      R     MOV     DPTR,#Comd
+0063 120000      R     LCALL   L?0158
+0066 120000      R     LCALL   L?0137
+0069 EF                MOV     A,R7
+006A F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 467
+006B 900000      R     MOV     DPTR,#ByteCont
+006E E0                MOVX    A,@DPTR
+006F FF                MOV     R7,A
+0070 EE                MOV     A,R6
+0071 120000      R     LCALL   L?0145
+0074 120000      R     LCALL   L?0137
+0077 EF                MOV     A,R7
+0078 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 468
+0079 900000      R     MOV     DPTR,#BCTemp
+007C EF                MOV     A,R7
+007D F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 469
+007E 120000      R     LCALL   L?0153
+0081 900000      R     MOV     DPTR,#Channel
+0084 E0                MOVX    A,@DPTR
+0085 FE                MOV     R6,A
+0086 120000      R     LCALL   L?0150
+0089 120000      R     LCALL   L?0137
+008C EF                MOV     A,R7
+                                           ; SOURCE LINE # 470
+008D 120000      R     LCALL   L?0131
+0090 74FE              MOV     A,#0FEH
+0092 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 471
+0093 900000      R     MOV     DPTR,#PECsupport
+0096 E0                MOVX    A,@DPTR
+0097 900000      R     MOV     DPTR,#Protocol
+009A 6005              JZ      ?C0061
+                                           ; SOURCE LINE # 472
+                                           ; SOURCE LINE # 473
+009C E0                MOVX    A,@DPTR
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 37  
+
+009D 44C0              ORL     A,#0C0H
+                                           ; SOURCE LINE # 474
+009F 8003              SJMP    ?C0125
+00A1         ?C0061:
+                                           ; SOURCE LINE # 476
+                                           ; SOURCE LINE # 477
+00A1 E0                MOVX    A,@DPTR
+00A2 4440              ORL     A,#040H
+00A4         ?C0125:
+00A4 FF                MOV     R7,A
+00A5 900000      R     MOV     DPTR,#Channel
+00A8 120000      R     LCALL   L?0135
+00AB EF                MOV     A,R7
+00AC F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 478
+00AD         ?C0062:
+                                           ; SOURCE LINE # 480
+00AD C28E              CLR     TR1
+                                           ; SOURCE LINE # 481
+00AF C2AB              CLR     ET1
+                                           ; SOURCE LINE # 482
+00B1 00                NOP     
+                                           ; SOURCE LINE # 483
+00B2 00                NOP     
+                                           ; SOURCE LINE # 484
+00B3 00                NOP     
+                                           ; SOURCE LINE # 485
+00B4 00                NOP     
+                                           ; SOURCE LINE # 486
+                                           ; SOURCE LINE # 487
+                                           ; SOURCE LINE # 488
+                                           ; SOURCE LINE # 489
+00B5 120000      R     LCALL   L?0152
+00B8         ?C0063:
+                                           ; SOURCE LINE # 491
+00B8 308F03            JNB     TF1,$ + 6H
+00BB 020000      R     LJMP    ?C0064
+                                           ; SOURCE LINE # 492
+                                           ; SOURCE LINE # 493
+00BE 900000      R     MOV     DPTR,#Channel
+00C1 120000      R     LCALL   L?0147
+00C4 120000      R     LCALL   L?0137
+00C7 E0                MOVX    A,@DPTR
+00C8 FE                MOV     R6,A
+;---- Variable 'status' assigned to Register 'R6' ----
+                                           ; SOURCE LINE # 494
+00C9 54FC              ANL     A,#0FCH
+00CB 60EB              JZ      ?C0063
+                                           ; SOURCE LINE # 495
+                                           ; SOURCE LINE # 496
+00CD EE                MOV     A,R6
+00CE 547C              ANL     A,#07CH
+00D0 6013              JZ      ?C0066
+                                           ; SOURCE LINE # 497
+                                           ; SOURCE LINE # 498
+00D2 EE                MOV     A,R6
+00D3 5418              ANL     A,#018H
+00D5 6003              JZ      ?C0067
+                                           ; SOURCE LINE # 499
+                                           ; SOURCE LINE # 500
+00D7 120000      R     LCALL   _ResetSMBus
+                                           ; SOURCE LINE # 501
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 38  
+
+00DA         ?C0067:
+                                           ; SOURCE LINE # 502
+                                           ; SOURCE LINE # 503
+                                           ; SOURCE LINE # 504
+00DA 120000      R     LCALL   L?0142
+                                           ; SOURCE LINE # 505
+00DD E4                CLR     A
+00DE 900000      R     MOV     DPTR,#ack
+00E1 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 506
+00E2 020000      R     LJMP    ?C0064
+                                           ; SOURCE LINE # 507
+00E5         ?C0066:
+                                           ; SOURCE LINE # 509
+                                           ; SOURCE LINE # 510
+00E5 900000      R     MOV     DPTR,#BCTemp
+00E8 E0                MOVX    A,@DPTR
+00E9 14                DEC     A
+00EA F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 511
+00EB 900000      R     MOV     DPTR,#Var
+00EE 120000      R     LCALL   L?0177
+                                           ; SOURCE LINE # 513
+00F1 900000      R     MOV     DPTR,#BCTemp
+00F4 E0                MOVX    A,@DPTR
+00F5 604A              JZ      ?C0069
+                                           ; SOURCE LINE # 514
+                                           ; SOURCE LINE # 515
+00F7 900000      R     MOV     DPTR,#PECsupport
+00FA E0                MOVX    A,@DPTR
+00FB 602C              JZ      ?C0070
+                                           ; SOURCE LINE # 516
+                                           ; SOURCE LINE # 517
+00FD 900000      R     MOV     DPTR,#Var
+0100 120000      R     LCALL   L?0174
+0103 120000      R     LCALL   L?0149
+0106 120000      R     LCALL   L?0161
+0109 ED                MOV     A,R5
+010A F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 518
+010B 8F82              MOV     DPL,R7
+010D 8E83              MOV     DPH,R6
+010F E0                MOVX    A,@DPTR
+0110 FF                MOV     R7,A
+0111 120000      R     LCALL   _CalcCRC8
+                                           ; SOURCE LINE # 519
+0114 900000      R     MOV     DPTR,#BCTemp
+0117 E0                MOVX    A,@DPTR
+0118 6401              XRL     A,#01H
+011A 7018              JNZ     ?C0072
+                                           ; SOURCE LINE # 520
+                                           ; SOURCE LINE # 521
+011C 7800        E     MOV     R0,#LOW SMBCRC8_A
+011E E6                MOV     A,@R0
+011F FF                MOV     R7,A
+0120 900000      R     MOV     DPTR,#Channel
+0123 E0                MOVX    A,@DPTR
+0124 120000      R     LCALL   L?0175
+                                           ; SOURCE LINE # 522
+                                           ; SOURCE LINE # 523
+0127 8006              SJMP    ?C0126
+0129         ?C0070:
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 39  
+
+                                           ; SOURCE LINE # 525
+                                           ; SOURCE LINE # 526
+0129 120000      R     LCALL   L?0154
+012C 120000      R     LCALL   L?0149
+012F         ?C0126:
+012F 120000      R     LCALL   L?0137
+0132 EF                MOV     A,R7
+0133 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 527
+0134         ?C0072:
+                                           ; SOURCE LINE # 528
+0134 900000      R     MOV     DPTR,#Channel
+0137 E0                MOVX    A,@DPTR
+0138 120000      R     LCALL   L?0132
+013B 74FE              MOV     A,#0FEH
+013D F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 529
+013E 020000      R     LJMP    ?C0063
+0141         ?C0069:
+                                           ; SOURCE LINE # 531
+                                           ; SOURCE LINE # 532
+                                           ; SOURCE LINE # 533
+                                           ; SOURCE LINE # 534
+0141 120000      R     LCALL   L?0142
+                                           ; SOURCE LINE # 535
+0144 900000      R     MOV     DPTR,#ack
+0147 7401              MOV     A,#01H
+0149 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 536
+                                           ; SOURCE LINE # 537
+                                           ; SOURCE LINE # 538
+                                           ; SOURCE LINE # 539
+                                           ; SOURCE LINE # 540
+014A         ?C0064:
+                                           ; SOURCE LINE # 542
+014A 308F10            JNB     TF1,?C0074
+                                           ; SOURCE LINE # 543
+                                           ; SOURCE LINE # 544
+                                           ; SOURCE LINE # 545
+                                           ; SOURCE LINE # 546
+014D 120000      R     LCALL   L?0142
+                                           ; SOURCE LINE # 547
+0150 900000      R     MOV     DPTR,#Channel
+0153 E0                MOVX    A,@DPTR
+0154 FF                MOV     R7,A
+0155 120000      R     LCALL   _ResetSMBus
+                                           ; SOURCE LINE # 548
+0158 E4                CLR     A
+0159 900000      R     MOV     DPTR,#ack
+015C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 549
+015D         ?C0074:
+                                           ; SOURCE LINE # 551
+015D 900000      R     MOV     DPTR,#Channel
+0160 E0                MOVX    A,@DPTR
+0161 120000      R     LCALL   L?0132
+0164 74FE              MOV     A,#0FEH
+0166 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 552
+0167         ?C0059:
+                                           ; SOURCE LINE # 554
+0167 900000      R     MOV     DPTR,#ack
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 40  
+
+016A E0                MOVX    A,@DPTR
+016B FF                MOV     R7,A
+                                           ; SOURCE LINE # 555
+016C         ?C0075:
+016C 22                RET     
+             ; FUNCTION _bWSMBusBlock (END)
+
+             ; FUNCTION _bSMBusSendByte (BEGIN)
+                                           ; SOURCE LINE # 560
+0000 900000      R     MOV     DPTR,#Addr
+0003 ED                MOV     A,R5
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 EB                MOV     A,R3
+0007 F0                MOVX    @DPTR,A
+0008 900000      R     MOV     DPTR,#Channel
+000B EF                MOV     A,R7
+000C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 561
+                                           ; SOURCE LINE # 566
+000D 7D01              MOV     R5,#01H
+000F 120000      R     LCALL   _CheckSMBusInterfaceCanbeUse
+0012 EF                MOV     A,R7
+0013 7007              JNZ     ?C0076
+                                           ; SOURCE LINE # 567
+                                           ; SOURCE LINE # 568
+0015 900000      R     MOV     DPTR,#result
+0018 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 569
+0019 020000      R     LJMP    ?C0077
+001C         ?C0076:
+                                           ; SOURCE LINE # 571
+                                           ; SOURCE LINE # 572
+;---- Variable 'error' assigned to Register 'R3' ----
+001C 7BEE              MOV     R3,#0EEH
+                                           ; SOURCE LINE # 573
+001E E4                CLR     A
+001F 900000      R     MOV     DPTR,#result
+0022 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 575
+0023 900000      R     MOV     DPTR,#Addr
+0026 E0                MOVX    A,@DPTR
+0027 FF                MOV     R7,A
+0028 900000      R     MOV     DPTR,#Channel
+002B 120000      R     LCALL   L?0139
+002E 120000      R     LCALL   L?0137
+0031 EF                MOV     A,R7
+0032 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 576
+0033 900000      R     MOV     DPTR,#SData
+                                           ; SOURCE LINE # 577
+0036 120000      R     LCALL   L?0129
+0039 74FE              MOV     A,#0FEH
+003B F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 578
+003C 900000      R     MOV     DPTR,#Channel
+003F 120000      R     LCALL   L?0162
+0042 120000      R     LCALL   L?0133
+0045 7444              MOV     A,#044H
+0047 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 580
+0048 C28E              CLR     TR1
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 41  
+
+                                           ; SOURCE LINE # 581
+004A C2AB              CLR     ET1
+                                           ; SOURCE LINE # 582
+004C 00                NOP     
+                                           ; SOURCE LINE # 583
+004D 00                NOP     
+                                           ; SOURCE LINE # 584
+004E 00                NOP     
+                                           ; SOURCE LINE # 585
+004F 00                NOP     
+                                           ; SOURCE LINE # 586
+                                           ; SOURCE LINE # 587
+                                           ; SOURCE LINE # 588
+                                           ; SOURCE LINE # 589
+0050 120000      R     LCALL   L?0152
+0053         ?C0078:
+                                           ; SOURCE LINE # 591
+0053 208F14            JB      TF1,?C0079
+                                           ; SOURCE LINE # 592
+                                           ; SOURCE LINE # 593
+0056 900000      R     MOV     DPTR,#Channel
+0059 E0                MOVX    A,@DPTR
+005A 120000      R     LCALL   L?0132
+005D E0                MOVX    A,@DPTR
+005E 900000      R     MOV     DPTR,#status
+0061 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 594
+0062 E0                MOVX    A,@DPTR
+0063 547E              ANL     A,#07EH
+0065 60EC              JZ      ?C0078
+                                           ; SOURCE LINE # 595
+                                           ; SOURCE LINE # 596
+                                           ; SOURCE LINE # 597
+                                           ; SOURCE LINE # 598
+0067 120000      R     LCALL   L?0142
+                                           ; SOURCE LINE # 599
+                                           ; SOURCE LINE # 600
+                                           ; SOURCE LINE # 601
+006A         ?C0079:
+                                           ; SOURCE LINE # 603
+006A 308F0F            JNB     TF1,?C0081
+                                           ; SOURCE LINE # 604
+                                           ; SOURCE LINE # 605
+                                           ; SOURCE LINE # 606
+                                           ; SOURCE LINE # 607
+006D 120000      R     LCALL   L?0142
+                                           ; SOURCE LINE # 608
+0070 900000      R     MOV     DPTR,#Channel
+0073 E0                MOVX    A,@DPTR
+0074 FF                MOV     R7,A
+0075 120000      R     LCALL   _ResetSMBus
+                                           ; SOURCE LINE # 609
+0078 7BEE              MOV     R3,#0EEH
+                                           ; SOURCE LINE # 610
+007A 801C              SJMP    ?C0082
+007C         ?C0081:
+                                           ; SOURCE LINE # 612
+                                           ; SOURCE LINE # 613
+007C 900000      R     MOV     DPTR,#status
+007F E0                MOVX    A,@DPTR
+0080 FF                MOV     R7,A
+0081 547C              ANL     A,#07CH
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 42  
+
+0083 6011              JZ      ?C0083
+                                           ; SOURCE LINE # 614
+                                           ; SOURCE LINE # 615
+0085 EF                MOV     A,R7
+0086 5418              ANL     A,#018H
+0088 6008              JZ      ?C0084
+                                           ; SOURCE LINE # 616
+                                           ; SOURCE LINE # 617
+008A 900000      R     MOV     DPTR,#Channel
+008D E0                MOVX    A,@DPTR
+008E FF                MOV     R7,A
+008F 120000      R     LCALL   _ResetSMBus
+                                           ; SOURCE LINE # 618
+0092         ?C0084:
+                                           ; SOURCE LINE # 619
+0092 7BEE              MOV     R3,#0EEH
+                                           ; SOURCE LINE # 620
+0094 8002              SJMP    ?C0082
+0096         ?C0083:
+                                           ; SOURCE LINE # 622
+                                           ; SOURCE LINE # 623
+0096 E4                CLR     A
+0097 FB                MOV     R3,A
+                                           ; SOURCE LINE # 624
+                                           ; SOURCE LINE # 625
+0098         ?C0082:
+                                           ; SOURCE LINE # 627
+0098 EB                MOV     A,R3
+0099 B4EE07            CJNE    A,#0EEH,?C0086
+                                           ; SOURCE LINE # 628
+                                           ; SOURCE LINE # 629
+009C E4                CLR     A
+009D 900000      R     MOV     DPTR,#result
+00A0 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 630
+00A1 8006              SJMP    ?C0087
+00A3         ?C0086:
+                                           ; SOURCE LINE # 632
+                                           ; SOURCE LINE # 633
+00A3 900000      R     MOV     DPTR,#result
+00A6 7401              MOV     A,#01H
+00A8 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 634
+00A9         ?C0087:
+                                           ; SOURCE LINE # 635
+00A9 900000      R     MOV     DPTR,#Channel
+00AC E0                MOVX    A,@DPTR
+00AD 120000      R     LCALL   L?0132
+00B0 74FE              MOV     A,#0FEH
+00B2 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 636
+00B3         ?C0077:
+                                           ; SOURCE LINE # 638
+00B3 900000      R     MOV     DPTR,#result
+00B6 E0                MOVX    A,@DPTR
+00B7 FF                MOV     R7,A
+                                           ; SOURCE LINE # 639
+00B8         ?C0088:
+00B8 22                RET     
+             ; FUNCTION _bSMBusSendByte (END)
+
+             ; FUNCTION _bSMBusReceiveByte (BEGIN)
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 43  
+
+                                           ; SOURCE LINE # 644
+0000 900000      R     MOV     DPTR,#Addr
+0003 ED                MOV     A,R5
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 EA                MOV     A,R2
+0007 F0                MOVX    @DPTR,A
+0008 A3                INC     DPTR
+0009 EB                MOV     A,R3
+000A F0                MOVX    @DPTR,A
+000B 900000      R     MOV     DPTR,#Channel
+000E EF                MOV     A,R7
+000F F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 645
+                                           ; SOURCE LINE # 650
+0010 7D01              MOV     R5,#01H
+0012 120000      R     LCALL   _CheckSMBusInterfaceCanbeUse
+0015 EF                MOV     A,R7
+0016 7007              JNZ     ?C0089
+                                           ; SOURCE LINE # 651
+                                           ; SOURCE LINE # 652
+0018 900000      R     MOV     DPTR,#result
+001B F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 653
+001C 020000      R     LJMP    ?C0090
+001F         ?C0089:
+                                           ; SOURCE LINE # 655
+                                           ; SOURCE LINE # 656
+;---- Variable 'error' assigned to Register 'R3' ----
+001F 7BEE              MOV     R3,#0EEH
+                                           ; SOURCE LINE # 657
+0021 E4                CLR     A
+0022 900000      R     MOV     DPTR,#result
+0025 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 659
+0026 900000      R     MOV     DPTR,#Addr
+0029 E0                MOVX    A,@DPTR
+002A 4401              ORL     A,#01H
+002C FF                MOV     R7,A
+002D 900000      R     MOV     DPTR,#Channel
+0030 120000      R     LCALL   L?0139
+                                           ; SOURCE LINE # 660
+0033 120000      R     LCALL   L?0130
+0036 74FE              MOV     A,#0FEH
+0038 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 661
+0039 900000      R     MOV     DPTR,#Channel
+003C 120000      R     LCALL   L?0163
+003F 120000      R     LCALL   L?0133
+0042 7444              MOV     A,#044H
+0044 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 663
+0045 C28E              CLR     TR1
+                                           ; SOURCE LINE # 664
+0047 C2AB              CLR     ET1
+                                           ; SOURCE LINE # 665
+0049 00                NOP     
+                                           ; SOURCE LINE # 666
+004A 00                NOP     
+                                           ; SOURCE LINE # 667
+004B 00                NOP     
+                                           ; SOURCE LINE # 668
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 44  
+
+004C 00                NOP     
+                                           ; SOURCE LINE # 669
+                                           ; SOURCE LINE # 670
+                                           ; SOURCE LINE # 671
+                                           ; SOURCE LINE # 672
+004D 120000      R     LCALL   L?0152
+0050         ?C0091:
+                                           ; SOURCE LINE # 674
+0050 208F14            JB      TF1,?C0092
+                                           ; SOURCE LINE # 675
+                                           ; SOURCE LINE # 676
+0053 900000      R     MOV     DPTR,#Channel
+0056 E0                MOVX    A,@DPTR
+0057 120000      R     LCALL   L?0132
+005A E0                MOVX    A,@DPTR
+005B 900000      R     MOV     DPTR,#status
+005E F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 677
+005F E0                MOVX    A,@DPTR
+0060 547E              ANL     A,#07EH
+0062 60EC              JZ      ?C0091
+                                           ; SOURCE LINE # 678
+                                           ; SOURCE LINE # 679
+                                           ; SOURCE LINE # 680
+                                           ; SOURCE LINE # 681
+0064 120000      R     LCALL   L?0142
+                                           ; SOURCE LINE # 682
+                                           ; SOURCE LINE # 683
+                                           ; SOURCE LINE # 684
+0067         ?C0092:
+                                           ; SOURCE LINE # 686
+0067 308F0F            JNB     TF1,?C0094
+                                           ; SOURCE LINE # 687
+                                           ; SOURCE LINE # 688
+                                           ; SOURCE LINE # 689
+                                           ; SOURCE LINE # 690
+006A 120000      R     LCALL   L?0142
+                                           ; SOURCE LINE # 691
+006D 900000      R     MOV     DPTR,#Channel
+0070 E0                MOVX    A,@DPTR
+0071 FF                MOV     R7,A
+0072 120000      R     LCALL   _ResetSMBus
+                                           ; SOURCE LINE # 692
+0075 7BEE              MOV     R3,#0EEH
+                                           ; SOURCE LINE # 693
+0077 801C              SJMP    ?C0095
+0079         ?C0094:
+                                           ; SOURCE LINE # 695
+                                           ; SOURCE LINE # 696
+0079 900000      R     MOV     DPTR,#status
+007C E0                MOVX    A,@DPTR
+007D FF                MOV     R7,A
+007E 547C              ANL     A,#07CH
+0080 6011              JZ      ?C0096
+                                           ; SOURCE LINE # 697
+                                           ; SOURCE LINE # 698
+0082 EF                MOV     A,R7
+0083 5418              ANL     A,#018H
+0085 6008              JZ      ?C0097
+                                           ; SOURCE LINE # 699
+                                           ; SOURCE LINE # 700
+0087 900000      R     MOV     DPTR,#Channel
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 45  
+
+008A E0                MOVX    A,@DPTR
+008B FF                MOV     R7,A
+008C 120000      R     LCALL   _ResetSMBus
+                                           ; SOURCE LINE # 701
+008F         ?C0097:
+                                           ; SOURCE LINE # 702
+008F 7BEE              MOV     R3,#0EEH
+                                           ; SOURCE LINE # 703
+0091 8002              SJMP    ?C0095
+0093         ?C0096:
+                                           ; SOURCE LINE # 705
+                                           ; SOURCE LINE # 706
+0093 E4                CLR     A
+0094 FB                MOV     R3,A
+                                           ; SOURCE LINE # 707
+                                           ; SOURCE LINE # 708
+0095         ?C0095:
+                                           ; SOURCE LINE # 710
+0095 EB                MOV     A,R3
+0096 B4EE07            CJNE    A,#0EEH,?C0099
+                                           ; SOURCE LINE # 711
+                                           ; SOURCE LINE # 712
+0099 E4                CLR     A
+009A 900000      R     MOV     DPTR,#result
+009D F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 713
+009E 801A              SJMP    ?C0100
+00A0         ?C0099:
+                                           ; SOURCE LINE # 715
+                                           ; SOURCE LINE # 716
+00A0 900000      R     MOV     DPTR,#Channel
+00A3 E0                MOVX    A,@DPTR
+00A4 120000      R     LCALL   L?0145
+00A7 120000      R     LCALL   L?0133
+00AA E0                MOVX    A,@DPTR
+00AB FF                MOV     R7,A
+00AC 900000      R     MOV     DPTR,#Var
+00AF 120000      R     LCALL   L?0170
+00B2 EF                MOV     A,R7
+00B3 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 717
+00B4 900000      R     MOV     DPTR,#result
+00B7 7401              MOV     A,#01H
+00B9 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 718
+00BA         ?C0100:
+                                           ; SOURCE LINE # 719
+00BA 900000      R     MOV     DPTR,#Channel
+00BD E0                MOVX    A,@DPTR
+00BE 120000      R     LCALL   L?0132
+00C1 74FE              MOV     A,#0FEH
+00C3 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 720
+00C4         ?C0090:
+                                           ; SOURCE LINE # 722
+00C4 900000      R     MOV     DPTR,#result
+00C7 E0                MOVX    A,@DPTR
+00C8 FF                MOV     R7,A
+                                           ; SOURCE LINE # 723
+00C9         ?C0101:
+00C9 22                RET     
+             ; FUNCTION _bSMBusReceiveByte (END)
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 46  
+
+
+             ; FUNCTION _CalcCRC8 (BEGIN)
+                                           ; SOURCE LINE # 728
+;---- Variable 'sourcebyte' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 729
+                                           ; SOURCE LINE # 731
+0000 7800        E     MOV     R0,#LOW SMBCRC8_A
+0002 E6                MOV     A,@R0
+0003 6F                XRL     A,R7
+0004 F6                MOV     @R0,A
+                                           ; SOURCE LINE # 732
+0005 E6                MOV     A,@R0
+0006 FF                MOV     R7,A
+;---- Variable 'temp' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 734
+0007 20E707            JB      ACC.7,?C0102
+                                           ; SOURCE LINE # 735
+                                           ; SOURCE LINE # 736
+000A 25E0              ADD     A,ACC
+000C FF                MOV     R7,A
+                                           ; SOURCE LINE # 737
+000D 66                XRL     A,@R0
+000E F6                MOV     @R0,A
+                                           ; SOURCE LINE # 738
+000F 800D              SJMP    ?C0103
+0011         ?C0102:
+                                           ; SOURCE LINE # 740
+                                           ; SOURCE LINE # 741
+0011 EF                MOV     A,R7
+0012 25E0              ADD     A,ACC
+0014 FF                MOV     R7,A
+                                           ; SOURCE LINE # 742
+0015 7800        E     MOV     R0,#LOW SMBCRC8_A
+0017 E6                MOV     A,@R0
+0018 6409              XRL     A,#09H
+001A F6                MOV     @R0,A
+                                           ; SOURCE LINE # 743
+001B E6                MOV     A,@R0
+001C 6F                XRL     A,R7
+001D F6                MOV     @R0,A
+                                           ; SOURCE LINE # 744
+001E         ?C0103:
+                                           ; SOURCE LINE # 746
+001E EF                MOV     A,R7
+001F 20E707            JB      ACC.7,?C0104
+                                           ; SOURCE LINE # 747
+                                           ; SOURCE LINE # 748
+0022 25E0              ADD     A,ACC
+                                           ; SOURCE LINE # 749
+0024 7800        E     MOV     R0,#LOW SMBCRC8_A
+0026 66                XRL     A,@R0
+0027 F6                MOV     @R0,A
+                                           ; SOURCE LINE # 750
+0028 22                RET     
+0029         ?C0104:
+                                           ; SOURCE LINE # 752
+                                           ; SOURCE LINE # 753
+0029 EF                MOV     A,R7
+002A 25E0              ADD     A,ACC
+002C FF                MOV     R7,A
+                                           ; SOURCE LINE # 754
+002D 7800        E     MOV     R0,#LOW SMBCRC8_A
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 47  
+
+002F E6                MOV     A,@R0
+0030 6407              XRL     A,#07H
+0032 F6                MOV     @R0,A
+                                           ; SOURCE LINE # 755
+0033 E6                MOV     A,@R0
+0034 6F                XRL     A,R7
+0035 F6                MOV     @R0,A
+                                           ; SOURCE LINE # 756
+                                           ; SOURCE LINE # 757
+0036         ?C0106:
+0036 22                RET     
+             ; FUNCTION _CalcCRC8 (END)
+
+             ; FUNCTION _CheckSMBusFree (BEGIN)
+                                           ; SOURCE LINE # 762
+;---- Variable 'channel' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 763
+                                           ; SOURCE LINE # 766
+0000 EF                MOV     A,R7
+0001 120000      R     LCALL   L?0166
+0004 120000      R     LCALL   L?0133
+0007 E0                MOVX    A,@DPTR
+;---- Variable 'pinstatus' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 768
+0008 5403              ANL     A,#03H
+000A FE                MOV     R6,A
+000B BE0303            CJNE    R6,#03H,?C0107
+                                           ; SOURCE LINE # 769
+                                           ; SOURCE LINE # 770
+000E 7F00              MOV     R7,#00H
+0010 22                RET     
+                                           ; SOURCE LINE # 771
+0011         ?C0107:
+                                           ; SOURCE LINE # 773
+                                           ; SOURCE LINE # 774
+0011 7F01              MOV     R7,#01H
+                                           ; SOURCE LINE # 775
+                                           ; SOURCE LINE # 776
+0013         ?C0108:
+0013 22                RET     
+             ; FUNCTION _CheckSMBusFree (END)
+
+             ; FUNCTION _CheckSMBusInterfaceIsALT (BEGIN)
+                                           ; SOURCE LINE # 781
+;---- Variable 'channel' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 782
+                                           ; SOURCE LINE # 783
+0000 EF                MOV     A,R7
+0001 120000      R     LCALL   L?0164
+0004 120000      R     LCALL   L?0137
+0007 E0                MOVX    A,@DPTR
+0008 54FB              ANL     A,#0FBH
+000A 7010              JNZ     ?C0111
+000C EF                MOV     A,R7
+000D 75F00F            MOV     B,#0FH
+0010 A4                MUL     AB
+0011 120000      R     LCALL   L?0173
+0014 120000      R     LCALL   L?0133
+0017 E0                MOVX    A,@DPTR
+0018 54FB              ANL     A,#0FBH
+001A 6003              JZ      ?C0110
+001C         ?C0111:
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 48  
+
+                                           ; SOURCE LINE # 784
+                                           ; SOURCE LINE # 785
+001C 7F00              MOV     R7,#00H
+001E 22                RET     
+                                           ; SOURCE LINE # 786
+001F         ?C0110:
+                                           ; SOURCE LINE # 788
+                                           ; SOURCE LINE # 789
+001F 7F01              MOV     R7,#01H
+                                           ; SOURCE LINE # 790
+                                           ; SOURCE LINE # 791
+0021         ?C0112:
+0021 22                RET     
+             ; FUNCTION _CheckSMBusInterfaceIsALT (END)
+
+             ; FUNCTION _CheckSMBusInterfaceCanbeUse (BEGIN)
+                                           ; SOURCE LINE # 796
+0000 900000      R     MOV     DPTR,#accesstype
+0003 ED                MOV     A,R5
+0004 F0                MOVX    @DPTR,A
+;---- Variable 'channel' assigned to Register 'R3' ----
+0005 CB                XCH     A,R3
+0006 EF                MOV     A,R7
+0007 CB                XCH     A,R3
+                                           ; SOURCE LINE # 797
+                                           ; SOURCE LINE # 800
+;---- Variable 'checksmbus' assigned to Register 'R2' ----
+0008 7A01              MOV     R2,#01H
+                                           ; SOURCE LINE # 803
+000A EB                MOV     A,R3
+000B B40203            CJNE    A,#02H,?C0114
+                                           ; SOURCE LINE # 804
+                                           ; SOURCE LINE # 805
+000E E4                CLR     A
+                                           ; SOURCE LINE # 806
+000F FF                MOV     R7,A
+0010 22                RET     
+                                           ; SOURCE LINE # 807
+0011         ?C0114:
+                                           ; SOURCE LINE # 810
+0011 CF                XCH     A,R7
+0012 EB                MOV     A,R3
+0013 CF                XCH     A,R7
+0014 120000      R     LCALL   _CheckSMBusInterfaceIsALT
+0017 EF                MOV     A,R7
+0018 7003              JNZ     ?C0116
+                                           ; SOURCE LINE # 811
+                                           ; SOURCE LINE # 812
+001A FA                MOV     R2,A
+                                           ; SOURCE LINE # 813
+001B 8032              SJMP    ?C0117
+001D         ?C0116:
+                                           ; SOURCE LINE # 815
+                                           ; SOURCE LINE # 816
+                                           ; SOURCE LINE # 817
+                                           ; SOURCE LINE # 821
+001D         ?C0118:
+                                           ; SOURCE LINE # 823
+001D CF                XCH     A,R7
+001E EB                MOV     A,R3
+001F CF                XCH     A,R7
+0020 120000      R     LCALL   _CheckSMBusFree
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 49  
+
+0023 EF                MOV     A,R7
+0024 6401              XRL     A,#01H
+0026 701D              JNZ     ?C0119
+                                           ; SOURCE LINE # 824
+                                           ; SOURCE LINE # 825
+0028 FA                MOV     R2,A
+                                           ; SOURCE LINE # 826
+0029 120000      R     LCALL   L?0171
+002C 120000      R     LCALL   L?0133
+002F E0                MOVX    A,@DPTR
+0030 FF                MOV     R7,A
+0031 04                INC     A
+0032 F0                MOVX    @DPTR,A
+0033 900000      E     MOV     DPTR,#SMBus_BusyRecover
+0036 E0                MOVX    A,@DPTR
+0037 FE                MOV     R6,A
+0038 EF                MOV     A,R7
+0039 D3                SETB    C
+003A 9E                SUBB    A,R6
+003B 4012              JC      ?C0117
+                                           ; SOURCE LINE # 827
+                                           ; SOURCE LINE # 828
+003D CF                XCH     A,R7
+003E EB                MOV     A,R3
+003F CF                XCH     A,R7
+0040 120000      R     LCALL   _ResetSMBus
+                                           ; SOURCE LINE # 829
+                                           ; SOURCE LINE # 830
+0043 800A              SJMP    ?C0117
+0045         ?C0119:
+                                           ; SOURCE LINE # 832
+                                           ; SOURCE LINE # 833
+0045 120000      R     LCALL   L?0171
+0048 120000      R     LCALL   L?0133
+004B E4                CLR     A
+004C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 834
+004D 7A01              MOV     R2,#01H
+                                           ; SOURCE LINE # 835
+                                           ; SOURCE LINE # 836
+004F         ?C0117:
+                                           ; SOURCE LINE # 838
+004F CF                XCH     A,R7
+0050 EA                MOV     A,R2
+0051 CF                XCH     A,R7
+                                           ; SOURCE LINE # 839
+0052         ?C0115:
+0052 22                RET     
+             ; FUNCTION _CheckSMBusInterfaceCanbeUse (END)
+
+             ; FUNCTION Core_Init_SMBus (BEGIN)
+                                           ; SOURCE LINE # 844
+                                           ; SOURCE LINE # 845
+                                           ; SOURCE LINE # 846
+0000 900000      E     MOV     DPTR,#SMBus_BusyRecover
+0003 7414              MOV     A,#014H
+0005 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 847
+0006 22                RET     
+             ; FUNCTION Core_Init_SMBus (END)
+
+
+C51 COMPILER V9.03   CORE_SMBUS                                                            02/02/2015 14:30:13 PAGE 50  
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   2468    ----
+   CONSTANT SIZE    =    144    ----
+   XDATA SIZE       =   ----      50
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

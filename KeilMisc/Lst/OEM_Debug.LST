@@ -1,0 +1,147 @@
+C51 COMPILER V9.03   OEM_DEBUG                                                             02/02/2015 14:30:41 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE OEM_DEBUG
+OBJECT MODULE PLACED IN Code\Oem\OEM_Debug.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\Oem\OEM_Debug.C LA WL(1) CD OT(9,SIZE) NOAREGS OR INCDI
+                    -R(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*-----------------------------------------------------------------------------
+   2           * TITLE: OEM_Debug.C
+   3           *
+   4           * Author : Dino
+   5           *
+   6           * Note : These functions are reference only.
+   7           *        Please follow your project software specification to do some modification.
+   8           *---------------------------------------------------------------------------*/
+   9          
+  10          #include <CORE_INCLUDE.H>
+  11          #include <OEM_INCLUDE.H>
+  12          
+  13          //------------------------------------------------------------
+  14          // Debug function
+  15          //------------------------------------------------------------
+  16          void RamDebug(unsigned char dbgcode)
+  17          {
+  18   1              PORT_BYTE_PNTR ClearIndex;
+  19   1              PORT_BYTE_PNTR byte_register_pntr;
+  20   1          BYTE index;
+  21   1              BYTE i;
+  22   1              
+  23   1          byte_register_pntr = DebugRamAddr+DebugRamRange;          
+  24   1          index = *byte_register_pntr;
+  25   1          *byte_register_pntr +=1;
+  26   1              
+  27   1          if ( *byte_register_pntr == DebugRamRange )
+  28   1              {
+  29   2                      *byte_register_pntr = 0;
+  30   2              ClearIndex= DebugRamAddr;
+  31   2      
+  32   2                      for (i=0x00;i<DebugRamRange;i++)
+  33   2              {
+  34   3                      *ClearIndex=0x00;
+  35   3                      ClearIndex++;
+  36   3              }
+  37   2              }
+  38   1      
+  39   1              byte_register_pntr = DebugRamAddr + index;
+  40   1          *byte_register_pntr = dbgcode;
+  41   1      }
+C51 COMPILER V9.03   OEM_DEBUG                                                             02/02/2015 14:30:41 PAGE 2   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION _RamDebug (BEGIN)
+                                           ; SOURCE LINE # 16
+;---- Variable 'dbgcode' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 17
+                                           ; SOURCE LINE # 23
+;---- Variable 'byte_register_pntr' assigned to Register 'R4/R5' ----
+0000 7DFF              MOV     R5,#0FFH
+0002 7C08              MOV     R4,#08H
+                                           ; SOURCE LINE # 24
+0004 8D82              MOV     DPL,R5
+0006 8C83              MOV     DPH,R4
+0008 E0                MOVX    A,@DPTR
+;---- Variable 'index' assigned to Register 'R1' ----
+0009 F9                MOV     R1,A
+                                           ; SOURCE LINE # 25
+000A E0                MOVX    A,@DPTR
+000B 04                INC     A
+000C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 27
+000D E0                MOVX    A,@DPTR
+000E B4FF27            CJNE    A,#0FFH,?C0001
+                                           ; SOURCE LINE # 28
+                                           ; SOURCE LINE # 29
+0011 E4                CLR     A
+0012 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 30
+0013 900000      R     MOV     DPTR,#ClearIndex
+0016 7408              MOV     A,#08H
+0018 F0                MOVX    @DPTR,A
+0019 A3                INC     DPTR
+001A E4                CLR     A
+001B F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 32
+;---- Variable 'i' assigned to Register 'R6' ----
+001C FE                MOV     R6,A
+001D         ?C0002:
+                                           ; SOURCE LINE # 33
+                                           ; SOURCE LINE # 34
+001D 900000      R     MOV     DPTR,#ClearIndex
+0020 E0                MOVX    A,@DPTR
+0021 FA                MOV     R2,A
+0022 A3                INC     DPTR
+0023 E0                MOVX    A,@DPTR
+0024 F582              MOV     DPL,A
+0026 8A83              MOV     DPH,R2
+0028 E4                CLR     A
+0029 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 35
+002A 900000      R     MOV     DPTR,#ClearIndex
+002D 75F001            MOV     B,#01H
+0030 120000      E     LCALL   ?C?IILDX
+                                           ; SOURCE LINE # 36
+0033 0E                INC     R6
+0034 EE                MOV     A,R6
+0035 B4FFE5            CJNE    A,#0FFH,?C0002
+                                           ; SOURCE LINE # 37
+0038         ?C0001:
+                                           ; SOURCE LINE # 39
+0038 CE                XCH     A,R6
+C51 COMPILER V9.03   OEM_DEBUG                                                             02/02/2015 14:30:41 PAGE 3   
+
+0039 E9                MOV     A,R1
+003A CE                XCH     A,R6
+003B E9                MOV     A,R1
+003C 2400              ADD     A,#00H
+003E FD                MOV     R5,A
+003F E4                CLR     A
+0040 3408              ADDC    A,#08H
+                                           ; SOURCE LINE # 40
+0042 8D82              MOV     DPL,R5
+0044 F583              MOV     DPH,A
+0046 EF                MOV     A,R7
+0047 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 41
+0048 22                RET     
+             ; FUNCTION _RamDebug (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     73    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       2
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,174 @@
+C51 COMPILER V9.03   CORE_BITADDR                                                          02/02/2015 14:30:09 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE CORE_BITADDR
+OBJECT MODULE PLACED IN Code\CORE\CORE_BITADDR.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\CORE\CORE_BITADDR.C LA WL(1) CD OT(9,SIZE) NOAREGS OR I
+                    -NCDIR(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*-----------------------------------------------------------------------------
+   2           * TITLE: CORE_BITADDR.C
+   3           *
+   4           * Copyright (c) ITE INC. All Rights Reserved.
+   5           *
+   6           *---------------------------------------------------------------------------*/
+   7          
+   8          //----------------------------------------------------------------------------
+   9          // Bit addressing variables [0x20-0x2F]
+  10          //----------------------------------------------------------------------------
+  11          volatile unsigned char bdata Ccb42 _at_ 0x20;
+  12          sbit Ccb42_INTR_KEY  = Ccb42^0;
+  13          sbit Ccb42_INTR_AUX  = Ccb42^1;
+  14          sbit Ccb42_SYS_FLAG  = Ccb42^2;
+  15          sbit Ccb42_RV1       = Ccb42^3;
+  16          sbit Ccb42_DISAB_KEY = Ccb42^4;
+  17          sbit Ccb42_DISAB_AUX = Ccb42^5;
+  18          sbit Ccb42_XLATE_PC  = Ccb42^6;
+  19          sbit Ccb42_RV2       = Ccb42^7;
+  20                                              //Reserved 0x21
+  21          
+  22          volatile unsigned char bdata MULPX _at_ 0x22;
+  23          sbit EnableTP                   = MULPX^0;
+  24          sbit MULPX_Mx_state2    = MULPX^1;
+  25          sbit MULPX_Mx_state3    = MULPX^2;
+  26          sbit MULPX_Multiplex    = MULPX^3;
+  27          sbit MULPX_RV1          = MULPX^4;
+  28          sbit MULPX_RV2          = MULPX^5;
+  29          sbit MULPX_RV3          = MULPX^6;
+  30          sbit MULPX_RV4          = MULPX^7;
+  31          
+  32          volatile unsigned char bdata AuxTestFlagS _at_ 0x23;
+  33          sbit PS2StartBit            = AuxTestFlagS^0;
+  34          sbit MouseDriverIn          = AuxTestFlagS^1;
+  35          sbit KeyboardDriverIn       = AuxTestFlagS^2;
+  36          sbit AUX2ByteCommand        = AuxTestFlagS^3;
+  37          sbit AuxTestFlagS_RV1       = AuxTestFlagS^4;
+  38          sbit AuxTestFlagS_RV2       = AuxTestFlagS^5;
+  39          sbit AuxTestFlagS_RV3       = AuxTestFlagS^6;
+  40          sbit AuxTestFlagS_RV4       = AuxTestFlagS^7;
+  41          
+  42          volatile unsigned char bdata SMBusFlagS _at_ 0x24;
+  43          sbit SMBusFlagS_RV0                     = SMBusFlagS^0; 
+  44          sbit SMBusFlagS_RV1                     = SMBusFlagS^1; 
+  45          sbit SMBusFlagS_RV2                 = SMBusFlagS^2;
+  46          sbit SMBusFlagS_RV3             = SMBusFlagS^3; 
+  47          sbit SMBusFlagS_RV4                 = SMBusFlagS^4;     
+  48          sbit SMBusFlagS_RV5                 = SMBusFlagS^5;
+  49          sbit SMBusFlagS_RV6         = SMBusFlagS^6;
+  50          sbit SMBusFlagS_RV7         = SMBusFlagS^7;
+  51          
+  52          volatile unsigned char bdata Led_Ctrl _at_ 0x25;
+  53          sbit Led_Ctrl_SCROLL = Led_Ctrl^0;
+  54          sbit Led_Ctrl_NUM    = Led_Ctrl^1;
+C51 COMPILER V9.03   CORE_BITADDR                                                          02/02/2015 14:30:09 PAGE 2   
+
+  55          sbit Led_Ctrl_CAPS   = Led_Ctrl^2;
+  56          sbit Led_Ctrl_OVL    = Led_Ctrl^3;
+  57          sbit Led_Ctrl_LED4   = Led_Ctrl^4;
+  58          sbit Led_Ctrl_LED5   = Led_Ctrl^5;
+  59          sbit Led_Ctrl_LED6   = Led_Ctrl^6;
+  60          sbit Led_Ctrl_LED7   = Led_Ctrl^7;
+  61          
+  62          volatile unsigned char bdata Service    _at_ 0x26;
+  63          sbit F_Service_PCI      = Service^0;
+  64          sbit F_Service_UNLOCK   = Service^1;
+  65          sbit F_Service_SEND     = Service^2;
+  66          sbit F_Service_Send_PS2 = Service^3;
+  67          sbit F_Service_PS2              = Service^4;
+  68          sbit F_Service_MS_1     = Service^5;
+  69          sbit F_Service_PCI2     = Service^6;
+  70          sbit F_Service_KEY      = Service^7;
+  71          
+  72          volatile unsigned char bdata Service1 _at_ 0x27;        
+  73          sbit F_Service_Low_LV           = Service1^0; 
+  74          sbit F_Service_PCI3             = Service1^1;
+  75          sbit F_Service_CIR              = Service1^2;
+  76          sbit F_Service_PCI4         = Service1^3;
+  77          sbit F_Service_OEM_1            = Service1^4;
+  78          sbit F_Service_OEM_2            = Service1^5;
+  79          sbit F_Service_OEM_3            = Service1^6;
+  80          sbit F_Service_OEM_4        = Service1^7;
+  81          
+  82          volatile unsigned char bdata Led_Data _at_ 0x28;
+  83          sbit Led_Data_SCROLL = Led_Data^0;
+  84          sbit Led_Data_NUM    = Led_Data^1;
+  85          sbit Led_Data_CAPS   = Led_Data^2;
+  86          sbit Led_Data_OVL    = Led_Data^3;
+  87          sbit Led_Data_LED4   = Led_Data^4;
+  88          sbit Led_Data_LED5   = Led_Data^5;
+  89          sbit Led_Data_LED6   = Led_Data^6;
+  90          sbit Led_Data_LED7   = Led_Data^7;
+  91          
+  92          volatile unsigned char bdata Scanner_State _at_ 0x29;
+  93          sbit Scanner_State_NUM_LOCK  = Scanner_State^0;
+  94          sbit Scanner_State_LEFT      = Scanner_State^1;
+  95          sbit Scanner_State_RIGHT     = Scanner_State^2;
+  96          sbit Scanner_State_ALT       = Scanner_State^3;
+  97          sbit Scanner_State_CONTROL   = Scanner_State^4;
+  98          sbit Scanner_State_OVERLAY   = Scanner_State^5;
+  99          sbit Scanner_State_FN        = Scanner_State^6;
+ 100          sbit Scanner_State_FN_SILENT = Scanner_State^7;
+ 101          
+ 102          volatile unsigned char bdata Gen_Info _at_ 0x2A;
+ 103          sbit Gen_Info_LED_CHANGE  = Gen_Info^0;
+ 104          sbit Gen_Info_TYPM_CHANGE = Gen_Info^1;
+ 105          sbit Gen_Info_CODE_CHANGE = Gen_Info^2;
+ 106          sbit Gen_Info_SCAN_LOCKED = Gen_Info^3;
+ 107          sbit Gen_Info_PASS_ENABLE = Gen_Info^4;
+ 108          sbit Gen_Info_BREAK_AUXD  = Gen_Info^5;
+ 109          sbit Gen_Info_BREAK_AUXK  = Gen_Info^6;
+ 110          sbit Gen_Info_BREAK_SCAN  = Gen_Info^7;
+ 111          
+ 112          volatile unsigned char bdata Kbd_Response _at_ 0x2B;
+ 113          // Don't use bit0 ~ bit5
+ 114          sbit Kbd_Response_SECOND_ACK   = Kbd_Response^6;
+ 115          sbit Kbd_Response_CMD_RESPONSE = Kbd_Response^7;
+ 116          
+C51 COMPILER V9.03   CORE_BITADDR                                                          02/02/2015 14:30:09 PAGE 3   
+
+ 117          volatile unsigned char bdata AuxScanFlagS _at_ 0x2C;
+ 118          sbit SendtoAUXFlag                      = AuxScanFlagS^0;       
+ 119          sbit ECSendtoAUXFlag        = AuxScanFlagS^1;
+ 120          sbit StartScanAUXDevice     = AuxScanFlagS^2;
+ 121          sbit StartENAUXDevice       = AuxScanFlagS^3;
+ 122          sbit AUXInterfaceBusy       = AuxScanFlagS^4;
+ 123          sbit AuxScanFlagS_RV3       = AuxScanFlagS^5;
+ 124          sbit AuxScanFlagS_RV1       = AuxScanFlagS^6;
+ 125          sbit AuxScanFlagS_RV2       = AuxScanFlagS^7;
+ 126          
+ 127          volatile unsigned char bdata CustomFlag _at_ 0x2D;
+ 128          sbit KbdNeedResponseFlag        = CustomFlag^0;
+ 129          sbit ExtendMatrix                       = CustomFlag^1;
+ 130          sbit Isr_Int1_Occur         = CustomFlag^2;
+ 131          sbit FastA20                    = CustomFlag^3;
+ 132          sbit ChkAUXRespFlag2            = CustomFlag^4;
+ 133          sbit ECCheckBurstMode           = CustomFlag^5;
+ 134          sbit OEM_Isr_Int1_Request   = CustomFlag^6;
+ 135          sbit FnStickKey             = CustomFlag^7;
+ 136          
+ 137          /*****************************************************************************/
+ 138          //      NOTE : 
+ 139          /*****************************************************************************/
+ 140          // Don't use bit addressble 0x2E and 0x2F.
+ 141          /*****************************************************************************/
+C51 COMPILER V9.03   CORE_BITADDR                                                          02/02/2015 14:30:09 PAGE 4   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

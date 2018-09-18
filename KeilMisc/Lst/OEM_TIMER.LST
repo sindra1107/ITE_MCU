@@ -1,0 +1,121 @@
+C51 COMPILER V9.03   OEM_TIMER                                                             02/02/2015 14:30:38 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE OEM_TIMER
+OBJECT MODULE PLACED IN Code\Oem\OEM_TIMER.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\Oem\OEM_TIMER.C LA WL(1) CD OT(9,SIZE) NOAREGS OR INCDI
+                    -R(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*-----------------------------------------------------------------------------
+   2           * TITLE: OEM_TIMER.C
+   3           *
+   4           * Author : Dino
+   5           *
+   6           * Note : These functions are reference only.
+   7           *---------------------------------------------------------------------------*/
+   8          
+   9          #include <CORE_INCLUDE.H>
+  10          #include <OEM_INCLUDE.H>
+  11          
+  12          //----------------------------------------------------------------------------
+  13          // Enable internal watch dog and waiting EC reset                 
+  14          //----------------------------------------------------------------------------
+  15          void InternalWDTNow(void)
+  16          
+  17          {
+  18   1              WDTCON|=0x01;   // WDTRST = 1 Reset watch dog timer.
+  19   1              WDTCON|=0x02;   // WDTEN  = 1 Enable watch dog.     
+  20   1              while(1);       // Wait for watch dog time-out      
+  21   1      }
+  22          
+  23          //----------------------------------------------------------------------------
+  24          // Enable internal watch dog
+  25          //----------------------------------------------------------------------------
+  26          void EnableInternalWDT(void)
+  27          {
+  28   1              CKCON |= 0xC0;              // set 26 bit counter
+  29   1              WDTRST = 1;                             // reset internal watch dog
+  30   1              WDTEB = 1;                              // enable internal watch dog            
+  31   1      }
+  32          
+  33          //----------------------------------------------------------------------------
+  34          // Disable internal watch dog
+  35          //----------------------------------------------------------------------------
+  36          void DisableInternalWDT(void)
+  37          {
+  38   1              WDTEB = 0;                              // Disable internal watch dog
+  39   1      }
+  40          
+  41          //----------------------------------------------------------------------------
+  42          // Disable internal watch dog
+  43          //----------------------------------------------------------------------------
+  44          void ResetInternalWDT(void)
+  45          {
+  46   1              WDTRST = 1;                             // Reset internal watch dog counter
+  47   1      }
+  48          
+  49          
+C51 COMPILER V9.03   OEM_TIMER                                                             02/02/2015 14:30:38 PAGE 2   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION InternalWDTNow (BEGIN)
+                                           ; SOURCE LINE # 15
+                                           ; SOURCE LINE # 17
+                                           ; SOURCE LINE # 18
+0000 43D801            ORL     WDTCON,#01H
+                                           ; SOURCE LINE # 19
+0003 43D802            ORL     WDTCON,#02H
+0006         ?C0001:
+                                           ; SOURCE LINE # 20
+0006 80FE              SJMP    ?C0001
+             ; FUNCTION InternalWDTNow (END)
+
+             ; FUNCTION EnableInternalWDT (BEGIN)
+                                           ; SOURCE LINE # 26
+                                           ; SOURCE LINE # 27
+                                           ; SOURCE LINE # 28
+0000 438EC0            ORL     CKCON,#0C0H
+                                           ; SOURCE LINE # 29
+0003 D2D8              SETB    WDTRST
+                                           ; SOURCE LINE # 30
+0005 D2D9              SETB    WDTEB
+                                           ; SOURCE LINE # 31
+0007 22                RET     
+             ; FUNCTION EnableInternalWDT (END)
+
+             ; FUNCTION DisableInternalWDT (BEGIN)
+                                           ; SOURCE LINE # 36
+                                           ; SOURCE LINE # 37
+                                           ; SOURCE LINE # 38
+0000 C2D9              CLR     WDTEB
+                                           ; SOURCE LINE # 39
+0002 22                RET     
+             ; FUNCTION DisableInternalWDT (END)
+
+             ; FUNCTION ResetInternalWDT (BEGIN)
+                                           ; SOURCE LINE # 44
+                                           ; SOURCE LINE # 45
+                                           ; SOURCE LINE # 46
+0000 D2D8              SETB    WDTRST
+                                           ; SOURCE LINE # 47
+0002 22                RET     
+             ; FUNCTION ResetInternalWDT (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     22    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

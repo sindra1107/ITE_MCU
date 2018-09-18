@@ -1,0 +1,404 @@
+C51 COMPILER V9.03   CORE_TIMERS                                                           02/02/2015 14:30:14 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE CORE_TIMERS
+OBJECT MODULE PLACED IN Code\CORE\CORE_TIMERS.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\CORE\CORE_TIMERS.C LA WL(1) CD OT(9,SIZE) NOAREGS OR IN
+                    -CDIR(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*-----------------------------------------------------------------------------
+   2           * TITLE: CORE_TIMERS.C
+   3           *
+   4           * Copyright (c) 1983-2007, Insyde Software Corporation. All Rights Reserved.
+   5           *
+   6           * You may not reproduce, distribute, publish, display, perform, modify, adapt,
+   7           * transmit, broadcast, present, recite, release, license or otherwise exploit
+   8           * any part of this publication in any form, by any means, without the prior
+   9           * written permission of Insyde Software Corporation.
+  10           *----------------------------------------------------------------------------*/
+  11           
+  12          #include <CORE_INCLUDE.H>
+  13          #include <OEM_INCLUDE.H>
+  14          
+  15          //----------------------------------------------------------------------------
+  16          // FUNCTION: Load_Timer_A - Load Timer A to time-out in 5 mS.
+  17          //----------------------------------------------------------------------------
+  18          void Load_Timer_A(void)
+  19          {                                               // Assume the 8051 clock source is Ring Oscillator 
+  20   1              //TL0 = Timer_5ms;      // Reload timer
+  21   1              //TH0 = Timer_5ms>>8;   // 5ms
+  22   1              TL0 = Timer_1ms;        // Reload timer
+  23   1              TH0 = Timer_1ms>>8;         // 1ms
+  24   1          TF0 = 0;                            // Clear overflow flag
+  25   1      }
+  26          
+  27          //----------------------------------------------------------------------------
+  28          // FUNCTION: Enable_Timer_A - Load the 5 mS timer if not already enabled.
+  29          //----------------------------------------------------------------------------
+  30          void Enable_Timer_A(void)
+  31          {
+  32   1              Load_Timer_A();                 // Reload timer0 
+  33   1              TR0 = 1;                                // Enable timer0
+  34   1      }
+  35          
+  36          //----------------------------------------------------------------------------
+  37          // FUNCTION: Stop_Timer_A - Stop the 5 mS timer.
+  38          //----------------------------------------------------------------------------
+  39          void Stop_Timer_A(void)
+  40          {
+  41   1              TR0 = 0;                                // Disable timer0
+  42   1              TF0 = 0;                                // Clear timer0 overflow flag
+  43   1      }
+  44          
+  45          //----------------------------------------------------------------------------
+  46          // FUNCTION: Load_Timer_B - Load Timer B to time-out in 150 microseconds.
+  47          //----------------------------------------------------------------------------
+  48          void Load_Timer_B(void)
+  49          {   
+  50   1          TL1 = Timer_2ms;            // Reload timer
+  51   1          TH1 = Timer_2ms>>8;         // 2ms
+  52   1              TF1 = 0;                                // Clear overflow flag          
+  53   1              TR1 = 1;                                // Enable timer1
+  54   1      }
+C51 COMPILER V9.03   CORE_TIMERS                                                           02/02/2015 14:30:14 PAGE 2   
+
+  55          
+  56          //----------------------------------------------------------------------------
+  57          // FUNCTION: Stop_Timer_B - Stop the timer B.  Timer 1 is used as Timer B.
+  58          //----------------------------------------------------------------------------
+  59          void Stop_Timer_B(void)
+  60          {
+  61   1              TR1 = 0;                                // Disable timer1       
+  62   1              TF1 = 0;                                // Clear overflow flag  
+  63   1              F_Service_SEND = 0;             // Clear service sned flag
+  64   1      }
+  65          
+  66          //----------------------------------------------------------------------------
+  67          // FUNCTION: Init_Timers
+  68          //----------------------------------------------------------------------------
+  69          void Init_Timers(void)
+  70          {
+  71   1          TF0 = TR0 = 0;              // Stop timer0 and clear interrupt
+  72   1              //TL0 = Timer_5ms;      // Reload timer
+  73   1              //TH0 = Timer_5ms>>8;   // 5ms
+  74   1              TL0 = Timer_1ms;        // Reload timer
+  75   1              TH0 = Timer_1ms>>8;         // 1ms
+  76   1              TMOD  = 0x11;                   // Timer0 and timer1 are 16 bits timer
+  77   1          TR0 = 1;                // Start timer0 running
+  78   1          ET0 = 1;                            // Enable timer0 interrupt
+  79   1                                                              
+  80   1          TF1 = TR1 = 0;              // Stop timer 1 and clear interrupt
+  81   1          TL1 = Timer_2ms;            // Reload timer
+  82   1          TH1 = Timer_2ms>>8;         // 2ms
+  83   1          //TR1 = 1;                  // Start timer1 
+  84   1          ET1 = 1;                            // Enable timer1 interrupt
+  85   1      }
+  86          
+  87          //----------------------------------------------------------------------------
+  88          // FUNCTION: Microsecond_Delay - Delay a number of microseconds.
+  89          // Input:  Code for delay.
+  90          //----------------------------------------------------------------------------
+  91          //void Microsecond_Delay(WORD delay)
+  92          //{
+  93          //  do 
+  94          //      {
+  95          //      delay--;        
+  96          //  } while (delay);                      
+  97          //}
+  98          
+  99          //----------------------------------------------------------------------------
+ 100          // Delay 1ms function use timer 1                     
+ 101          //----------------------------------------------------------------------------
+ 102          void Delay1MS(BYTE bMS)
+ 103          {       
+ 104   1          TR1 = 0;                            // Disable timer1
+ 105   1              ET1 = 0;                                // Disable timer1 interrupt
+ 106   1              DisableAllInterrupt();
+ 107   1              for (;bMS!=0;bMS--)
+ 108   1              {
+ 109   2                      TH1=Timer_1ms>>8;       // Re-load 1ms timer
+ 110   2              TL1=Timer_1ms;
+ 111   2              TF1=0;                          // Clear overflow flag
+ 112   2                      TR1=1;                          // enable timer
+ 113   2                      while (!TF1);           // waiting for time-out
+ 114   2                  TR1=0;                              // Disable timer
+ 115   2                      TF1=0;                          // Clear overflow flag
+ 116   2              }
+C51 COMPILER V9.03   CORE_TIMERS                                                           02/02/2015 14:30:14 PAGE 3   
+
+ 117   1      
+ 118   1              EnableAllInterrupt();   // Enable timer1 interrupt 
+ 119   1              ET1 = 1;                                                                
+ 120   1              //TR1=1;                            // Enable timer1    
+ 121   1      }
+ 122          
+ 123          //----------------------------------------------------------------------------
+ 124          // Delay Xms function                  
+ 125          //----------------------------------------------------------------------------
+ 126          void DelayXms(BYTE bMS)
+ 127          {
+ 128   1          TR1 = 0;
+ 129   1              ET1 = 0;                        // Disable timer1 interrupt
+ 130   1          _nop_();
+ 131   1          _nop_();
+ 132   1          _nop_();
+ 133   1          _nop_();
+ 134   1              for (;bMS!=0;bMS--)
+ 135   1              {
+ 136   2                      TH1=Timer_1ms>>8;
+ 137   2              TL1=Timer_1ms;
+ 138   2              TF1=0;
+ 139   2                      TR1=1;
+ 140   2                      while (!TF1);
+ 141   2              TR1=0;
+ 142   2                      TF1=0;
+ 143   2              }
+ 144   1              ET1 = 1;        
+ 145   1      }
+ 146          
+ 147          //----------------------------------------------------------------------------
+ 148          // INIT UART
+ 149          //----------------------------------------------------------------------------
+ 150          void Init_UART(void)
+ 151          {
+ 152   1      #ifdef UART_Debug
+                      //GPCRB0=ALT;
+                  GPCRB1=ALT;
+                  SCON=0x40;
+                  T2CON &= 0xF0;               /* EXEN2=0; TR2=0; C/T2#=0; CP/RL2#=0; */
+                  T2CON |= 0x30;               /* RCLK = 1; TCLK=1; */
+                  T2MOD=0x00;
+                  RCAP2H=R2HV;
+                  RCAP2L=R2LV;
+                  TR2=1;
+                  TI = 1;
+              #endif    
+ 164   1      }
+C51 COMPILER V9.03   CORE_TIMERS                                                           02/02/2015 14:30:14 PAGE 4   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION Com0014 (BEGIN)
+0000         L?0021:
+0000 758DFD            MOV     TH1,#0FDH
+0003 E4                CLR     A
+0004 F58B              MOV     TL1,A
+0006 C28F              CLR     TF1
+0008 D28E              SETB    TR1
+000A 22                RET     
+             ; FUNCTION Com0014 (END)
+
+             ; FUNCTION Load_Timer_A (BEGIN)
+                                           ; SOURCE LINE # 18
+                                           ; SOURCE LINE # 19
+                                           ; SOURCE LINE # 22
+0000 E4                CLR     A
+0001 F58A              MOV     TL0,A
+                                           ; SOURCE LINE # 23
+0003 758CFD            MOV     TH0,#0FDH
+                                           ; SOURCE LINE # 24
+0006 C28D              CLR     TF0
+                                           ; SOURCE LINE # 25
+0008 22                RET     
+             ; FUNCTION Load_Timer_A (END)
+
+             ; FUNCTION Enable_Timer_A (BEGIN)
+                                           ; SOURCE LINE # 30
+                                           ; SOURCE LINE # 31
+                                           ; SOURCE LINE # 32
+0000 120000      R     LCALL   Load_Timer_A
+                                           ; SOURCE LINE # 33
+0003 D28C              SETB    TR0
+                                           ; SOURCE LINE # 34
+0005 22                RET     
+             ; FUNCTION Enable_Timer_A (END)
+
+             ; FUNCTION Stop_Timer_A (BEGIN)
+                                           ; SOURCE LINE # 39
+                                           ; SOURCE LINE # 40
+                                           ; SOURCE LINE # 41
+0000 C28C              CLR     TR0
+                                           ; SOURCE LINE # 42
+0002 C28D              CLR     TF0
+                                           ; SOURCE LINE # 43
+0004 22                RET     
+             ; FUNCTION Stop_Timer_A (END)
+
+             ; FUNCTION Load_Timer_B (BEGIN)
+                                           ; SOURCE LINE # 48
+                                           ; SOURCE LINE # 49
+                                           ; SOURCE LINE # 50
+0000 758B01            MOV     TL1,#01H
+                                           ; SOURCE LINE # 51
+0003 758DFA            MOV     TH1,#0FAH
+                                           ; SOURCE LINE # 52
+0006 C28F              CLR     TF1
+                                           ; SOURCE LINE # 53
+0008 D28E              SETB    TR1
+                                           ; SOURCE LINE # 54
+000A 22                RET     
+C51 COMPILER V9.03   CORE_TIMERS                                                           02/02/2015 14:30:14 PAGE 5   
+
+             ; FUNCTION Load_Timer_B (END)
+
+             ; FUNCTION Stop_Timer_B (BEGIN)
+                                           ; SOURCE LINE # 59
+                                           ; SOURCE LINE # 60
+                                           ; SOURCE LINE # 61
+0000 C28E              CLR     TR1
+                                           ; SOURCE LINE # 62
+0002 C28F              CLR     TF1
+                                           ; SOURCE LINE # 63
+0004 C200        E     CLR     F_Service_SEND
+                                           ; SOURCE LINE # 64
+0006 22                RET     
+             ; FUNCTION Stop_Timer_B (END)
+
+             ; FUNCTION Init_Timers (BEGIN)
+                                           ; SOURCE LINE # 69
+                                           ; SOURCE LINE # 70
+                                           ; SOURCE LINE # 71
+0000 C28C              CLR     TR0
+0002 C28D              CLR     TF0
+                                           ; SOURCE LINE # 74
+0004 E4                CLR     A
+0005 F58A              MOV     TL0,A
+                                           ; SOURCE LINE # 75
+0007 758CFD            MOV     TH0,#0FDH
+                                           ; SOURCE LINE # 76
+000A 758911            MOV     TMOD,#011H
+                                           ; SOURCE LINE # 77
+000D D28C              SETB    TR0
+                                           ; SOURCE LINE # 78
+000F D2A9              SETB    ET0
+                                           ; SOURCE LINE # 80
+0011 C28E              CLR     TR1
+0013 C28F              CLR     TF1
+                                           ; SOURCE LINE # 81
+0015 758B01            MOV     TL1,#01H
+                                           ; SOURCE LINE # 82
+0018 758DFA            MOV     TH1,#0FAH
+                                           ; SOURCE LINE # 84
+001B D2AB              SETB    ET1
+                                           ; SOURCE LINE # 85
+001D 22                RET     
+             ; FUNCTION Init_Timers (END)
+
+             ; FUNCTION _Delay1MS (BEGIN)
+                                           ; SOURCE LINE # 102
+0000 900000      R     MOV     DPTR,#bMS
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 103
+                                           ; SOURCE LINE # 104
+0005 C28E              CLR     TR1
+                                           ; SOURCE LINE # 105
+0007 C2AB              CLR     ET1
+                                           ; SOURCE LINE # 106
+0009 120000      E     LCALL   DisableAllInterrupt
+                                           ; SOURCE LINE # 107
+000C         ?C0007:
+000C 900000      R     MOV     DPTR,#bMS
+000F E0                MOVX    A,@DPTR
+0010 6012              JZ      ?C0008
+C51 COMPILER V9.03   CORE_TIMERS                                                           02/02/2015 14:30:14 PAGE 6   
+
+                                           ; SOURCE LINE # 108
+                                           ; SOURCE LINE # 109
+                                           ; SOURCE LINE # 110
+                                           ; SOURCE LINE # 111
+                                           ; SOURCE LINE # 112
+0012 120000      R     LCALL   L?0021
+0015         ?C0010:
+                                           ; SOURCE LINE # 113
+0015 308FFD            JNB     TF1,?C0010
+0018         ?C0011:
+                                           ; SOURCE LINE # 114
+0018 C28E              CLR     TR1
+                                           ; SOURCE LINE # 115
+001A C28F              CLR     TF1
+                                           ; SOURCE LINE # 116
+001C 900000      R     MOV     DPTR,#bMS
+001F E0                MOVX    A,@DPTR
+0020 14                DEC     A
+0021 F0                MOVX    @DPTR,A
+0022 80E8              SJMP    ?C0007
+0024         ?C0008:
+                                           ; SOURCE LINE # 118
+0024 120000      E     LCALL   EnableAllInterrupt
+                                           ; SOURCE LINE # 119
+0027 D2AB              SETB    ET1
+                                           ; SOURCE LINE # 121
+0029 22                RET     
+             ; FUNCTION _Delay1MS (END)
+
+             ; FUNCTION _DelayXms (BEGIN)
+                                           ; SOURCE LINE # 126
+;---- Variable 'bMS' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 127
+                                           ; SOURCE LINE # 128
+0000 C28E              CLR     TR1
+                                           ; SOURCE LINE # 129
+0002 C2AB              CLR     ET1
+                                           ; SOURCE LINE # 130
+0004 00                NOP     
+                                           ; SOURCE LINE # 131
+0005 00                NOP     
+                                           ; SOURCE LINE # 132
+0006 00                NOP     
+                                           ; SOURCE LINE # 133
+0007 00                NOP     
+                                           ; SOURCE LINE # 134
+0008         ?C0013:
+0008 EF                MOV     A,R7
+0009 600D              JZ      ?C0014
+                                           ; SOURCE LINE # 135
+                                           ; SOURCE LINE # 136
+                                           ; SOURCE LINE # 137
+                                           ; SOURCE LINE # 138
+                                           ; SOURCE LINE # 139
+000B 120000      R     LCALL   L?0021
+000E         ?C0016:
+                                           ; SOURCE LINE # 140
+000E 308FFD            JNB     TF1,?C0016
+0011         ?C0017:
+                                           ; SOURCE LINE # 141
+0011 C28E              CLR     TR1
+                                           ; SOURCE LINE # 142
+C51 COMPILER V9.03   CORE_TIMERS                                                           02/02/2015 14:30:14 PAGE 7   
+
+0013 C28F              CLR     TF1
+                                           ; SOURCE LINE # 143
+0015 1F                DEC     R7
+0016 80F0              SJMP    ?C0013
+0018         ?C0014:
+                                           ; SOURCE LINE # 144
+0018 D2AB              SETB    ET1
+                                           ; SOURCE LINE # 145
+001A 22                RET     
+             ; FUNCTION _DelayXms (END)
+
+             ; FUNCTION Init_UART (BEGIN)
+                                           ; SOURCE LINE # 150
+                                           ; SOURCE LINE # 151
+                                           ; SOURCE LINE # 164
+0000 22                RET     
+             ; FUNCTION Init_UART (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    149    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       1
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

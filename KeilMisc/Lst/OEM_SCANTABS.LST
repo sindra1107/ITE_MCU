@@ -1,0 +1,1174 @@
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE OEM_SCANTABS
+OBJECT MODULE PLACED IN Code\OEM\OEM_SCANTABS.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\OEM\OEM_SCANTABS.C LA WL(1) CD OT(9,SIZE) NOAREGS OR IN
+                    -CDIR(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*-----------------------------------------------------------------
+   2           * TITLE: OEM_SCANTABS.C - RC Table(s) for Scan Matix
+   3           *
+   4           * Copyright (c) 1983-2007, Insyde Software Corporation. All Rights Reserved.
+   5           *
+   6           * You may not reproduce, distribute, publish, display, perform, modify, adapt,
+   7           * transmit, broadcast, present, recite, release, license or otherwise exploit
+   8           * any part of this publication in any form, by any means, without the prior
+   9           * written permission of Insyde Software Corporation.
+  10           *----------------------------------------------------------------*/
+  11           
+  12          #include <CORE_INCLUDE.H>
+  13          #include <OEM_INCLUDE.H>
+  14          
+  15          const unsigned char code Rc_ROM_Tables[] =   
+  16          {
+  17              // Scanner Table 1  
+  18                  0x29,0x5a,0x7b,0x00,0x00,0xe7,0x7c,0x00,0xed,0x31,0x32,0xE1,0x2c,0x73,0x8a,0xe3,
+  19                  0x00,0x1e,0x4a,0x00,0x00,0x7d,0x41,0x00,0x49,0x3a,0x2a,0xe5,0x22,0x34,0x8b,0x75,
+  20                  0x00,0x5d,0x16,0x00,0x00,0xe6,0x42,0x88,0x4b,0x3b,0x2b,0x7a,0x1b,0xaf,0x00,0x58,
+  21                  0x00,0x5b,0x54,0x00,0x00,0xb4,0x43,0x89,0x44,0x3c,0x2d,0xe4,0x1d,0x4c,0x00,0x0d,
+  22                  0x00,0x66,0x4d,0x00,0x8c,0x00,0x3e,0x00,0x46,0x3d,0x25,0x72,0x52,0x26,0x00,0x24,
+  23                  0xe2,0x55,0x45,0x82,0x00,0x00,0xb1,0x00,0xb6,0x36,0x2e,0x69,0xec,0x1c,0x00,0x0e,
+  24                  0x91,0x00,0xb8,0x81,0x00,0xb5,0xb2,0x79,0xb7,0x35,0x21,0x70,0xad,0xb0,0x71,0x15,
+  25                  0xe0,0x74,0x4e,0x00,0x8d,0x6b,0xb3,0x00,0x6c,0x33,0x1a,0x8e,0xae,0x23,0x00,0x84,
+  26                  
+  27          };
+  28          
+  29          const unsigned char code EtKey_ROM_Tables[] =
+  30          {       //16   17   18          // 19X8 Scan Table 
+  31                  0x00,0x00,0x00,
+  32                  0x00,0x00,0x00,
+  33                  0x00,0x00,0x00,
+  34                  0x00,0x00,0x00,
+  35                  0x00,0x00,0x00,
+  36                  0x00,0x00,0x00,
+  37                  0x00,0x00,0x00,
+  38                  0x00,0x00,0x00,
+  39          };
+  40          
+  41          const unsigned char code KB_S3WakeUP_Tables[] =
+  42          {
+  43              // Scanner Table 1 
+  44                  //00   01   02   03   04   05   06   07   08   09   10   11   12   13   14   15
+  45                  0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55, //
+  46                  0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55, //
+  47                  0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55, //
+  48                  0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55, //
+  49                  0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55, //
+  50                  0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55, //
+  51                  0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55, //
+  52                  0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55  //
+  53          };
+  54          
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 2   
+
+  55          const unsigned char code EtKey_S3WakeUP_Tables[] =
+  56          {       //16   17   18          // 19X8 Scan Table 
+  57                  0x55,0x55,0x55,
+  58                  0x55,0x55,0x55,
+  59                  0x55,0x55,0x55,
+  60                  0x55,0x55,0x55,
+  61                  0x55,0x55,0x55,
+  62                  0x55,0x55,0x55,
+  63                  0x55,0x55,0x55,
+  64                  0x55,0x55,0x55,
+  65          };
+  66          
+  67          //----------------------------------------------------------------------------
+  68          // The function of hotkey Fn + F1
+  69          //----------------------------------------------------------------------------
+  70          void HotKey_Fn_F1(BYTE event)
+  71          {
+  72   1      
+  73   1      }
+  74          
+  75          //----------------------------------------------------------------------------
+  76          // The function of hotkey Fn + F2
+  77          //----------------------------------------------------------------------------
+  78          void HotKey_Fn_F2(BYTE event)
+  79          {
+  80   1      
+  81   1      }
+  82          
+  83          //----------------------------------------------------------------------------
+  84          // The function of hotkey Fn + F3
+  85          //----------------------------------------------------------------------------
+  86          void HotKey_Fn_F3(BYTE event)
+  87          {
+  88   1      
+  89   1      }
+  90          
+  91          //----------------------------------------------------------------------------
+  92          // The function of hotkey Fn + F4
+  93          //----------------------------------------------------------------------------
+  94          void HotKey_Fn_F4(BYTE event)
+  95          {
+  96   1      
+  97   1      }
+  98          
+  99          //----------------------------------------------------------------------------
+ 100          // The function of hotkey Fn + F5
+ 101          //----------------------------------------------------------------------------
+ 102          void HotKey_Fn_F5(BYTE event)
+ 103          {
+ 104   1      
+ 105   1      }
+ 106          
+ 107          //----------------------------------------------------------------------------
+ 108          // The function of hotkey Fn + F6
+ 109          //----------------------------------------------------------------------------
+ 110          void HotKey_Fn_F6(BYTE event)
+ 111          {       
+ 112   1      
+ 113   1      }
+ 114          
+ 115          //----------------------------------------------------------------------------
+ 116          // The function of hotkey Fn + F7
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 3   
+
+ 117          //----------------------------------------------------------------------------
+ 118          void HotKey_Fn_F7(BYTE event)
+ 119          {
+ 120   1      
+ 121   1      }
+ 122          
+ 123          //----------------------------------------------------------------------------
+ 124          // The function of hotkey Fn + F8
+ 125          //----------------------------------------------------------------------------
+ 126          void HotKey_Fn_F8(BYTE event)
+ 127          {
+ 128   1      
+ 129   1      }
+ 130          
+ 131          //----------------------------------------------------------------------------
+ 132          // The function of hotkey Fn + F9
+ 133          //----------------------------------------------------------------------------
+ 134          void HotKey_Fn_F9(BYTE event)
+ 135          {
+ 136   1      
+ 137   1      }
+ 138          
+ 139          //----------------------------------------------------------------------------
+ 140          // The function of hotkey Fn + F10
+ 141          //----------------------------------------------------------------------------
+ 142          void HotKey_Fn_F10(BYTE event)
+ 143          {
+ 144   1      
+ 145   1      }
+ 146          
+ 147          //----------------------------------------------------------------------------
+ 148          // The function of hotkey Fn + F11
+ 149          //----------------------------------------------------------------------------
+ 150          void HotKey_Fn_F11(BYTE event)
+ 151          {
+ 152   1      
+ 153   1      }
+ 154          
+ 155          //----------------------------------------------------------------------------
+ 156          // The function of hotkey Fn + F12
+ 157          //----------------------------------------------------------------------------
+ 158          void HotKey_Fn_F12(BYTE event)
+ 159          {
+ 160   1      
+ 161   1      }
+ 162          
+ 163          //----------------------------------------------------------------------------
+ 164          // The function of hotkey Fn + ESC
+ 165          //----------------------------------------------------------------------------
+ 166          void HotKey_Fn_ESC(BYTE event)
+ 167          {
+ 168   1      
+ 169   1      }
+ 170          
+ 171          //----------------------------------------------------------------------------
+ 172          // The function of hotkey Fn + up arrow
+ 173          //----------------------------------------------------------------------------
+ 174          void HotKey_Fn_UP(BYTE event)
+ 175          {
+ 176   1      
+ 177   1      }
+ 178          
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 4   
+
+ 179          //----------------------------------------------------------------------------
+ 180          // The function of hotkey Fn + down arrow
+ 181          //----------------------------------------------------------------------------
+ 182          void HotKey_Fn_DOWN(BYTE event)
+ 183          {
+ 184   1      
+ 185   1      }
+ 186          
+ 187          //----------------------------------------------------------------------------
+ 188          // The function of hotkey Fn + left arrow
+ 189          //----------------------------------------------------------------------------
+ 190          void HotKey_Fn_LEFT(BYTE event)
+ 191          {
+ 192   1      
+ 193   1      }
+ 194          
+ 195          //----------------------------------------------------------------------------
+ 196          // The function of hotkey Fn + right arrow
+ 197          //----------------------------------------------------------------------------
+ 198          void HotKey_Fn_RIGHT(BYTE event)
+ 199          {
+ 200   1      
+ 201   1      }
+ 202          
+ 203          //----------------------------------------------------------------------------
+ 204          // The function of hotkey Fn + Ins (Scr Lk)
+ 205          //---------------------------------------------------------------------------
+ 206          void HotKey_Fn_Ins(BYTE event)
+ 207          {
+ 208   1      
+ 209   1      }
+ 210          
+ 211          //----------------------------------------------------------------------------
+ 212          // The function of hotkey Fn + Del (NumLk)
+ 213          //---------------------------------------------------------------------------
+ 214          void HotKey_Fn_Del(BYTE event)
+ 215          {
+ 216   1      
+ 217   1      }
+ 218          
+ 219          
+ 220          const FUNCT_PTR_V_B code HotKey_Fn_Fx[] =
+ 221          {
+ 222                  HotKey_Fn_F1,           // Fn + F1
+ 223                  HotKey_Fn_F2,           // Fn + F2
+ 224                  HotKey_Fn_F3,           // Fn + F3
+ 225                  HotKey_Fn_F4,       // Fn + F4
+ 226                  HotKey_Fn_F5,           // Fn + F5
+ 227                  HotKey_Fn_F6,           // Fn + F6
+ 228                  HotKey_Fn_F7,           // Fn + F7
+ 229                  HotKey_Fn_F8,       // Fn + F8
+ 230                  HotKey_Fn_F9,           // Fn + F9
+ 231                  HotKey_Fn_F10,          // Fn + F10
+ 232                  HotKey_Fn_F11,          // Fn + F11
+ 233                  HotKey_Fn_F12,          // Fn + F12     
+ 234                  HotKey_Fn_ESC,          // Fn + ESC     
+ 235                  HotKey_Fn_UP,           // Fn + up arrow        
+ 236                  HotKey_Fn_DOWN,         // Fn + down arrow      
+ 237                  HotKey_Fn_LEFT,         // Fn + left arrow      
+ 238                  HotKey_Fn_RIGHT,        // Fn + right arrow     
+ 239                  //HotKey_Fn_Ins,        // Fn + Ins (Scr Lk)
+ 240                  //HotKey_Fn_Del,        // Fn + Del (NumLk)
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 5   
+
+ 241          };
+ 242          
+ 243          //---------------------------------------------------------------------------
+ 244          //      Numpad 7 Home   [B0h]
+ 245          //      Numpad 8 UP     [B1h]
+ 246          //      Numpad 9 PGUp   [B2h]
+ 247          //      Numpad *                [B3h]
+ 248          //      Numpad 4 Left   [B4h]
+ 249          //      Numpad 5                [B5h]
+ 250          //      Numpad 6 Right  [B6h]
+ 251          //      Numpad -                [B7h]
+ 252          //      Numpad 1 End    [B8h]
+ 253          //      Numpad 2 Down   [B9h]
+ 254          //      Numpad 3 PGDn   [BAh]
+ 255          //      Numpad +                [BBh]
+ 256          //      Numpad 0 Ins    [BCh]
+ 257          //      Numpad . Del    [BDh]
+ 258          //      Numpad /        [BEh]
+ 259          //---------------------------------------------------------------------------
+ 260          
+ 261          const BYTE code ss2_9C[] =      // Numpad 7 
+ 262          {
+ 263              0x3D,   // Normal           // 7
+ 264              0xB0,   // Numlock 
+ 265              0xB0,   // Fn 
+ 266              0xB0    // Fn+Numlock 
+ 267          };
+ 268          
+ 269          const BYTE code ss2_9D[] =      // Numpad 8   
+ 270          {
+ 271              0x3E,   // Normal           // 8
+ 272              0xB1,   // Numlock 
+ 273              0xB1,   // Fn 
+ 274              0xB1    // Fn+Numlock 
+ 275          };
+ 276          
+ 277          const BYTE code ss2_9E[] =      // Numpad 9  
+ 278          {
+ 279              0x46,   // Normal           // 9
+ 280              0xB2,   // Numlock 
+ 281              0xB2,   // Fn 
+ 282              0xB2    // Fn+Numlock 
+ 283          };
+ 284          
+ 285          const BYTE code ss2_9F[] =      // Numpad 0  
+ 286          {
+ 287              0x45,   // Normal           // 0
+ 288              0xBE,   // Numlock 
+ 289              0xBE,   // Fn 
+ 290              0xBE    // Fn+Numlock 
+ 291          };
+ 292          
+ 293          const BYTE code ss2_A0[] =      // Numpad U  
+ 294          {
+ 295              0x3C,   // Normal           // U
+ 296              0xB4,   // Numlock 
+ 297              0xB4,   // Fn 
+ 298              0xB4    // Fn+Numlock 
+ 299          };
+ 300          
+ 301          const BYTE code ss2_A1[] =      // Numpad I  
+ 302          {
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 6   
+
+ 303              0x43,   // Normal           // I
+ 304              0xB5,   // Numlock 
+ 305              0xB5,   // Fn 
+ 306              0xB5    // Fn+Numlock 
+ 307          };
+ 308          
+ 309          const BYTE code ss2_A2[] =      // Numpad O 
+ 310          {
+ 311              0x44,   // Normal           // O
+ 312              0xB6,   // Numlock 
+ 313              0xB6,   // Fn 
+ 314              0xB6    // Fn+Numlock 
+ 315          };
+ 316          
+ 317          const BYTE code ss2_A3[] =      // Numpad P 
+ 318          {
+ 319              0x4D,   // Normal           // P
+ 320              0xB3,   // Numlock 
+ 321              0xB3,   // Fn 
+ 322              0xB3    // Fn+Numlock 
+ 323          };
+ 324          
+ 325          const BYTE code ss2_A4[] =      // Numpad J 
+ 326          {
+ 327              0x3B,   // Normal           // J
+ 328              0xB8,   // Numlock 
+ 329              0xB8,   // Fn 
+ 330              0xB8    // Fn+Numlock 
+ 331          };
+ 332          
+ 333          const BYTE code ss2_A5[] =      // Numpad K 
+ 334          {
+ 335              0x42,   // Normal           // K
+ 336              0xB9,   // Numlock 
+ 337              0xB9,   // Fn 
+ 338              0xB9    // Fn+Numlock 
+ 339          };
+ 340          
+ 341          const BYTE code ss2_A6[] =      // Numpad L 
+ 342          {
+ 343              0x4B,   // Normal           // L
+ 344              0xBA,   // Numlock 
+ 345              0xBA,   // Fn 
+ 346              0xBA    // Fn+Numlock 
+ 347          };
+ 348          
+ 349          const BYTE code ss2_A7[] =      // Numpad ;:  
+ 350          {
+ 351              0x4C,   // Normal           // ;:
+ 352              0xB7,   // Numlock 
+ 353              0xB7,   // Fn 
+ 354              0xB7    // Fn+Numlock 
+ 355          };
+ 356          
+ 357          const BYTE code ss2_A8[] =      // Numpad M  
+ 358          {
+ 359              0x3A,   // Normal           // M
+ 360              0xBC,   // Numlock 
+ 361              0xBC,   // Fn 
+ 362              0xBC    // Fn+Numlock 
+ 363          };
+ 364          
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 7   
+
+ 365          const BYTE code ss2_A9[] =      // Numpad ,<  
+ 366          {
+ 367              0x41,   // Normal           // ,< 
+ 368              0x41,   // Numlock 
+ 369              0x41,   // Fn 
+ 370              0x41    // Fn+Numlock 
+ 371          };
+ 372          
+ 373          const BYTE code ss2_AA[] =      // Numpad .>   
+ 374          {
+ 375              0x49,   // Normal           // .> 
+ 376              0xBD,   // Numlock 
+ 377              0xBD,   // Fn 
+ 378              0xBD    // Fn+Numlock 
+ 379          };
+ 380          
+ 381          const BYTE code ss2_AB[] =      // Numpad /?      
+ 382          {
+ 383              0x4A,   // Normal           // /? 
+ 384              0xBB,   // Numlock 
+ 385              0xBB,   // Fn 
+ 386              0xBB    // Fn+Numlock 
+ 387          };
+ 388          
+ 389          const BYTE code ss2_AC[] =   
+ 390          {
+ 391              0x5A,   // Normal 
+ 392              0x81,   // Fn 
+ 393          };
+ 394          //----------------------------------------------------------------
+ 395          // Function key F1 ~ F12
+ 396          //----------------------------------------------------------------
+ 397          const BYTE code ss2_AD[] =      // F1
+ 398          {
+ 399              0x05,   // Normal 
+ 400              0xD0,   // Fn 
+ 401          };
+ 402          
+ 403          const BYTE code ss2_AE[] =      // F2    
+ 404          {
+ 405              0x06,   // Normal 
+ 406              0xD1,   // Fn 
+ 407          };
+ 408          
+ 409          const BYTE code ss2_AF[] =      // F3  
+ 410          {
+ 411              0x04,   // Normal 
+ 412              0xD2,   // Fn 
+ 413          };
+ 414          
+ 415          const BYTE code ss2_B0[] =      // F4   
+ 416          {
+ 417              0x0C,   // Normal 
+ 418              0xD3,   // Fn 
+ 419          };
+ 420          
+ 421          const BYTE code ss2_B1[] =      // F5  
+ 422          {
+ 423              0x03,   // Normal 
+ 424              0xD4,   // Fn 
+ 425          };
+ 426          
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 8   
+
+ 427          const BYTE code ss2_B2[] =      // F6  
+ 428          {
+ 429              0x0B,   // Normal 
+ 430              0xD5,   // Fn 
+ 431          };
+ 432          
+ 433          const BYTE code ss2_B3[] =      // F7  
+ 434          {
+ 435              0x80,   // Normal 
+ 436              0xD6,   // Fn 
+ 437          };
+ 438          
+ 439          const BYTE code ss2_B4[] =      // F8  
+ 440          {
+ 441              0x0A,   // Normal 
+ 442              0xD7,   // Fn 
+ 443          };
+ 444          
+ 445          const BYTE code ss2_B5[] =      // F9  
+ 446          {
+ 447              0x01,   // Normal 
+ 448              0xD8,   // Fn 
+ 449              //0x01,   // Normal 
+ 450          };
+ 451          
+ 452          const BYTE code ss2_B6[] =      // F10  
+ 453          {
+ 454              0x09,   // Normal 
+ 455                  //0x09,   // Fn 
+ 456              0xD9,   // Fn 
+ 457              //0x09,   // Normal 
+ 458          };
+ 459          
+ 460          const BYTE code ss2_B7[] =      // F11  
+ 461          {
+ 462              0x78,   // Normal 
+ 463              0xDA,   // Fn 
+ 464              //0x78,   // Normal 
+ 465          };
+ 466          
+ 467          const BYTE code ss2_B8[] =      // F12  
+ 468          {
+ 469              0x07,   // Normal 
+ 470              0xDB,   // Fn 
+ 471              //0x07,
+ 472          };
+ 473          
+ 474          /* ----------------------------------------------------------------------------
+ 475           * FUNCTION: sskey2_A2_table
+ 476           *
+ 477           * The A2_TABLE structure contains the following.
+ 478           *
+ 479           * BYTE comb;  Bit   Setting Combination Key
+ 480           *            ---   -----------------------
+ 481           *             7    Hook_calc_index_comb_BIT7
+ 482           *             6    Hook_calc_index_comb_BIT6
+ 483           *             5    Fn
+ 484           *             4    Numlock
+ 485           *             3    Ctrl
+ 486           *             2    Alt
+ 487           *             1    Shift
+ 488           *             0    reserved
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 9   
+
+ 489           *
+ 490           * BYTE *pntr; Pointer to array for key.
+ 491           * ------------------------------------------------------------------------- */
+ 492          const A2_TABLE sskey2_A2_table[] =
+ 493          {                                                                                       // Keyboard matrix index
+ 494                  // Keypad -->
+ 495                  {0x30, ss2_9C },    /* index = 00h */   // 0x9C 
+ 496              {0x30, ss2_9D },    /* index = 01h */       // 0x9D
+ 497              {0x30, ss2_9E },    /* index = 02h */       // 0x9E 
+ 498              {0x30, ss2_9F },    /* index = 03h */       // 0x9F 
+ 499              {0x30, ss2_A0 },    /* index = 04h */       // 0xA0
+ 500              {0x30, ss2_A1 },    /* index = 05h */       // 0xA1
+ 501              {0x30, ss2_A2 },    /* index = 06h */       // 0xA2
+ 502              {0x30, ss2_A3 },    /* index = 07h */       // 0xA3
+ 503              {0x30, ss2_A4 },    /* index = 08h */       // 0xA4
+ 504              {0x30, ss2_A5 },    /* index = 09h */       // 0xA5
+ 505              {0x30, ss2_A6 },    /* index = 0Ah */       // 0xA6
+ 506              {0x30, ss2_A7 },    /* index = 0Bh */       // 0xA7
+ 507              {0x30, ss2_A8 },    /* index = 0Ch */       // 0xA8
+ 508              {0x30, ss2_A9 },    /* index = 0Dh */       // 0xA9
+ 509              {0x30, ss2_AA },    /* index = 0Eh */       // 0xAA
+ 510              {0x30, ss2_AB },    /* index = 0Fh */       // 0xAB
+ 511              {0x20, ss2_AC },    /* index = 10h */       // 0xAC
+ 512                  // Keypad <--
+ 513                  
+ 514                  // F1~F12 hotkeys -->
+ 515              {0x20, ss2_AD },    /* index = 11h */       // 0xAD
+ 516              {0x20, ss2_AE },    /* index = 12h */       // 0xAE
+ 517              {0x20, ss2_AF },    /* index = 13h */       // 0xAF
+ 518              {0x20, ss2_B0 },    /* index = 14h */       // 0xB0
+ 519              {0x20, ss2_B1 },    /* index = 15h */       // 0xB1
+ 520              {0x20, ss2_B2 },    /* index = 16h */       // 0xB2
+ 521              {0x20, ss2_B3 },    /* index = 17h */       // 0xB3
+ 522              {0x20, ss2_B4 },    /* index = 18h */       // 0xB4
+ 523              {0x20, ss2_B5 },    /* index = 19h */       // 0xB5
+ 524              {0x20, ss2_B6 },    /* index = 1Ah */       // 0xB6
+ 525              {0x20, ss2_B7 },    /* index = 1Bh */       // 0xB7
+ 526              {0x20, ss2_B8 }     /* index = 1Ch */       // 0xB8 
+ 527              // F1~F12 hotkeys <--
+ 528          };
+ 529                                                                                                  // Reserved 0xB9 ~ 0xDF
+ 530           
+ 531          /* ----------------------------------------------------------------------------
+ 532           * FUNCTION: sskey2_overlay_table
+ 533           * ------------------------------------------------------------------------- */
+ 534          const BYTE code sskey2_overlay_table[] =
+ 535          {               //      Normal          Fn                      // Keyboard matrix index
+ 536              0xC3, 0xC1, //      Print Scr       SysRq                   // 0xE0
+ 537                  0x77, 0x7E, //  Num Lk          Scr LK                  // 0xE1
+ 538                  0xC0, 0xC0, //  Del             Del             // 0xE2
+ 539                  0xC2, 0xC2, //  Insert          Insert                  // 0xE3
+ 540          
+ 541                  0x98, 0xDD, //  Up arrow        Function key up arrow  (HotKey_Fn_Up)           // 0xE4
+ 542                  0x99, 0xDE, //  Down arrow      Function key down arrow  (HotKey_Fn_Down)       // 0xE5
+ 543                  0x9A, 0xDF, //  Left arrow      Function key Left arrow  (HotKey_Fn_LEFT)       // 0xE6
+ 544                  0x9B, 0xE0,     //      Right arrow     Function key Right arrow (HotKey_Fn_RIGHT)      // 0xE7
+ 545                  
+ 546                  0x94, 0x9F, //  Home            Play/Pause event// 0xE8
+ 547                  0x96, 0x9E, //  PgUp            Stop event              // 0xE9
+ 548                  0x97, 0x9D, //  PgDn            Prev Track event// 0xEA
+ 549                  0x95, 0x9C,     //      End                     Next Track event// 0xEB
+ 550          
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 10  
+
+ 551                  0x76, 0xDC,     //      ESC                     ESC                             // 0xEC
+ 552                  0xBE, 0xBE,     //      KeyPad_/        KeyPad_/                // 0xED
+ 553          
+ 554                  0xC4, 0xC4,     // Euro Sign    // Euro Sign    // 0xEE
+ 555                  0xC5, 0xC5,     // Dollar Sign  // Dollar Sign  // 0xEF
+ 556          };
+ 557          
+ 558                                                                                                          // Reserved 0xEE ~ 0xFF                                                         
+ 559          
+ 560          /* ----------------------------------------------------------------------------
+ 561           * Insyde Software Key Number 2
+ 562           *
+ 563           * 00h         Null
+ 564           * 01h - 7Fh   Same as IBM Scan Code, Set2
+ 565           * 80h - BFh   Pre-Index for generation Scan Code, Set2
+ 566           * C0h - DFh   Pre-Index for PPK function
+ 567           * C0h - DFh   Pre-Index for SMI function
+ 568           * ------------------------------------------------------------------------- */
+ 569          /* ----------------------------------------------------------------------------
+ 570           * FUNCTION: sskey3_80_table - Insyde Software Key Number 2
+ 571           * 80h - BFh   Pre-Index for generation Scan Code, Set2
+ 572           * ------------------------------------------------------------------------- */
+ 573          const BYTE code sskey3_80_table[] =
+ 574          {
+ 575          //-----------------------------------------------------------------
+ 576          // Index from keyboard matrix
+ 577          //-----------------------------------------------------------------     
+ 578                                                                                  // Keyboard matrix index
+ 579                  0x83,   DO_SIMPLE_CODE,         // [80h] F7 (118) 
+ 580                  0x5A,   DO_E0_PREFIX_CODE,      // [81h] Numpad Enter (108) 
+ 581              0x1F,       DO_E0_PREFIX_CODE,      // [82h] Windows Left 
+ 582              0x27,       DO_E0_PREFIX_CODE,      // [83h] Windows Right 
+ 583              0x2F,       DO_E0_PREFIX_CODE,      // [84h] Application 
+ 584              0x37,       DO_E0_PREFIX_CODE,      // [85h] Power event 
+ 585              0x3F,       DO_E0_PREFIX_CODE,      // [86h] Sleep event 
+ 586              0x5E,       DO_E0_PREFIX_CODE,              // [87h] Wake event 
+ 587              LShift, DO_CONTROL_EFFECT,          // [88h] 12 Shift(L) 
+ 588              RShift, DO_CONTROL_EFFECT,          // [89h] 59 Shift(R) 
+ 589              LAlt,       DO_CONTROL_EFFECT,      // [8Ah] 11 Alt(L) 
+ 590              RAlt,       DO_CONTROL_EFFECT_E0,   // [8Bh] E0 11 Alt(R) 
+ 591              LCtrl,      DO_CONTROL_EFFECT,              // [8Ch] 14 Crtl(L) 
+ 592              RCtrl,      DO_CONTROL_EFFECT_E0,   // [8Dh] E0 14 Ctrl(R) 
+ 593              FN,         DO_CONTROL_EFFECT,      // [8Eh] Fn 
+ 594              OVLAY,      DO_CONTROL_EFFECT,              // [8Fh] Overlay 
+ 595              0x00,       DO_SIMPLE_CODE,         // [90h] Reserved 
+ 596              0x00,       DO_SPECIAL_CODE,        // [91h] Pause (126) 
+ 597              0x01,       DO_SPECIAL_CODE,        // [92h] Break 
+ 598              0x84,       DO_SIMPLE_CODE,         // [93h] (124) Alt-Case (SysRq) 
+ 599                  0x6C,   DO_E0_PREFIX_CODE,      // [94h] Home 
+ 600              0x69,       DO_E0_PREFIX_CODE,      // [95h] End 
+ 601              0x7D,       DO_E0_PREFIX_CODE,      // [96h] Page up 
+ 602              0x7A,       DO_E0_PREFIX_CODE,      // [97h] Page down 
+ 603                  0x75,   DO_E0_PREFIX_CODE,      // [98h] UP arrow 
+ 604              0x72,       DO_E0_PREFIX_CODE,      // [99h] Down arrow 
+ 605              0x6B,       DO_E0_PREFIX_CODE,      // [9Ah] Left arrow 
+ 606              0x74,       DO_E0_PREFIX_CODE,      // [9Bh] Right arrow 
+ 607              
+ 608          //-----------------------------------------------------------------
+ 609          // For MicroSoft enhance keyboard feature.
+ 610          //-----------------------------------------------------------------
+ 611                  0x4D, DO_E0_PREFIX_CODE,        // [9Ch] Next Track event 
+ 612              0x15, DO_E0_PREFIX_CODE,            // [9Dh] Prev Track event 
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 11  
+
+ 613              0x3B, DO_E0_PREFIX_CODE,            // [9Eh] Stop event 
+ 614              0x34, DO_E0_PREFIX_CODE,            // [9Fh] Play/Pause event 
+ 615              0x23, DO_E0_PREFIX_CODE,            // [A0h] Mute event 
+ 616              0x32, DO_E0_PREFIX_CODE,            // [A1h] Volume Up event 
+ 617              0x21, DO_E0_PREFIX_CODE,            // [A2h] Volume Down event 
+ 618              0x48, DO_E0_PREFIX_CODE,            // [A3h] Mail event 
+ 619              0x10, DO_E0_PREFIX_CODE,            // [A4h] Search event 
+ 620              0x3A, DO_E0_PREFIX_CODE,            // [A5h] Web/Home event 
+ 621              0x38, DO_E0_PREFIX_CODE,            // [A6h] Back event 
+ 622              0x30, DO_E0_PREFIX_CODE,            // [A7h] Forward event 
+ 623              0x28, DO_E0_PREFIX_CODE,            // [A8h] Stop event 
+ 624              0x20, DO_E0_PREFIX_CODE,            // [A9h] Refresh event 
+ 625              0x18, DO_E0_PREFIX_CODE,            // [AAh] Favorites event 
+ 626              0x2B, DO_E0_PREFIX_CODE,            // [ABh] Caluator event 
+ 627              0x40, DO_E0_PREFIX_CODE,            // [ACh] My Computer event 
+ 628              0x50, DO_E0_PREFIX_CODE,            // [ADh] Media event 
+ 629              0x00, DO_SIMPLE_CODE,               // [AEh] Reserved 
+ 630              0x00, DO_SIMPLE_CODE,               // [AFh] Reserved 
+ 631              
+ 632          //-----------------------------------------------------------------
+ 633          // Index from sskey2_A2_table
+ 634          //-----------------------------------------------------------------
+ 635                  0x6C, DO_SIMPLE_CODE,                   // Numpad 7 Home        [B0h]
+ 636                  0x75, DO_SIMPLE_CODE,                   // Numpad 8 UP          [B1h]
+ 637                  0x7D, DO_SIMPLE_CODE,           // Numpad 9 PGUp        [B2h]
+ 638                  0x7C, DO_SIMPLE_CODE,           // Numpad *             [B3h]
+ 639                  0x6B, DO_SIMPLE_CODE,           // Numpad 4 Left        [B4h]
+ 640                  0x73, DO_SIMPLE_CODE,           // Numpad 5             [B5h]
+ 641                  0x74, DO_SIMPLE_CODE,           // Numpad 6 Right       [B6h]
+ 642                  0x7B, DO_SIMPLE_CODE,           // Numpad -             [B7h]
+ 643                  0x69, DO_SIMPLE_CODE,           // Numpad 1 End         [B8h]
+ 644                  0x72, DO_SIMPLE_CODE,           // Numpad 2 Down        [B9h]
+ 645                  0x7A, DO_SIMPLE_CODE,           // Numpad 3 PGDn        [BAh]
+ 646                  0x79, DO_SIMPLE_CODE,           // Numpad +             [BBh]
+ 647                  0x70, DO_SIMPLE_CODE,           // Numpad 0 Ins         [BCh]
+ 648                  0x71, DO_SIMPLE_CODE,                   // Numpad . Del         [BDh]
+ 649                  0x4A, DO_E0_PREFIX_CODE,                // Numpad /             [BEh]
+ 650                  
+ 651                  0x00, DO_SIMPLE_CODE,                   // Reserved             [BFh]
+ 652                  
+ 653              0x71, DO_E0_PREFIX_CODE,            // Delete                       [C0h]  
+ 654              0x84, DO_SIMPLE_CODE,               // SysRq                        [C1h]  
+ 655              0x70, DO_E0_PREFIX_CODE,            // Insert                       [C2h]  
+ 656              0x7C, DO_E0_PREFIX_CODE,            // Print Screen         [C3h] 
+ 657                  0x41, DO_E0_PREFIX_CODE,        // Euro Sign            [C4h]
+ 658                  0x49, DO_E0_PREFIX_CODE,        // Dollar Sign          [C5h]
+ 659                  0x00, DO_SIMPLE_CODE,                   // Reserved             [C6h]
+ 660                  0x00, DO_SIMPLE_CODE,                   // Reserved             [C7h]
+ 661                  0x00, DO_SIMPLE_CODE,                   // Reserved             [C8h]
+ 662                  0x00, DO_SIMPLE_CODE,                   // Reserved             [C9h]
+ 663                  0x00, DO_SIMPLE_CODE,                   // Reserved             [CAh]
+ 664                  0x00, DO_SIMPLE_CODE,                   // Reserved             [CBh]
+ 665                  0x00, DO_SIMPLE_CODE,                   // Reserved             [CCh]
+ 666                  0x00, DO_SIMPLE_CODE,                   // Reserved             [CDh]
+ 667                  0x00, DO_SIMPLE_CODE,                   // Reserved             [CEh]
+ 668                  0x00, DO_SIMPLE_CODE,                   // Reserved             [CFh]
+ 669                  
+ 670          // Function key F1 ~ F12     
+ 671              0   , DO_COSTOMER_FUNCTION,         // Function key F1      [D0h]  
+ 672              1   , DO_COSTOMER_FUNCTION,         // Function key F2      [D1h]  
+ 673              2   , DO_COSTOMER_FUNCTION,         // Function key F3      [D2h] 
+ 674              3   , DO_COSTOMER_FUNCTION,         // Function key F4      [D3h] 
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 12  
+
+ 675              4   , DO_COSTOMER_FUNCTION,         // Function key F5      [D4h] 
+ 676              5   , DO_COSTOMER_FUNCTION,         // Function key F6      [D5h] 
+ 677              6   , DO_COSTOMER_FUNCTION,         // Function key F7      [D6h] 
+ 678              7   , DO_COSTOMER_FUNCTION,         // Function key F8      [D7h] 
+ 679              8   , DO_COSTOMER_FUNCTION,         // Function key F9      [D8h] 
+ 680              9   , DO_COSTOMER_FUNCTION,         // Function key F10     [D9h] 
+ 681              10  , DO_COSTOMER_FUNCTION,         // Function key F11     [DAh]  
+ 682              11  , DO_COSTOMER_FUNCTION,         // Function key F12     [DBh] 
+ 683                  12      , DO_COSTOMER_FUNCTION,         // Function key Esc     [DCh]
+ 684                  13      , DO_COSTOMER_FUNCTION,         // Function key Up arrow        [DDh]
+ 685                  14      , DO_COSTOMER_FUNCTION,         // Function key Down arrow      [DEh]
+ 686                  15      , DO_COSTOMER_FUNCTION,         // Function key Left arrow      [DFh]
+ 687                  16      , DO_COSTOMER_FUNCTION,         // Function key Right arrow     [E0h]   
+ 688          };
+ 689          
+ 690                                                                                  // Reserved 0xE0 ~ 0xFF         
+ 691          
+ 692          //----------------------------------------------------------------------------
+ 693          // table_entry : value of keyboard matrix table. for example Rc_ROM_Tables[]
+ 694          // event : key MAKE_EVENT or BREAK_EVENT or REPEAT_EVENT
+ 695          //----------------------------------------------------------------------------
+ 696          void OEM_Hook_Send_Key(BYTE table_entry, BYTE event)
+ 697          {
+ 698   1      
+ 699   1      }
+ 700          
+ 701          //----------------------------------------------------------------------------
+ 702          // Return : 0xFF --> Send_Key function will be break; (no any scan code to host)
+ 703          //----------------------------------------------------------------------------
+ 704          BYTE OEM_Hook_Skip_Send_Key(void)
+ 705          {
+ 706   1          return(0x00);
+ 707   1      }
+ 708                                                                          
+ 709          //-----------------------------------------------------------------------------
+ 710          // Keyboard hook function (KSO0 - KSO15)
+ 711          // KSIValus : keyboard KSI
+ 712          // KSOValus : keyboard KSO
+ 713          //-----------------------------------------------------------------------------
+ 714          void Hook_keyboard(BYTE KSIValus, BYTE KSOValus)
+ 715          {
+ 716   1      
+ 717   1      }               
+ 718          
+ 719          //-----------------------------------------------------------------------------
+ 720          // Keyboard hook function (KSO16 - KSO17 and GPIO KSO)
+ 721          // KSIValus : keyboard KSI
+ 722          // KSOValus : keyboard KSO
+ 723          //-----------------------------------------------------------------------------
+ 724          void Et_Hook_keyboard(BYTE KSIValus, BYTE KSOValus)
+ 725          {
+ 726   1      
+ 727   1      }
+ 728          
+ 729          /* ---------------------------------------------------------------------------
+ 730           * FUNCTION: Hook_Setup_Scanner_Pntr - to define the possible scanner tables
+ 731           *
+ 732           *     0   Rc_RAM_Table
+ 733           *     1   ROM Table 1
+ 734           *     ...
+ 735           * ------------------------------------------------------------------------ */
+ 736          void Hook_Setup_Scanner_Pntr(void)
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 13  
+
+ 737          {                                               
+ 738   1              Scanner_Table_Pntr = &Rc_ROM_Tables;
+ 739   1              Extendkey_Table_Pntr = &EtKey_ROM_Tables;
+ 740   1      }
+ 741          
+ 742          //-----------------------------------------------------------------------------
+ 743          // The function of setting GPIO scan pin to high
+ 744          //-----------------------------------------------------------------------------
+ 745          void Hook_SetGPIOScanPinH(void)
+ 746          {
+ 747   1      
+ 748   1      }
+ 749          
+ 750          //-----------------------------------------------------------------------------
+ 751          // The function of setting GPIO scan pin to low
+ 752          //-----------------------------------------------------------------------------
+ 753          void Hook_SetGPIOScanPinL(void)
+ 754          {
+ 755   1      
+ 756   1      }
+ 757          
+ 758          //-----------------------------------------------------------------------------
+ 759          // The function of setting GPIO scan pin output
+ 760          //-----------------------------------------------------------------------------
+ 761          void Hook_SetGPIOScanPinCtrl(void)
+ 762          {
+ 763   1      
+ 764   1      }
+ 765          
+ 766          //-----------------------------------------------------------------------------
+ 767          // Fn key make
+ 768          //-----------------------------------------------------------------------------
+ 769          void Hook_Fn_Key_Make(void)
+ 770          {
+ 771   1      
+ 772   1      }
+ 773          
+ 774          //-----------------------------------------------------------------------------
+ 775          // Fn key break
+ 776          //-----------------------------------------------------------------------------
+ 777          void Hook_Fn_Key_Break(void)
+ 778          {
+ 779   1      
+ 780   1      }
+ 781          
+ 782          //-----------------------------------------------------------------------------
+ 783          // Return : 0xFF --> sskey2_A2_table contains bit6
+ 784          //-----------------------------------------------------------------------------
+ 785          BYTE Hook_calc_index_comb_BIT6(void)
+ 786          {
+ 787   1          return(0x00);
+ 788   1      }
+ 789          
+ 790          //-----------------------------------------------------------------------------
+ 791          // Return : 0xFF --> sskey2_A2_table contains bit7
+ 792          //-----------------------------------------------------------------------------
+ 793          BYTE Hook_calc_index_comb_BIT7(void)
+ 794          {
+ 795   1          return(0x00);
+ 796   1      }
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 14  
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION _HotKey_Fn_F1 (BEGIN)
+                                           ; SOURCE LINE # 70
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 71
+                                           ; SOURCE LINE # 73
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_F1 (END)
+
+             ; FUNCTION _HotKey_Fn_F2 (BEGIN)
+                                           ; SOURCE LINE # 78
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 79
+                                           ; SOURCE LINE # 81
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_F2 (END)
+
+             ; FUNCTION _HotKey_Fn_F3 (BEGIN)
+                                           ; SOURCE LINE # 86
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 87
+                                           ; SOURCE LINE # 89
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_F3 (END)
+
+             ; FUNCTION _HotKey_Fn_F4 (BEGIN)
+                                           ; SOURCE LINE # 94
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 95
+                                           ; SOURCE LINE # 97
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_F4 (END)
+
+             ; FUNCTION _HotKey_Fn_F5 (BEGIN)
+                                           ; SOURCE LINE # 102
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 103
+                                           ; SOURCE LINE # 105
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_F5 (END)
+
+             ; FUNCTION _HotKey_Fn_F6 (BEGIN)
+                                           ; SOURCE LINE # 110
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 111
+                                           ; SOURCE LINE # 113
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_F6 (END)
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 15  
+
+
+             ; FUNCTION _HotKey_Fn_F7 (BEGIN)
+                                           ; SOURCE LINE # 118
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 119
+                                           ; SOURCE LINE # 121
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_F7 (END)
+
+             ; FUNCTION _HotKey_Fn_F8 (BEGIN)
+                                           ; SOURCE LINE # 126
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 127
+                                           ; SOURCE LINE # 129
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_F8 (END)
+
+             ; FUNCTION _HotKey_Fn_F9 (BEGIN)
+                                           ; SOURCE LINE # 134
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 135
+                                           ; SOURCE LINE # 137
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_F9 (END)
+
+             ; FUNCTION _HotKey_Fn_F10 (BEGIN)
+                                           ; SOURCE LINE # 142
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 143
+                                           ; SOURCE LINE # 145
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_F10 (END)
+
+             ; FUNCTION _HotKey_Fn_F11 (BEGIN)
+                                           ; SOURCE LINE # 150
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 151
+                                           ; SOURCE LINE # 153
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_F11 (END)
+
+             ; FUNCTION _HotKey_Fn_F12 (BEGIN)
+                                           ; SOURCE LINE # 158
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 159
+                                           ; SOURCE LINE # 161
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_F12 (END)
+
+             ; FUNCTION _HotKey_Fn_ESC (BEGIN)
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 16  
+
+                                           ; SOURCE LINE # 166
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 167
+                                           ; SOURCE LINE # 169
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_ESC (END)
+
+             ; FUNCTION _HotKey_Fn_UP (BEGIN)
+                                           ; SOURCE LINE # 174
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 175
+                                           ; SOURCE LINE # 177
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_UP (END)
+
+             ; FUNCTION _HotKey_Fn_DOWN (BEGIN)
+                                           ; SOURCE LINE # 182
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 183
+                                           ; SOURCE LINE # 185
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_DOWN (END)
+
+             ; FUNCTION _HotKey_Fn_LEFT (BEGIN)
+                                           ; SOURCE LINE # 190
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 191
+                                           ; SOURCE LINE # 193
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_LEFT (END)
+
+             ; FUNCTION _HotKey_Fn_RIGHT (BEGIN)
+                                           ; SOURCE LINE # 198
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 199
+                                           ; SOURCE LINE # 201
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_RIGHT (END)
+
+             ; FUNCTION _HotKey_Fn_Ins (BEGIN)
+                                           ; SOURCE LINE # 206
+0000 900000      R     MOV     DPTR,#event
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 207
+                                           ; SOURCE LINE # 209
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_Ins (END)
+
+             ; FUNCTION _HotKey_Fn_Del (BEGIN)
+                                           ; SOURCE LINE # 214
+0000 900000      R     MOV     DPTR,#event
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 17  
+
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 215
+                                           ; SOURCE LINE # 217
+0005 22                RET     
+             ; FUNCTION _HotKey_Fn_Del (END)
+
+             ; FUNCTION _OEM_Hook_Send_Key (BEGIN)
+                                           ; SOURCE LINE # 696
+0000 900000      R     MOV     DPTR,#table_entry
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 ED                MOV     A,R5
+0007 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 697
+                                           ; SOURCE LINE # 699
+0008 22                RET     
+             ; FUNCTION _OEM_Hook_Send_Key (END)
+
+             ; FUNCTION OEM_Hook_Skip_Send_Key (BEGIN)
+                                           ; SOURCE LINE # 704
+                                           ; SOURCE LINE # 705
+                                           ; SOURCE LINE # 706
+0000 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 707
+0002         ?C0021:
+0002 22                RET     
+             ; FUNCTION OEM_Hook_Skip_Send_Key (END)
+
+             ; FUNCTION _Hook_keyboard (BEGIN)
+                                           ; SOURCE LINE # 714
+0000 900000      R     MOV     DPTR,#KSIValus
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 ED                MOV     A,R5
+0007 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 715
+                                           ; SOURCE LINE # 717
+0008 22                RET     
+             ; FUNCTION _Hook_keyboard (END)
+
+             ; FUNCTION _Et_Hook_keyboard (BEGIN)
+                                           ; SOURCE LINE # 724
+0000 900000      R     MOV     DPTR,#KSIValus
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 ED                MOV     A,R5
+0007 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 725
+                                           ; SOURCE LINE # 727
+0008 22                RET     
+             ; FUNCTION _Et_Hook_keyboard (END)
+
+             ; FUNCTION Hook_Setup_Scanner_Pntr (BEGIN)
+                                           ; SOURCE LINE # 736
+                                           ; SOURCE LINE # 737
+                                           ; SOURCE LINE # 738
+0000 900000      E     MOV     DPTR,#Scanner_Table_Pntr
+0003 7400        R     MOV     A,#HIGH Rc_ROM_Tables
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 18  
+
+0005 F0                MOVX    @DPTR,A
+0006 A3                INC     DPTR
+0007 7400        R     MOV     A,#LOW Rc_ROM_Tables
+0009 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 739
+000A 900000      E     MOV     DPTR,#Extendkey_Table_Pntr
+000D 7400        R     MOV     A,#HIGH EtKey_ROM_Tables
+000F F0                MOVX    @DPTR,A
+0010 A3                INC     DPTR
+0011 7400        R     MOV     A,#LOW EtKey_ROM_Tables
+0013 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 740
+0014 22                RET     
+             ; FUNCTION Hook_Setup_Scanner_Pntr (END)
+
+             ; FUNCTION Hook_SetGPIOScanPinH (BEGIN)
+                                           ; SOURCE LINE # 745
+                                           ; SOURCE LINE # 746
+                                           ; SOURCE LINE # 748
+0000 22                RET     
+             ; FUNCTION Hook_SetGPIOScanPinH (END)
+
+             ; FUNCTION Hook_SetGPIOScanPinL (BEGIN)
+                                           ; SOURCE LINE # 753
+                                           ; SOURCE LINE # 754
+                                           ; SOURCE LINE # 756
+0000 22                RET     
+             ; FUNCTION Hook_SetGPIOScanPinL (END)
+
+             ; FUNCTION Hook_SetGPIOScanPinCtrl (BEGIN)
+                                           ; SOURCE LINE # 761
+                                           ; SOURCE LINE # 762
+                                           ; SOURCE LINE # 764
+0000 22                RET     
+             ; FUNCTION Hook_SetGPIOScanPinCtrl (END)
+
+             ; FUNCTION Hook_Fn_Key_Make (BEGIN)
+                                           ; SOURCE LINE # 769
+                                           ; SOURCE LINE # 770
+                                           ; SOURCE LINE # 772
+0000 22                RET     
+             ; FUNCTION Hook_Fn_Key_Make (END)
+
+             ; FUNCTION Hook_Fn_Key_Break (BEGIN)
+                                           ; SOURCE LINE # 777
+                                           ; SOURCE LINE # 778
+                                           ; SOURCE LINE # 780
+0000 22                RET     
+             ; FUNCTION Hook_Fn_Key_Break (END)
+
+             ; FUNCTION Hook_calc_index_comb_BIT6 (BEGIN)
+                                           ; SOURCE LINE # 785
+                                           ; SOURCE LINE # 786
+                                           ; SOURCE LINE # 787
+0000 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 788
+0002         ?C0030:
+0002 22                RET     
+             ; FUNCTION Hook_calc_index_comb_BIT6 (END)
+
+             ; FUNCTION Hook_calc_index_comb_BIT7 (BEGIN)
+                                           ; SOURCE LINE # 793
+C51 COMPILER V9.03   OEM_SCANTABS                                                          02/02/2015 14:30:22 PAGE 19  
+
+                                           ; SOURCE LINE # 794
+                                           ; SOURCE LINE # 795
+0000 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 796
+0002         ?C0031:
+0002 22                RET     
+             ; FUNCTION Hook_calc_index_comb_BIT7 (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    176    ----
+   CONSTANT SIZE    =    758    ----
+   XDATA SIZE       =   ----      25
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

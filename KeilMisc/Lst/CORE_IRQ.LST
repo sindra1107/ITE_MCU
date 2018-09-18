@@ -1,0 +1,3570 @@
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE CORE_IRQ
+OBJECT MODULE PLACED IN Code\CORE\CORE_IRQ.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\CORE\CORE_IRQ.C LA WL(1) CD OT(9,SIZE) NOAREGS OR INCDI
+                    -R(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*-----------------------------------------------------------------------------
+   2           * TITLE: CORE_IRQ.C - Interrupt Service Routines (ISR).
+   3           *
+   4           * The Interrupt Service Routines (ISR).  The actual interrupt functions are
+   5           * implemented in the "CHIP_IRQ.C".
+   6           *
+   7           * Copyright (c) 1983-2007, Insyde Software Corporation. All Rights Reserved.
+   8           *
+   9           * You may not reproduce, distribute, publish, display, perform, modify, adapt,
+  10           * transmit, broadcast, present, recite, release, license or otherwise exploit
+  11           * any part of this publication in any form, by any means, without the prior
+  12           * written permission of Insyde Software Corporation.
+  13           *---------------------------------------------------------------------------*/
+  14           
+  15          #include <CORE_INCLUDE.H>
+  16          #include <OEM_INCLUDE.H>
+  17          
+  18          //----------------------------------------------------------------------------
+  19          // Input full irq lock scan
+  20          //----------------------------------------------------------------------------
+  21          void IrqLock_scan(void)
+  22          {
+  23   1              Int_Var.Scan_Lock = 1;
+  24   1          //Timer_B.fbit.SEND_ENABLE = 0;     // Lock scanner. 
+  25   1      }
+  26          
+  27          //----------------------------------------------------------------------------
+  28          // Null function
+  29          //----------------------------------------------------------------------------
+  30          void IRQ_INT0_Null(void)
+  31          {
+  32   1      
+  33   1      }
+  34          
+  35          //----------------------------------------------------------------------------
+  36          // WKO[20]
+  37          //----------------------------------------------------------------------------
+  38          void IRQ_INT1_WKO20(void)
+  39          {
+  40   1          Hook_IRQ_INT1_WKO20();
+  41   1      }
+  42          
+  43          //----------------------------------------------------------------------------
+  44          // KBC Output Buffer Empty Interrupt
+  45          //----------------------------------------------------------------------------
+  46          void IRQ_INT2_KBCOBE(void)
+  47          {
+  48   1          Hook_IRQ_INT2_KBCOBE();
+  49   1      }
+  50          
+  51          //----------------------------------------------------------------------------
+  52          // PMC Output Buffer Empty Intr. PMC1 Output Buffer Empty Intr.
+  53          //----------------------------------------------------------------------------
+  54          void IRQ_INT3_PMCPMC1OBE(void)
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 2   
+
+  55          {
+  56   1          Hook_IRQ_INT3_PMCPMC1OBE();
+  57   1      }
+  58          
+  59          //----------------------------------------------------------------------------
+  60          // SMBus D Interrupt
+  61          //----------------------------------------------------------------------------
+  62          void IRQ_INT4_SMBusD(void)
+  63          {
+  64   1          Hook_IRQ_INT4_SMBusD();
+  65   1      }
+  66          
+  67          //----------------------------------------------------------------------------
+  68          // WKINTAD (WKINTA or WKINTD)
+  69          //----------------------------------------------------------------------------
+  70          void IRQ_INT5_WKINTAD(void)
+  71          {
+  72   1          Hook_IRQ_INT5_WKINTAD();
+  73   1      }
+  74          
+  75          //----------------------------------------------------------------------------
+  76          // WKO[23]
+  77          //----------------------------------------------------------------------------
+  78          void IRQ_INT6_WKO23(void)
+  79          {
+  80   1          Hook_IRQ_INT6_WKO23();
+  81   1      }
+  82          
+  83          //----------------------------------------------------------------------------
+  84          // PWM Interrupt
+  85          //----------------------------------------------------------------------------
+  86          void IRQ_INT7_PWM(void)
+  87          {
+  88   1          Hook_IRQ_INT7_PWM();
+  89   1      }
+  90          
+  91          //----------------------------------------------------------------------------
+  92          // ADC Interrupt
+  93          //----------------------------------------------------------------------------
+  94          void IRQ_INT8_ADC(void)
+  95          {
+  96   1          Hook_IRQ_INT8_ADC();
+  97   1      }
+  98          
+  99          //----------------------------------------------------------------------------
+ 100          // SMBus A Interrupt
+ 101          //----------------------------------------------------------------------------
+ 102          void IRQ_INT9_SMBusA(void)
+ 103          {
+ 104   1          Hook_IRQ_INT9_SMBusA();
+ 105   1      }
+ 106          
+ 107          //----------------------------------------------------------------------------
+ 108          // SMBus B Interrupt
+ 109          //----------------------------------------------------------------------------
+ 110          void IRQ_INT10_SMBusB(void)
+ 111          {
+ 112   1          Hook_IRQ_INT10_SMBusB();
+ 113   1      }
+ 114          
+ 115          //----------------------------------------------------------------------------
+ 116          // KB Matrix Scan Interrupt
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 3   
+
+ 117          //----------------------------------------------------------------------------
+ 118          void IRQ_INT11_KBMatrixScan(void)
+ 119          {
+ 120   1          //*******************************************************
+ 121   1          #ifndef KB_HW_KeyScan   // Firmware scan keyboard
+ 122   1          //*******************************************************
+ 123   1              CLEAR_MASK(IER1,Int_KB);
+ 124   1          ISR1 = Int_KB;
+ 125   1              F_Service_KEY = 1;      // Post service request to scan internal keyboard. 
+ 126   1      
+ 127   1          Hook_IRQ_INT11_KBMatrixScan();
+ 128   1          //*******************************************************
+ 129   1          #endif  // KB_HW_KeyScan 
+ 130   1          //*******************************************************
+ 131   1      }
+ 132          
+ 133          //----------------------------------------------------------------------------
+ 134          // WKO[26]
+ 135          //----------------------------------------------------------------------------
+ 136          void IRQ_INT12_WKO26(void)
+ 137          {
+ 138   1          Hook_IRQ_INT12_WKO26();
+ 139   1      }
+ 140          
+ 141          //----------------------------------------------------------------------------
+ 142          // WKINTC
+ 143          //----------------------------------------------------------------------------
+ 144          void IRQ_INT13_WKINTC(void)
+ 145          {
+ 146   1          Hook_IRQ_INT13_WKINTC();
+ 147   1      }
+ 148          
+ 149          //----------------------------------------------------------------------------
+ 150          // WKO[25]
+ 151          //----------------------------------------------------------------------------
+ 152          void IRQ_INT14_WKO25(void)
+ 153          {
+ 154   1          Hook_IRQ_INT14_WKO25();
+ 155   1      }
+ 156          
+ 157          //----------------------------------------------------------------------------
+ 158          // CIR Interrupt
+ 159          //----------------------------------------------------------------------------
+ 160          void IRQ_INT15_CIR(void)
+ 161          {
+ 162   1          Hook_IRQ_INT15_CIR();
+ 163   1      }
+ 164          
+ 165          //----------------------------------------------------------------------------
+ 166          // SMBus C Interrupt
+ 167          //----------------------------------------------------------------------------
+ 168          void IRQ_INT16_SMBusC(void)
+ 169          {
+ 170   1          Hook_IRQ_INT16_SMBusC();
+ 171   1      }
+ 172          
+ 173          //----------------------------------------------------------------------------
+ 174          // WKO[24]
+ 175          //----------------------------------------------------------------------------
+ 176          void IRQ_INT17_WKO24(void)
+ 177          {
+ 178   1          Hook_IRQ_INT17_WKO24();
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 4   
+
+ 179   1      }
+ 180          
+ 181          //----------------------------------------------------------------------------
+ 182          // PS/2 Interrupt 2
+ 183          //----------------------------------------------------------------------------
+ 184          void IRQ_INT18_PS2Interrupt2(void)
+ 185          {
+ 186   1          #if TouchPad_only
+ 187   1              CLEAR_MASK(IER2,Int_PS2_2); // Disable PS2 interrupt 2  
+ 188   1          ISR2 = Int_PS2_2;           // Write to clear pending interrupt
+ 189   1          
+ 190   1          if(SendtoAUXFlag)
+ 191   1          {
+ 192   2              for(PS2DataPinStatusCounter=0x00;PS2DataPinStatusCounter<5;PS2DataPinStatusCounter++)
+ 193   2              {
+ 194   3                  //if(IS_MASK_SET(PSSTS3, DLS))   // DATA Line Status is high
+ 195   3                  if(IS_MASK_SET(GPDRF, BIT5))   // DATA Line Status is high
+ 196   3                  {
+ 197   4                      break;
+ 198   4                  }
+ 199   3                  else
+ 200   3                  {
+ 201   4                      WNCKR = 0x00;   // Delay 15.26 us
+ 202   4                  }
+ 203   3              }
+ 204   2          }
+ 205   1      
+ 206   1              PSCTL1 = PS2_InhibitMode;   // Inhibit clock pin1
+ 207   1              PSCTL2 = PS2_InhibitMode;   // Inhibit clock pin2
+ 208   1              PSCTL3 = PS2_InhibitMode;   // Inhibit clock pin3
+ 209   1      
+ 210   1              PS2_IRQ_Channel = 2;        // Set PS2 2 service flag
+ 211   1              F_Service_PS2 = 1;          // Set main service flag
+ 212   1              PS2StartBit=0;                  // clear start bit flag
+ 213   1          PS2_SSIRQ_Channel = 0xFF;   //
+ 214   1          PS2PortxData[2]=PSDAT3;
+ 215   1          #else
+                      if(IS_MASK_SET(PSSTS3, TDS))    // Transaction done interrupt 
+                      {
+                              CLEAR_MASK(IER2,Int_PS2_2); // Disable PS2 interrupt 2  
+                          ISR2 = Int_PS2_2;           // Write to clear pending interrupt
+                          
+                          if(SendtoAUXFlag)
+                          {
+                          for(PS2DataPinStatusCounter=0x00;PS2DataPinStatusCounter<5;PS2DataPinStatusCounter++)
+                          {
+                              if(IS_MASK_SET(PSSTS3, DLS))   // DATA Line Status is high
+                              {
+                                  break;
+                              }
+                              else
+                              {
+                                  WNCKR = 0x00;   // Delay 15.26 us
+                              }
+                          }
+                      }
+                      else
+                      {
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 5   
+
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+                      }
+                      
+                              PSCTL1 = PS2_InhibitMode;   // Inhibit clock pin1
+                              PSCTL2 = PS2_InhibitMode;   // Inhibit clock pin2
+                              PSCTL3 = PS2_InhibitMode;   // Inhibit clock pin3
+              
+                              PS2_IRQ_Channel = 2;        // Set PS2 2 service flag
+                              F_Service_PS2 = 1;          // Set main service flag
+                              PS2StartBit=0;                  // clear start bit flag
+                          PS2_SSIRQ_Channel = 0xFF;   //
+                          PS2PortxData[2]=PSDAT3;
+                      }
+                  else                                                // Start bit interrupt 
+                  {
+                      PSCTL1 = PS2_InhibitMode;   // Inhibit clock pin1
+                      PSCTL2 = PS2_InhibitMode;   // Inhibit clock pin2
+                      IER2&= ~(Int_PS2_0+Int_PS2_1+Int_PS2_2);    // Disable all PS2 interrupt
+                      ISR2=(Int_PS2_0+Int_PS2_1+Int_PS2_2);       // Write to clear all PS2 pending interrupt
+                      PS2StartBit = 1;                // Set start bit flag
+                      PS2_SSIRQ_Channel = 2;      //
+                      SET_MASK(IER2,Int_PS2_2);   // Enable PS2 interrupt 2
+                  }   
+                  #endif
+ 267   1          Hook_IRQ_INT18_PS2Interrupt2();
+ 268   1      }
+ 269          
+ 270          //----------------------------------------------------------------------------
+ 271          // PS/2 Interrupt 1
+ 272          //----------------------------------------------------------------------------
+ 273          void IRQ_INT19_PS2Interrupt1(void)
+ 274          {
+ 275   1          #if TouchPad_only
+ 276   1          CLEAR_MASK(IER2,Int_PS2_1); // Disable PS2 interrupt 1  
+ 277   1          ISR2 = Int_PS2_1;           // Write to clear pending interrupt 
+ 278   1          
+ 279   1          if(SendtoAUXFlag)
+ 280   1          {
+ 281   2              for(PS2DataPinStatusCounter=0x00;PS2DataPinStatusCounter<5;PS2DataPinStatusCounter++)
+ 282   2              {
+ 283   3                  //if(IS_MASK_SET(PSSTS2, DLS))   // DATA Line Status is high
+ 284   3                  if(IS_MASK_SET(GPDRF, BIT3))   // DATA Line Status is high
+ 285   3                  {
+ 286   4                      break;
+ 287   4                  }
+ 288   3                  else
+ 289   3                  {
+ 290   4                      WNCKR = 0x00;   // Delay 15.26 us
+ 291   4                  }
+ 292   3              }
+ 293   2          }
+ 294   1          
+ 295   1              PSCTL1 = PS2_InhibitMode;   // Inhibit clock pin1
+ 296   1              PSCTL2 = PS2_InhibitMode;   // Inhibit clock pin2
+ 297   1              PSCTL3 = PS2_InhibitMode;   // Inhibit clock pin3
+ 298   1      
+ 299   1          PS2_IRQ_Channel = 1;        // Set PS2 1 service flag
+ 300   1              F_Service_PS2 = 1;          // Set main service flag
+ 301   1          PS2StartBit=0;                      // clear start bit flag
+ 302   1          PS2_SSIRQ_Channel = 0xFF;   //
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 6   
+
+ 303   1          PS2PortxData[1]=PSDAT2;
+ 304   1          #else
+                      if(IS_MASK_SET(PSSTS2, TDS))    // Transaction done interrupt 
+                      {
+                              CLEAR_MASK(IER2,Int_PS2_1); // Disable PS2 interrupt 1  
+                          ISR2 = Int_PS2_1;           // Write to clear pending interrupt 
+                          
+                          if(SendtoAUXFlag)
+                          {
+                          for(PS2DataPinStatusCounter=0x00;PS2DataPinStatusCounter<5;PS2DataPinStatusCounter++)
+                          {
+                              if(IS_MASK_SET(PSSTS2, DLS))   // DATA Line Status is high
+                              {
+                                  break;
+                              }
+                              else
+                              {
+                                  WNCKR = 0x00;   // Delay 15.26 us
+                              }
+                          }
+                      }
+                      else
+                      {
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+                      }
+                      
+                              PSCTL1 = PS2_InhibitMode;   // Inhibit clock pin1
+                              PSCTL2 = PS2_InhibitMode;   // Inhibit clock pin2
+                              PSCTL3 = PS2_InhibitMode;   // Inhibit clock pin3
+                 
+                          PS2_IRQ_Channel = 1;        // Set PS2 1 service flag
+                              F_Service_PS2 = 1;          // Set main service flag
+                      PS2StartBit=0;                  // clear start bit flag
+                      PS2_SSIRQ_Channel = 0xFF;   //
+                          PS2PortxData[1]=PSDAT2;
+                      }
+                  else                                                // Start bit interrupt 
+                  {
+                      PSCTL1 = PS2_InhibitMode;   // Inhibit clock pin1
+                      PSCTL3 = PS2_InhibitMode;   // Inhibit clock pin3
+                      IER2&= ~(Int_PS2_0+Int_PS2_1+Int_PS2_2);    // Disable all PS2 interrupt
+                      ISR2=(Int_PS2_0+Int_PS2_1+Int_PS2_2);       // Write to clear all PS2 pending interrupt
+                      PS2StartBit = 1;                // Set start bit flag
+                      PS2_SSIRQ_Channel = 1;      //
+                      SET_MASK(IER2,Int_PS2_1);   // Enable PS2 interrupt 1
+                  }   
+                  #endif
+ 356   1          Hook_IRQ_INT19_PS2Interrupt1();
+ 357   1      }
+ 358          
+ 359          //----------------------------------------------------------------------------
+ 360          // PS/2 Interrupt 0
+ 361          //----------------------------------------------------------------------------
+ 362          void IRQ_INT20_PS2Interrupt0(void)
+ 363          {
+ 364   1          #if TouchPad_only
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 7   
+
+ 365   1          CLEAR_MASK(IER2,Int_PS2_0); // Disable PS2 interrupt 0
+ 366   1          ISR2 = Int_PS2_0;           // Write to clear pending interrupt
+ 367   1      
+ 368   1          if(SendtoAUXFlag)
+ 369   1          {
+ 370   2              for(PS2DataPinStatusCounter=0x00;PS2DataPinStatusCounter<5;PS2DataPinStatusCounter++)
+ 371   2              {
+ 372   3                  //if(IS_MASK_SET(PSSTS1, DLS))   // DATA Line Status is high
+ 373   3                  if(IS_MASK_SET(GPDRF, BIT1))   // DATA Line Status is high
+ 374   3                  {
+ 375   4                      break;
+ 376   4                  }
+ 377   3                  else
+ 378   3                  {
+ 379   4                      WNCKR = 0x00;   // Delay 15.26 us
+ 380   4                  }
+ 381   3              }
+ 382   2          }
+ 383   1      
+ 384   1              PSCTL1 = PS2_InhibitMode;   // Inhibit clock pin1
+ 385   1              PSCTL2 = PS2_InhibitMode;   // Inhibit clock pin2
+ 386   1              PSCTL3 = PS2_InhibitMode;   // Inhibit clock pin3
+ 387   1      
+ 388   1          PS2_IRQ_Channel = 0;        // Set PS2 0 service flag
+ 389   1              F_Service_PS2 = 1;          // Set main service flag
+ 390   1          PS2StartBit=0;                          // clear start bit flag
+ 391   1          PS2_SSIRQ_Channel = 0xFF;   //
+ 392   1              PS2PortxData[0]=PSDAT1;
+ 393   1          #else
+                      if(IS_MASK_SET(PSSTS1, TDS))    // Transaction done interrupt 
+                      {
+                      CLEAR_MASK(IER2,Int_PS2_0); // Disable PS2 interrupt 0
+                          ISR2 = Int_PS2_0;           // Write to clear pending interrupt
+              
+                      if(SendtoAUXFlag)
+                          {
+                          for(PS2DataPinStatusCounter=0x00;PS2DataPinStatusCounter<5;PS2DataPinStatusCounter++)
+                          {
+                              if(IS_MASK_SET(PSSTS1, DLS))   // DATA Line Status is high
+                              {
+                                  break;
+                              }
+                              else
+                              {
+                                  WNCKR = 0x00;   // Delay 15.26 us
+                              }
+                          }
+                      }
+                      else
+                      {
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+                          WNCKR = 0x00;           // Delay 15.26 us
+                      }
+                      
+                              PSCTL1 = PS2_InhibitMode;   // Inhibit clock pin1
+                              PSCTL2 = PS2_InhibitMode;   // Inhibit clock pin2
+                              PSCTL3 = PS2_InhibitMode;   // Inhibit clock pin3
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 8   
+
+              
+                          PS2_IRQ_Channel = 0;        // Set PS2 0 service flag
+                              F_Service_PS2 = 1;          // Set main service flag
+                          PS2StartBit=0;                          // clear start bit flag
+                          PS2_SSIRQ_Channel = 0xFF;   //
+                              PS2PortxData[0]=PSDAT1;
+                      }
+                  else                                                    // Start bit interrupt 
+                  {
+                      PSCTL2 = PS2_InhibitMode;   // Inhibit clock pin2
+                      PSCTL3 = PS2_InhibitMode;   // Inhibit clock pin3
+                      IER2&= ~(Int_PS2_0+Int_PS2_1+Int_PS2_2);    // Disable all PS2 interrupt
+                      ISR2=(Int_PS2_0+Int_PS2_1+Int_PS2_2);       // Write to clear all PS2 pending interrupt
+                      PS2StartBit = 1;                    // Set start bit flag
+                      PS2_SSIRQ_Channel = 0;      //
+                      SET_MASK(IER2,Int_PS2_0);   // Enable PS2 interrupt 0
+                  }   
+                  #endif
+ 445   1          Hook_IRQ_INT20_PS2Interrupt0();
+ 446   1      }
+ 447          
+ 448          //----------------------------------------------------------------------------
+ 449          // WKO[22]
+ 450          //----------------------------------------------------------------------------
+ 451          void IRQ_INT21_WKO22(void)
+ 452          {
+ 453   1          Hook_IRQ_INT21_WKO22();
+ 454   1      }
+ 455          
+ 456          //----------------------------------------------------------------------------
+ 457          // SMFI Semaphore Interrupt
+ 458          //----------------------------------------------------------------------------
+ 459          void IRQ_INT22_SMFISemaphore(void)
+ 460          {
+ 461   1          Hook_IRQ_INT22_SMFISemaphore();
+ 462   1      }
+ 463          
+ 464          //----------------------------------------------------------------------------
+ 465          //
+ 466          //----------------------------------------------------------------------------
+ 467          void IRQ_INT23_Null(void)
+ 468          {
+ 469   1          Hook_IRQ_INT23_Null();
+ 470   1      }
+ 471          
+ 472          //----------------------------------------------------------------------------
+ 473          // KBC Input Buffer Full Interrupt
+ 474          //----------------------------------------------------------------------------
+ 475          void IRQ_INT24_KBCIBF(void)
+ 476          {
+ 477   1              IrqLock_scan();
+ 478   1              CLEAR_MASK(IER3,Int_KBCIBF);
+ 479   1          ISR3 = Int_KBCIBF;
+ 480   1          F_Service_PCI = 1;
+ 481   1      
+ 482   1          Hook_IRQ_INT24_KBCIBF();
+ 483   1      }
+ 484          
+ 485          //----------------------------------------------------------------------------
+ 486          // PMC Input Buffer Full Interrupt PMC1 Input Buffer Full Interrupt
+ 487          //----------------------------------------------------------------------------
+ 488          void IRQ_INT25_PMCPMC1IBF(void)
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 9   
+
+ 489          {
+ 490   1              if(IS_MASK_SET(PM2STS, P_IBF))  // 68/6C input buffer full
+ 491   1              {
+ 492   2                      F_Service_PCI3 = 1;
+ 493   2              }
+ 494   1              else                                            // 62/66 input buffer full
+ 495   1              {
+ 496   2                      F_Service_PCI2 = 1;
+ 497   2              }
+ 498   1              CLEAR_MASK(IER3,Int_PMCIBF);
+ 499   1          ISR3 = Int_PMCIBF;
+ 500   1      
+ 501   1          Hook_IRQ_INT25_PMCPMC1IBF();
+ 502   1      }
+ 503          
+ 504          //----------------------------------------------------------------------------
+ 505          // PMC2 Output Buffer Empty Intr.
+ 506          //----------------------------------------------------------------------------
+ 507          void IRQ_INT26_PMC2OBE(void)
+ 508          {
+ 509   1          Hook_IRQ_INT26_PMC2OBE();
+ 510   1      }
+ 511          
+ 512          //----------------------------------------------------------------------------
+ 513          // PMC2 Input Buffer Full Intr.
+ 514          //----------------------------------------------------------------------------
+ 515          void IRQ_INT27_PMC2IBF(void)
+ 516          {
+ 517   1          Hook_IRQ_INT27_PMC2IBF();
+ 518   1      }
+ 519          
+ 520          //----------------------------------------------------------------------------
+ 521          // GINT from function 1 of GPD5
+ 522          //----------------------------------------------------------------------------
+ 523          void IRQ_INT28_GINTofGPD5(void)
+ 524          {
+ 525   1          Hook_IRQ_INT28_GINTofGPD5();
+ 526   1      }
+ 527          
+ 528          //----------------------------------------------------------------------------
+ 529          // EGPC Interrupt
+ 530          //----------------------------------------------------------------------------
+ 531          void IRQ_INT29_EGPC(void)
+ 532          {
+ 533   1          Hook_IRQ_INT29_EGPC();
+ 534   1      }
+ 535          
+ 536          //----------------------------------------------------------------------------
+ 537          // External Timer 1 Interrupt
+ 538          //----------------------------------------------------------------------------
+ 539          void IRQ_INT30_ET1(void)
+ 540          {
+ 541   1          Hook_IRQ_INT30_ET1();
+ 542   1      }
+ 543          
+ 544          //----------------------------------------------------------------------------
+ 545          // WKO[21]
+ 546          //----------------------------------------------------------------------------
+ 547          void IRQ_INT31_WKO21(void)
+ 548          {
+ 549   1          Hook_IRQ_INT31_WKO21();
+ 550   1      }
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 10  
+
+ 551          
+ 552          //----------------------------------------------------------------------------
+ 553          // GPINT0
+ 554          //----------------------------------------------------------------------------
+ 555          void IRQ_INT32_GPINT0(void)
+ 556          {
+ 557   1          Hook_IRQ_INT32_GPINT0();
+ 558   1      }
+ 559          
+ 560          //----------------------------------------------------------------------------
+ 561          // GPINT1
+ 562          //----------------------------------------------------------------------------
+ 563          void IRQ_INT33_GPINT1(void)
+ 564          {
+ 565   1          Hook_IRQ_INT33_GPINT1();
+ 566   1      }
+ 567          
+ 568          //----------------------------------------------------------------------------
+ 569          // GPINT2
+ 570          //----------------------------------------------------------------------------
+ 571          void IRQ_INT34_GPINT2(void)
+ 572          {
+ 573   1          Hook_IRQ_INT34_GPINT2();
+ 574   1      }
+ 575          
+ 576          //----------------------------------------------------------------------------
+ 577          // GPINT3
+ 578          //----------------------------------------------------------------------------
+ 579          void IRQ_INT35_GPINT3(void)
+ 580          {
+ 581   1          Hook_IRQ_INT35_GPINT3();
+ 582   1      }
+ 583          
+ 584          //----------------------------------------------------------------------------
+ 585          // CIR GPINT
+ 586          //----------------------------------------------------------------------------
+ 587          void IRQ_INT36_CIRGPINT(void)
+ 588          {
+ 589   1          Hook_IRQ_INT36_CIRGPINT();
+ 590   1      }
+ 591          
+ 592          //----------------------------------------------------------------------------
+ 593          // SSPI Interrupt
+ 594          //----------------------------------------------------------------------------
+ 595          void IRQ_INT37_SSPI(void)
+ 596          {
+ 597   1          Hook_IRQ_INT37_SSPI();
+ 598   1      }
+ 599          
+ 600          //----------------------------------------------------------------------------
+ 601          // UART1 Interrupt
+ 602          //----------------------------------------------------------------------------
+ 603          void IRQ_INT38_UART1(void)
+ 604          {
+ 605   1          Hook_IRQ_INT38_UART1();
+ 606   1      }
+ 607          
+ 608          //----------------------------------------------------------------------------
+ 609          // UART2 Interrupt
+ 610          //----------------------------------------------------------------------------
+ 611          void IRQ_INT39_UART2(void)
+ 612          {
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 11  
+
+ 613   1          Hook_IRQ_INT39_UART2();
+ 614   1      }
+ 615          
+ 616          //----------------------------------------------------------------------------
+ 617          //
+ 618          //----------------------------------------------------------------------------
+ 619          void IRQ_INT40_Null(void)
+ 620          {
+ 621   1          Hook_IRQ_INT40_Null();
+ 622   1      }
+ 623          
+ 624          //----------------------------------------------------------------------------
+ 625          //
+ 626          //----------------------------------------------------------------------------
+ 627          void IRQ_INT41_Null(void)
+ 628          {
+ 629   1          Hook_IRQ_INT41_Null();
+ 630   1      }
+ 631          
+ 632          //----------------------------------------------------------------------------
+ 633          //
+ 634          //----------------------------------------------------------------------------
+ 635          void IRQ_INT42_Null(void)
+ 636          {
+ 637   1          Hook_IRQ_INT42_Null();
+ 638   1      }
+ 639          
+ 640          //----------------------------------------------------------------------------
+ 641          //
+ 642          //----------------------------------------------------------------------------
+ 643          void IRQ_INT43_Null(void)
+ 644          {
+ 645   1          Hook_IRQ_INT43_Null();
+ 646   1      }
+ 647          
+ 648          //----------------------------------------------------------------------------
+ 649          //
+ 650          //----------------------------------------------------------------------------
+ 651          void IRQ_INT44_Null(void)
+ 652          {
+ 653   1          Hook_IRQ_INT44_Null();
+ 654   1      }
+ 655          
+ 656          //----------------------------------------------------------------------------
+ 657          //
+ 658          //----------------------------------------------------------------------------
+ 659          void IRQ_INT45_Null(void)
+ 660          {
+ 661   1          Hook_IRQ_INT45_Null();
+ 662   1      }
+ 663          
+ 664          //----------------------------------------------------------------------------
+ 665          //
+ 666          //----------------------------------------------------------------------------
+ 667          void IRQ_INT46_Null(void)
+ 668          {
+ 669   1          Hook_IRQ_INT46_Null();
+ 670   1      }
+ 671          
+ 672          //----------------------------------------------------------------------------
+ 673          //
+ 674          //----------------------------------------------------------------------------
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 12  
+
+ 675          void IRQ_INT47_Null(void)
+ 676          {
+ 677   1          Hook_IRQ_INT47_Null();
+ 678   1      }
+ 679          
+ 680          //----------------------------------------------------------------------------
+ 681          // WKO[60]
+ 682          //----------------------------------------------------------------------------
+ 683          void IRQ_INT48_WKO60(void)
+ 684          {
+ 685   1          Hook_IRQ_INT48_WKO60();
+ 686   1      }
+ 687          
+ 688          //----------------------------------------------------------------------------
+ 689          // WKO[61]
+ 690          //----------------------------------------------------------------------------
+ 691          void IRQ_INT49_WKO61(void)
+ 692          {
+ 693   1          Hook_IRQ_INT49_WKO61();
+ 694   1      }
+ 695          
+ 696          //----------------------------------------------------------------------------
+ 697          //WKO[62]
+ 698          //----------------------------------------------------------------------------
+ 699          void IRQ_INT50_WKO62(void)
+ 700          {
+ 701   1          Hook_IRQ_INT50_WKO62();
+ 702   1      }
+ 703          
+ 704          //----------------------------------------------------------------------------
+ 705          // WKO[63]
+ 706          //----------------------------------------------------------------------------
+ 707          void IRQ_INT51_WKO63(void)
+ 708          {
+ 709   1          Hook_IRQ_INT51_WKO63();
+ 710   1      }
+ 711          
+ 712          //----------------------------------------------------------------------------
+ 713          // WKO[64]
+ 714          //----------------------------------------------------------------------------
+ 715          void IRQ_INT52_WKO64(void)
+ 716          {
+ 717   1          Hook_IRQ_INT52_WKO64();
+ 718   1      }
+ 719          
+ 720          //----------------------------------------------------------------------------
+ 721          // WKO[65]
+ 722          //----------------------------------------------------------------------------
+ 723          void IRQ_INT53_WKO65(void)
+ 724          {
+ 725   1          Hook_IRQ_INT53_WKO65();
+ 726   1      }
+ 727          
+ 728          //----------------------------------------------------------------------------
+ 729          // WKO[66]
+ 730          //----------------------------------------------------------------------------
+ 731          void IRQ_INT54_WKO66(void)
+ 732          {
+ 733   1          Hook_IRQ_INT54_WKO66();
+ 734   1      }
+ 735          
+ 736          //----------------------------------------------------------------------------
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 13  
+
+ 737          // WKO[67]
+ 738          //----------------------------------------------------------------------------
+ 739          void IRQ_INT55_WKO67(void)
+ 740          {
+ 741   1          Hook_IRQ_INT55_WKO67();
+ 742   1      }
+ 743          
+ 744          //----------------------------------------------------------------------------
+ 745          //
+ 746          //----------------------------------------------------------------------------
+ 747          void IRQ_INT56_Null(void)
+ 748          {
+ 749   1          Hook_IRQ_INT56_Null();
+ 750   1      }
+ 751          
+ 752          //----------------------------------------------------------------------------
+ 753          //
+ 754          //----------------------------------------------------------------------------
+ 755          void IRQ_INT57_Null(void)
+ 756          {
+ 757   1          Hook_IRQ_INT57_Null();
+ 758   1      }
+ 759          
+ 760          //----------------------------------------------------------------------------
+ 761          // External Timer 2 Interrupt
+ 762          //----------------------------------------------------------------------------
+ 763          void IRQ_INT58_ET2(void)
+ 764          {
+ 765   1          Hook_IRQ_INT58_ET2();
+ 766   1      }
+ 767          
+ 768          //----------------------------------------------------------------------------
+ 769          // Deferred SPI Instruction Interrupt
+ 770          //----------------------------------------------------------------------------
+ 771          void IRQ_INT59_DeferredSPIInstruction(void)
+ 772          {
+ 773   1          Hook_IRQ_INT59_DeferredSPIInstruction();
+ 774   1      }
+ 775          
+ 776          //----------------------------------------------------------------------------
+ 777          // TMRINTA0
+ 778          //----------------------------------------------------------------------------
+ 779          void IRQ_INT60_TMRINTA0(void)
+ 780          {
+ 781   1          Hook_IRQ_INT60_TMRINTA0();
+ 782   1      }
+ 783          
+ 784          //----------------------------------------------------------------------------
+ 785          // TMRINTA1
+ 786          //----------------------------------------------------------------------------
+ 787          void IRQ_INT61_TMRINTA1(void)
+ 788          {
+ 789   1          Hook_IRQ_INT61_TMRINTA1();
+ 790   1      }
+ 791          
+ 792          //----------------------------------------------------------------------------
+ 793          // TMRINTB0
+ 794          //----------------------------------------------------------------------------
+ 795          void IRQ_INT62_TMRINTB0(void)
+ 796          {
+ 797   1          Hook_IRQ_INT62_TMRINTB0();
+ 798   1      }
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 14  
+
+ 799          
+ 800          //----------------------------------------------------------------------------
+ 801          // TMRINTB1
+ 802          //----------------------------------------------------------------------------
+ 803          void IRQ_INT63_TMRINTB1(void)
+ 804          {
+ 805   1          Hook_IRQ_INT63_TMRINTB1();
+ 806   1      }
+ 807          
+ 808          //----------------------------------------------------------------------------
+ 809          // PMC2EX Output Buffer Empty Intr.
+ 810          //----------------------------------------------------------------------------
+ 811          void IRQ_INT64_PMC2EXOBE(void)
+ 812          {
+ 813   1          Hook_IRQ_INT64_PMC2EXOBE();
+ 814   1      }
+ 815          
+ 816          //----------------------------------------------------------------------------
+ 817          // PMC2EX Input Buffer Full Intr.
+ 818          //----------------------------------------------------------------------------
+ 819          void IRQ_INT65_PMC2EXIBF(void)
+ 820          {
+ 821   1          Hook_IRQ_INT65_PMC2EXIBF();
+ 822   1      }
+ 823          
+ 824          //----------------------------------------------------------------------------
+ 825          // PMC3 Output Buffer Empty Intr.
+ 826          //----------------------------------------------------------------------------
+ 827          void IRQ_INT66_PMC3OBE(void)
+ 828          {
+ 829   1          Hook_IRQ_INT66_PMC3OBE();
+ 830   1      }
+ 831          
+ 832          //----------------------------------------------------------------------------
+ 833          // PMC3 Input Buffer Full Intr.
+ 834          //----------------------------------------------------------------------------
+ 835          void IRQ_INT67_PMC3IBF(void)
+ 836          {
+ 837   1          Hook_IRQ_INT67_PMC3IBF();
+ 838   1      }
+ 839          
+ 840          //----------------------------------------------------------------------------
+ 841          // PMC4 Output Buffer Empty Intr.
+ 842          //----------------------------------------------------------------------------
+ 843          void IRQ_INT68_PMC4OBE(void)
+ 844          {
+ 845   1          Hook_IRQ_INT68_PMC4OBE();
+ 846   1      }
+ 847          
+ 848          //----------------------------------------------------------------------------
+ 849          // PMC4 Input Buffer Full Intr.
+ 850          //----------------------------------------------------------------------------
+ 851          void IRQ_INT69_PMC4IBF(void)
+ 852          {
+ 853   1          Hook_IRQ_INT69_PMC4IBF();
+ 854   1      }
+ 855          
+ 856          //----------------------------------------------------------------------------
+ 857          //
+ 858          //----------------------------------------------------------------------------
+ 859          void IRQ_INT70_Null(void)
+ 860          {
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 15  
+
+ 861   1          Hook_IRQ_INT70_Null();
+ 862   1      }
+ 863          
+ 864          //----------------------------------------------------------------------------
+ 865          // I2BRAM Interrupt
+ 866          //----------------------------------------------------------------------------
+ 867          void IRQ_INT71_I2BRAM(void)
+ 868          {
+ 869   1          Hook_IRQ_INT71_I2BRAM();
+ 870   1      }
+ 871          
+ 872          //----------------------------------------------------------------------------
+ 873          // WKO[70]
+ 874          //----------------------------------------------------------------------------
+ 875          void IRQ_INT72_WKO70(void)
+ 876          {
+ 877   1          Hook_IRQ_INT72_WKO70();
+ 878   1      }
+ 879          
+ 880          //----------------------------------------------------------------------------
+ 881          // WKO[71]
+ 882          //----------------------------------------------------------------------------
+ 883          void IRQ_INT73_WKO71(void)
+ 884          {
+ 885   1          Hook_IRQ_INT73_WKO71();
+ 886   1      }
+ 887          
+ 888          //----------------------------------------------------------------------------
+ 889          // WKO[72]
+ 890          //----------------------------------------------------------------------------
+ 891          void IRQ_INT74_WKO72(void)
+ 892          {
+ 893   1          Hook_IRQ_INT74_WKO72();
+ 894   1      }
+ 895          
+ 896          //----------------------------------------------------------------------------
+ 897          // WKO[73]
+ 898          //----------------------------------------------------------------------------
+ 899          void IRQ_INT75_WKO73(void)
+ 900          {
+ 901   1          Hook_IRQ_INT75_WKO73();
+ 902   1      }
+ 903          
+ 904          //----------------------------------------------------------------------------
+ 905          // WKO[74]
+ 906          //----------------------------------------------------------------------------
+ 907          void IRQ_INT76_WKO74(void)
+ 908          {
+ 909   1          Hook_IRQ_INT76_WKO74();
+ 910   1      }
+ 911          
+ 912          //----------------------------------------------------------------------------
+ 913          // WKO[75]
+ 914          //----------------------------------------------------------------------------
+ 915          void IRQ_INT77_WKO75(void)
+ 916          {
+ 917   1          Hook_IRQ_INT77_WKO75();
+ 918   1      }
+ 919          
+ 920          //----------------------------------------------------------------------------
+ 921          // WKO[76]
+ 922          //----------------------------------------------------------------------------
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 16  
+
+ 923          void IRQ_INT78_WKO76(void)
+ 924          {
+ 925   1          Hook_IRQ_INT78_WKO76();
+ 926   1      }
+ 927          
+ 928          //----------------------------------------------------------------------------
+ 929          // WKO[77]
+ 930          //----------------------------------------------------------------------------
+ 931          void IRQ_INT79_WKO77(void)
+ 932          {
+ 933   1          Hook_IRQ_INT79_WKO77();
+ 934   1      }
+ 935          
+ 936          //----------------------------------------------------------------------------
+ 937          // 
+ 938          //----------------------------------------------------------------------------
+ 939          void IRQ_INT80_Null(void)
+ 940          {
+ 941   1          Hook_IRQ_INT80_Null();
+ 942   1      }
+ 943          
+ 944          //----------------------------------------------------------------------------
+ 945          // SMBus clock held interrupt
+ 946          //----------------------------------------------------------------------------
+ 947          void IRQ_INT81_SMBusClockHeld(void)
+ 948          {
+ 949   1          Hook_IRQ_INT81_SMBusClockHeld();
+ 950   1      }
+ 951          
+ 952          //----------------------------------------------------------------------------
+ 953          // CEC interrupt
+ 954          //----------------------------------------------------------------------------
+ 955          void IRQ_INT82_CEC(void)
+ 956          {
+ 957   1          Hook_IRQ_INT82_CEC();
+ 958   1      }
+ 959          
+ 960          //----------------------------------------------------------------------------
+ 961          // H2RAM LPC trigger
+ 962          //----------------------------------------------------------------------------
+ 963          void IRQ_INT83_H2RAMLPC(void)
+ 964          {
+ 965   1          Hook_IRQ_INT83_H2RAMLPC();
+ 966   1      }
+ 967          
+ 968          //----------------------------------------------------------------------------
+ 969          // 
+ 970          //----------------------------------------------------------------------------
+ 971          void IRQ_INT84_Null(void)
+ 972          {
+ 973   1          //*******************************************************
+ 974   1          #ifdef KB_HW_KeyScan    // Hardware scan keyboard
+                  //*******************************************************
+                  CLEAR_MASK(IER10, BIT4);
+                  ISR10 = BIT4;
+                  F_Service_KEY = 1;      // Post service request to scan internal keyboard. 
+                  
+                  Hook_IRQ_INT84_Null();
+                  //*******************************************************
+                  #endif  // KB_HW_KeyScan
+ 983   1          //*******************************************************
+ 984   1      }
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 17  
+
+ 985          
+ 986          //----------------------------------------------------------------------------
+ 987          // WKO[88]
+ 988          //----------------------------------------------------------------------------
+ 989          void IRQ_INT85_WKO88(void)
+ 990          {
+ 991   1          Hook_IRQ_INT85_WKO88();
+ 992   1      }
+ 993          
+ 994          //----------------------------------------------------------------------------
+ 995          // WKO[89]
+ 996          //----------------------------------------------------------------------------
+ 997          void IRQ_INT86_WKO89(void)
+ 998          {
+ 999   1          Hook_IRQ_INT86_WKO89();
+1000   1      }
+1001          
+1002          //----------------------------------------------------------------------------
+1003          // WKO[90]
+1004          //----------------------------------------------------------------------------
+1005          void IRQ_INT87_WKO90(void)
+1006          {
+1007   1          Hook_IRQ_INT87_WKO90();
+1008   1      }
+1009          
+1010          //----------------------------------------------------------------------------
+1011          // WKO[80]
+1012          //----------------------------------------------------------------------------
+1013          void IRQ_INT88_WKO80(void)
+1014          {
+1015   1          Hook_IRQ_INT88_WKO80();
+1016   1      }
+1017          
+1018          //----------------------------------------------------------------------------
+1019          // WKO[81]
+1020          //----------------------------------------------------------------------------
+1021          void IRQ_INT89_WKO81(void)
+1022          {
+1023   1          Hook_IRQ_INT89_WKO81();
+1024   1      }
+1025          
+1026          //----------------------------------------------------------------------------
+1027          // WKO[82]
+1028          //----------------------------------------------------------------------------
+1029          void IRQ_INT90_WKO82(void)
+1030          {
+1031   1          Hook_IRQ_INT90_WKO82();
+1032   1      }
+1033          
+1034          //----------------------------------------------------------------------------
+1035          // WKO[83]
+1036          //----------------------------------------------------------------------------
+1037          void IRQ_INT91_WKO83(void)
+1038          {
+1039   1          Hook_IRQ_INT91_WKO83();
+1040   1      }
+1041          
+1042          //----------------------------------------------------------------------------
+1043          // WKO[84]
+1044          //----------------------------------------------------------------------------
+1045          void IRQ_INT92_WKO84(void)
+1046          {
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 18  
+
+1047   1          Hook_IRQ_INT92_WKO84();
+1048   1      }
+1049          
+1050          //----------------------------------------------------------------------------
+1051          // WKO[85]
+1052          //----------------------------------------------------------------------------
+1053          void IRQ_INT93_WKO85(void)
+1054          {
+1055   1          Hook_IRQ_INT93_WKO85();
+1056   1      }
+1057          
+1058          //----------------------------------------------------------------------------
+1059          // WKO[86]
+1060          //----------------------------------------------------------------------------
+1061          void IRQ_INT94_WKO86(void)
+1062          {
+1063   1          Hook_IRQ_INT94_WKO86();
+1064   1      }
+1065          
+1066          //----------------------------------------------------------------------------
+1067          // WKO[87]
+1068          //----------------------------------------------------------------------------
+1069          void IRQ_INT95_WKO87(void)
+1070          {
+1071   1          Hook_IRQ_INT95_WKO87();
+1072   1      }
+1073          
+1074          //----------------------------------------------------------------------------
+1075          // WKO[91]
+1076          //----------------------------------------------------------------------------
+1077          void IRQ_INT96_WKO91(void)
+1078          {
+1079   1          Hook_IRQ_INT96_WKO91();
+1080   1      }
+1081          
+1082          //----------------------------------------------------------------------------
+1083          // WKO[92]
+1084          //----------------------------------------------------------------------------
+1085          void IRQ_INT97_WKO92(void)
+1086          {
+1087   1          Hook_IRQ_INT97_WKO92();
+1088   1      }
+1089          
+1090          //----------------------------------------------------------------------------
+1091          // WKO[93]
+1092          //----------------------------------------------------------------------------
+1093          void IRQ_INT98_WKO93(void)
+1094          {
+1095   1          Hook_IRQ_INT98_WKO93();
+1096   1      }
+1097          
+1098          //----------------------------------------------------------------------------
+1099          // WKO[94]
+1100          //----------------------------------------------------------------------------
+1101          void IRQ_INT99_WKO94(void)
+1102          {
+1103   1          Hook_IRQ_INT99_WKO94();
+1104   1      }
+1105          
+1106          //----------------------------------------------------------------------------
+1107          // WKO[95]
+1108          //----------------------------------------------------------------------------
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 19  
+
+1109          void IRQ_INT100_WKO95(void)
+1110          {
+1111   1          Hook_IRQ_INT100_WKO95();
+1112   1      }
+1113          
+1114          //----------------------------------------------------------------------------
+1115          // WKO[96]
+1116          //----------------------------------------------------------------------------
+1117          void IRQ_INT101_WKO96(void)
+1118          {
+1119   1          Hook_IRQ_INT101_WKO96();
+1120   1      }
+1121          
+1122          //----------------------------------------------------------------------------
+1123          // WKO[97]
+1124          //----------------------------------------------------------------------------
+1125          void IRQ_INT102_WKO97(void)
+1126          {
+1127   1          Hook_IRQ_INT102_WKO97();
+1128   1      }
+1129          
+1130          //----------------------------------------------------------------------------
+1131          // WKO[98]
+1132          //----------------------------------------------------------------------------
+1133          void IRQ_INT103_WKO98(void)
+1134          {
+1135   1          Hook_IRQ_INT103_WKO98();
+1136   1      }
+1137          
+1138          //----------------------------------------------------------------------------
+1139          // WKO[99]
+1140          //----------------------------------------------------------------------------
+1141          void IRQ_INT104_WKO99(void)
+1142          {
+1143   1          Hook_IRQ_INT104_WKO99();
+1144   1      }
+1145          
+1146          //----------------------------------------------------------------------------
+1147          // WKO[100]
+1148          //----------------------------------------------------------------------------
+1149          void IRQ_INT105_WKO100(void)
+1150          {
+1151   1          Hook_IRQ_INT105_WKO100();
+1152   1      }
+1153          
+1154          //----------------------------------------------------------------------------
+1155          // WKO[101]
+1156          //----------------------------------------------------------------------------
+1157          void IRQ_INT106_WKO101(void)
+1158          {
+1159   1          Hook_IRQ_INT106_WKO101();
+1160   1      }
+1161          
+1162          //----------------------------------------------------------------------------
+1163          // WKO[102]
+1164          //----------------------------------------------------------------------------
+1165          void IRQ_INT107_WKO102(void)
+1166          {
+1167   1          Hook_IRQ_INT107_WKO102();
+1168   1      }
+1169          
+1170          //----------------------------------------------------------------------------
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 20  
+
+1171          // WKO[103]
+1172          //----------------------------------------------------------------------------
+1173          void IRQ_INT108_WKO103(void)
+1174          {
+1175   1          Hook_IRQ_INT108_WKO103();
+1176   1      }
+1177          
+1178          //----------------------------------------------------------------------------
+1179          // WKO[104]
+1180          //----------------------------------------------------------------------------
+1181          void IRQ_INT109_WKO104(void)
+1182          {
+1183   1          Hook_IRQ_INT109_WKO104();
+1184   1      }
+1185          
+1186          //----------------------------------------------------------------------------
+1187          // WKO[105]
+1188          //----------------------------------------------------------------------------
+1189          void IRQ_INT110_WKO105(void)
+1190          {
+1191   1          Hook_IRQ_INT110_WKO105();
+1192   1      }
+1193          
+1194          //----------------------------------------------------------------------------
+1195          // WKO[106]
+1196          //----------------------------------------------------------------------------
+1197          void IRQ_INT111_WKO106(void)
+1198          {
+1199   1          Hook_IRQ_INT111_WKO106();
+1200   1      }
+1201          
+1202          //----------------------------------------------------------------------------
+1203          // WKO[107]
+1204          //----------------------------------------------------------------------------
+1205          void IRQ_INT112_WKO107(void)
+1206          {
+1207   1          Hook_IRQ_INT112_WKO107();
+1208   1      }
+1209          
+1210          //----------------------------------------------------------------------------
+1211          // WKO[108]
+1212          //----------------------------------------------------------------------------
+1213          void IRQ_INT113_WKO108(void)
+1214          {
+1215   1          Hook_IRQ_INT113_WKO108();
+1216   1      }
+1217          
+1218          //----------------------------------------------------------------------------
+1219          // WKO[109]
+1220          //----------------------------------------------------------------------------
+1221          void IRQ_INT114_WKO109(void)
+1222          {
+1223   1          Hook_IRQ_INT114_WKO109();
+1224   1      }
+1225          
+1226          //----------------------------------------------------------------------------
+1227          // WKO[110]
+1228          //----------------------------------------------------------------------------
+1229          void IRQ_INT115_WKO110(void)
+1230          {
+1231   1          Hook_IRQ_INT115_WKO110();
+1232   1      }
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 21  
+
+1233          
+1234          //----------------------------------------------------------------------------
+1235          // WKO[111]
+1236          //----------------------------------------------------------------------------
+1237          void IRQ_INT116_WKO111(void)
+1238          {
+1239   1          Hook_IRQ_INT116_WKO111();
+1240   1      }
+1241          
+1242          //----------------------------------------------------------------------------
+1243          // WKO[112]
+1244          //----------------------------------------------------------------------------
+1245          void IRQ_INT117_WKO112(void)
+1246          {
+1247   1          Hook_IRQ_INT117_WKO112();
+1248   1      }
+1249          
+1250          //----------------------------------------------------------------------------
+1251          // WKO[113]
+1252          //----------------------------------------------------------------------------
+1253          void IRQ_INT118_WKO113(void)
+1254          {
+1255   1          Hook_IRQ_INT118_WKO113();
+1256   1      }
+1257          
+1258          //----------------------------------------------------------------------------
+1259          // WKO[114]
+1260          //----------------------------------------------------------------------------
+1261          void IRQ_INT119_WKO114(void)
+1262          {
+1263   1          Hook_IRQ_INT119_WKO114();
+1264   1      }
+1265          
+1266          //----------------------------------------------------------------------------
+1267          // WKO[115]
+1268          //----------------------------------------------------------------------------
+1269          void IRQ_INT120_WKO115(void)
+1270          {
+1271   1          Hook_IRQ_INT120_WKO115();
+1272   1      }
+1273          
+1274          //----------------------------------------------------------------------------
+1275          // WKO[116]
+1276          //----------------------------------------------------------------------------
+1277          void IRQ_INT121_WKO116(void)
+1278          {
+1279   1          Hook_IRQ_INT121_WKO116();
+1280   1      }
+1281          
+1282          //----------------------------------------------------------------------------
+1283          // WKO[117]
+1284          //----------------------------------------------------------------------------
+1285          void IRQ_INT122_WKO117(void)
+1286          {
+1287   1          Hook_IRQ_INT122_WKO117();
+1288   1      }
+1289          
+1290          //----------------------------------------------------------------------------
+1291          // WKO[118]
+1292          //----------------------------------------------------------------------------
+1293          void IRQ_INT123_WKO118(void)
+1294          {
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 22  
+
+1295   1          Hook_IRQ_INT123_WKO118();
+1296   1      }
+1297          
+1298          //----------------------------------------------------------------------------
+1299          // WKO[119]
+1300          //----------------------------------------------------------------------------
+1301          void IRQ_INT124_WKO119(void)
+1302          {
+1303   1          Hook_IRQ_INT124_WKO119();
+1304   1      }
+1305          
+1306          //----------------------------------------------------------------------------
+1307          // WKO[120]
+1308          //----------------------------------------------------------------------------
+1309          void IRQ_INT125_WKO120(void)
+1310          {
+1311   1          Hook_IRQ_INT125_WKO120();
+1312   1      }
+1313          
+1314          //----------------------------------------------------------------------------
+1315          // WKO[121]
+1316          //----------------------------------------------------------------------------
+1317          void IRQ_INT126_WKO121(void)
+1318          {
+1319   1          Hook_IRQ_INT126_WKO121();
+1320   1      }
+1321          
+1322          //----------------------------------------------------------------------------
+1323          // WKO[122]
+1324          //----------------------------------------------------------------------------
+1325          void IRQ_INT127_WKO122(void)
+1326          {
+1327   1          Hook_IRQ_INT127_WKO122();
+1328   1      }
+1329          
+1330          //----------------------------------------------------------------------------
+1331          // WKO[128]
+1332          //----------------------------------------------------------------------------
+1333          void IRQ_INT128_WKO128(void)
+1334          {
+1335   1          Hook_IRQ_INT128_WKO128();
+1336   1      }
+1337          
+1338          //----------------------------------------------------------------------------
+1339          // WKO[129]
+1340          //----------------------------------------------------------------------------
+1341          void IRQ_INT129_WKO129(void)
+1342          {
+1343   1          Hook_IRQ_INT129_WKO129();
+1344   1      }
+1345          
+1346          //----------------------------------------------------------------------------
+1347          // WKO[130]
+1348          //----------------------------------------------------------------------------
+1349          void IRQ_INT130_WKO130(void)
+1350          {
+1351   1          Hook_IRQ_INT130_WKO130();
+1352   1      }
+1353          
+1354          //----------------------------------------------------------------------------
+1355          // WKO[131]
+1356          //----------------------------------------------------------------------------
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 23  
+
+1357          void IRQ_INT131_WKO131(void)
+1358          {
+1359   1          Hook_IRQ_INT131_WKO131();
+1360   1      }
+1361          
+1362          //----------------------------------------------------------------------------
+1363          // WKO[132]
+1364          //----------------------------------------------------------------------------
+1365          void IRQ_INT132_WKO132(void)
+1366          {
+1367   1          Hook_IRQ_INT132_WKO132();
+1368   1      }
+1369          
+1370          //----------------------------------------------------------------------------
+1371          // WKO[133]
+1372          //----------------------------------------------------------------------------
+1373          void IRQ_INT133_WKO133(void)
+1374          {
+1375   1          Hook_IRQ_INT133_WKO133();
+1376   1      }
+1377          
+1378          //----------------------------------------------------------------------------
+1379          // WKO[134]
+1380          //----------------------------------------------------------------------------
+1381          void IRQ_INT134_WKO134(void)
+1382          {
+1383   1          Hook_IRQ_INT134_WKO134();
+1384   1      }
+1385          
+1386          //----------------------------------------------------------------------------
+1387          //
+1388          //----------------------------------------------------------------------------
+1389          void IRQ_INT135_Null(void)
+1390          {
+1391   1          Hook_IRQ_INT135_Null();
+1392   1      }
+1393          
+1394          //----------------------------------------------------------------------------
+1395          //
+1396          //----------------------------------------------------------------------------
+1397          void IRQ_INT136_Null(void)
+1398          {
+1399   1          Hook_IRQ_INT136_Null();
+1400   1      }
+1401          
+1402          //----------------------------------------------------------------------------
+1403          //
+1404          //----------------------------------------------------------------------------
+1405          void IRQ_INT137_Null(void)
+1406          {
+1407   1          Hook_IRQ_INT137_Null();
+1408   1      }
+1409          
+1410          //----------------------------------------------------------------------------
+1411          //
+1412          //----------------------------------------------------------------------------
+1413          void IRQ_INT138_Null(void)
+1414          {
+1415   1          Hook_IRQ_INT138_Null();
+1416   1      }
+1417          
+1418          //----------------------------------------------------------------------------
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 24  
+
+1419          //
+1420          //----------------------------------------------------------------------------
+1421          void IRQ_INT139_Null(void)
+1422          {
+1423   1          Hook_IRQ_INT139_Null();
+1424   1      }
+1425          
+1426          //----------------------------------------------------------------------------
+1427          //
+1428          //----------------------------------------------------------------------------
+1429          void IRQ_INT140_Null(void)
+1430          {
+1431   1          Hook_IRQ_INT140_Null();
+1432   1      }
+1433          
+1434          //----------------------------------------------------------------------------
+1435          //
+1436          //----------------------------------------------------------------------------
+1437          void IRQ_INT141_Null(void)
+1438          {
+1439   1          Hook_IRQ_INT141_Null();
+1440   1      }
+1441          
+1442          //----------------------------------------------------------------------------
+1443          //
+1444          //----------------------------------------------------------------------------
+1445          void IRQ_INT142_Null(void)
+1446          {
+1447   1          Hook_IRQ_INT142_Null();
+1448   1      }
+1449          
+1450          //----------------------------------------------------------------------------
+1451          //
+1452          //----------------------------------------------------------------------------
+1453          void IRQ_INT143_Null(void)
+1454          {
+1455   1          Hook_IRQ_INT143_Null();
+1456   1      }
+1457          
+1458          //----------------------------------------------------------------------------
+1459          //
+1460          //----------------------------------------------------------------------------
+1461          void IRQ_INT144_Null(void)
+1462          {
+1463   1          Hook_IRQ_INT144_Null();
+1464   1      }
+1465          
+1466          //----------------------------------------------------------------------------
+1467          //
+1468          //----------------------------------------------------------------------------
+1469          void IRQ_INT145_Null(void)
+1470          {
+1471   1          Hook_IRQ_INT145_Null();
+1472   1      }
+1473          
+1474          //----------------------------------------------------------------------------
+1475          //
+1476          //----------------------------------------------------------------------------
+1477          void IRQ_INT146_Null(void)
+1478          {
+1479   1          Hook_IRQ_INT146_Null();
+1480   1      }
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 25  
+
+1481          
+1482          //----------------------------------------------------------------------------
+1483          //
+1484          //----------------------------------------------------------------------------
+1485          void IRQ_INT147_Null(void)
+1486          {
+1487   1          Hook_IRQ_INT147_Null();
+1488   1      }
+1489          
+1490          //----------------------------------------------------------------------------
+1491          //
+1492          //----------------------------------------------------------------------------
+1493          void IRQ_INT148_Null(void)
+1494          {
+1495   1          Hook_IRQ_INT148_Null();
+1496   1      }
+1497          
+1498          //----------------------------------------------------------------------------
+1499          // PMC5 output buffer empty interrupt.
+1500          //----------------------------------------------------------------------------
+1501          void IRQ_INT149_PMC5OBE(void)
+1502          {
+1503   1          Hook_IRQ_INT149_PMC5OBE();
+1504   1      }
+1505          
+1506          //----------------------------------------------------------------------------
+1507          // PMC5 input buffer full interrupt.
+1508          //----------------------------------------------------------------------------
+1509          void IRQ_INT150_PMC5IBF(void)
+1510          {
+1511   1          Hook_IRQ_INT150_PMC5IBF();
+1512   1      }
+1513          
+1514          //----------------------------------------------------------------------------
+1515          // Voltage comparator interrupt.
+1516          //----------------------------------------------------------------------------
+1517          void IRQ_INT151_VCI(void)
+1518          {
+1519   1          Hook_IRQ_INT151_VCI();
+1520   1      }
+1521          
+1522          //----------------------------------------------------------------------------
+1523          // FUNCTION:   Isr_Int0
+1524          // ISR for INT0 (Key Scan Interrupt).
+1525          //----------------------------------------------------------------------------
+1526          void Isr_Int0(void) interrupt 0 using 2
+1527          {
+1528   1      
+1529   1      }
+1530          
+1531          //----------------------------------------------------------------------------
+1532          // Isr_Tmr0
+1533          // ISR for TF0 (Timer 0 Interrupt).  Timer 0 is the 1mS Timer (Timer A).
+1534          //----------------------------------------------------------------------------
+1535          /* ----------------------------------------------------------------------------
+1536           * FUNCTION: Irq_Timer_A - Handle Timer A interrupts.
+1537           *
+1538           * Timer A has a time base of 1 mS.
+1539           *
+1540           * Input: On entry, "TIMER Timer_A" has the event(s) to handle. Valid Events:
+1541           *     TMR_SCAN   -
+1542           *     TMR_GENTMO - This timer is a timer that is used for timeout detection
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 26  
+
+1543           *                  of serial data transmissions to/from the auxiliary
+1544           *                  keyboard/pointing devices.
+1545           * ------------------------------------------------------------------------- */
+1546          void Isr_Tmr0(void) interrupt 1 using 2
+1547          {
+1548   1          Load_Timer_A();
+1549   1          F_Service_MS_1 = 1;   // Request 1 mS timer service.
+1550   1      }
+1551          
+1552          
+1553          /* ----------------------------------------------------------------------------
+1554           * FUNCTION:   Isr_Int1
+1555           * ISR for INT1 (Interrupt Source A and B Interrupts).
+1556           *
+1557           * Interrupt Source A:  
+1558           * ------------------------------------------------------------------------- */
+1559          const FUNCT_PTR_V_V code IRQ_Service[] = 
+1560          {
+1561              IRQ_INT0_Null,                      //   INT0       Reserved
+1562              IRQ_INT1_WKO20,                     //   INT1       WUC interrupt WUI0      
+1563              IRQ_INT2_KBCOBE,                    //   INT2       KBC output buffer empty interrupt 
+1564              IRQ_INT3_PMCPMC1OBE,                //   INT3       PMC output buffer empty interrupt 
+1565              IRQ_INT4_SMBusD,                    //   INT4       SMBus D Interrupt
+1566              IRQ_INT5_WKINTAD,                   //   INT5       WUC interrupt (WU10 ~ WU15)(WU40 ~ WU47)        
+1567              IRQ_INT6_WKO23,                     //   INT6       WUC interrupt WUI3
+1568              IRQ_INT7_PWM,                       //   INT7       PWM interrupt 
+1569              
+1570              IRQ_INT8_ADC,                           //   INT8   ADC Interrupt   
+1571              IRQ_INT9_SMBusA,                            //   INT9       SMB0 Interrupt 
+1572              IRQ_INT10_SMBusB,                   //   INT10      SMB1 Interrupt
+1573              IRQ_INT11_KBMatrixScan,                 //   INT11  Key matrix scan Int
+1574              IRQ_INT12_WKO26,                    //   INT12      WUC interrupt SWUC wake up
+1575              IRQ_INT13_WKINTC,                   //   INT13      WUC interrupt KSI wake-up (WU30 ~ WU37)
+1576              IRQ_INT14_WKO25,                    //   INT14      WUC interrupt Power switch
+1577              IRQ_INT15_CIR,                          //   INT15  CIR interrupt 
+1578              
+1579              IRQ_INT16_SMBusC,                   //   INT16      SMB2 Interrupt
+1580              IRQ_INT17_WKO24,                    //   INT17      WUC Interrupt WUI4
+1581              IRQ_INT18_PS2Interrupt2,                //   INT18  PS2 P2 Interrupt
+1582              IRQ_INT19_PS2Interrupt1,                //   INT19  PS2 P1 Interrupt
+1583              IRQ_INT20_PS2Interrupt0,            //   INT20      PS2 P0 Interrupt
+1584              IRQ_INT21_WKO22,                    //   INT21      WUC Interrupt WUI2
+1585              IRQ_INT22_SMFISemaphore,            //   INT22  SMFI Semaphore Interrupt
+1586              IRQ_INT23_Null,                     //   INT23  --
+1587              
+1588              IRQ_INT24_KBCIBF,                   //   INT24      KBC input buffer empty interrupt 
+1589              IRQ_INT25_PMCPMC1IBF,                   //   INT25  PMC input buffer empty interrupt 
+1590              IRQ_INT26_PMC2OBE,                  //   INT26  PMC2 Output Buffer Empty Intr.
+1591              IRQ_INT27_PMC2IBF,                  //   INT27  PMC2 Input Buffer Full Intr.
+1592              IRQ_INT28_GINTofGPD5,               //   INT28  GINT from function 1 of GPD5
+1593              IRQ_INT29_EGPC,                     //   INT29  EGPC Interrupt
+1594              IRQ_INT30_ET1,                      //   INT30      External timer interrupt 
+1595              IRQ_INT31_WKO21,                    //   INT31      WUC     interrupt WUI1
+1596              
+1597              IRQ_INT32_GPINT0,                       //   INT32  GPINT0  
+1598              IRQ_INT33_GPINT1,                       //   INT33  GPINT1      
+1599              IRQ_INT34_GPINT2,                   //   INT34  GPINT2
+1600              IRQ_INT35_GPINT3,                   //   INT35  GPINT3
+1601              IRQ_INT36_CIRGPINT,                 //   INT36  CIR GPINT
+1602              IRQ_INT37_SSPI,                     //   INT37  SSPI Interrupt
+1603              IRQ_INT38_UART1,                    //   INT38  UART1 Interrupt
+1604              IRQ_INT39_UART2,                    //   INT39  UART2 Interrupt
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 27  
+
+1605              
+1606              IRQ_INT40_Null,                             //   INT40      --
+1607              IRQ_INT41_Null,                             //   INT41      --
+1608              IRQ_INT42_Null,                     //   INT42  --
+1609              IRQ_INT43_Null,                     //   INT43  --
+1610              IRQ_INT44_Null,                     //   INT44  --
+1611              IRQ_INT45_Null,                     //   INT45  --
+1612              IRQ_INT46_Null,                     //   INT46      --
+1613              IRQ_INT47_Null,                     //   INT47      --
+1614              
+1615              IRQ_INT48_WKO60,                        //   INT48  WKO[60] 
+1616              IRQ_INT49_WKO61,                            //   INT49  WKO[61]     
+1617              IRQ_INT50_WKO62,                    //   INT50  WKO[62]
+1618              IRQ_INT51_WKO63,                    //   INT51  WKO[63]
+1619              IRQ_INT52_WKO64,                    //   INT52  WKO[64]
+1620              IRQ_INT53_WKO65,                    //   INT53  WKO[65]
+1621              IRQ_INT54_WKO66,                    //   INT54  WKO[66]     
+1622              IRQ_INT55_WKO67,                    //   INT55  WKO[67]    
+1623          
+1624              IRQ_INT56_Null,                             //   INT56  --  
+1625              IRQ_INT57_Null,                     //   INT57  --
+1626              IRQ_INT58_ET2,                      //   INT58  External Timer 2 Interrupt
+1627              IRQ_INT59_DeferredSPIInstruction,   //   INT59  Deferred SPI Instruction Interrupt      
+1628              IRQ_INT60_TMRINTA0,                 //   INT60  TMRINTA0
+1629              IRQ_INT61_TMRINTA1,                 //   INT61  TMRINTA1
+1630              IRQ_INT62_TMRINTB0,                 //   INT62  TMRINTB0  
+1631                  IRQ_INT63_TMRINTB1,                 //   INT63  TMRINTB1
+1632          
+1633              IRQ_INT64_PMC2EXOBE,                    //   INT64  PMC2EX Output Buffer Empty Intr.
+1634              IRQ_INT65_PMC2EXIBF,                    //   INT65  PMC2EX Input Buffer Full Intr.
+1635              IRQ_INT66_PMC3OBE,                  //   INT66  PMC3 Output Buffer Empty Intr.
+1636              IRQ_INT67_PMC3IBF,                  //   INT67  PMC3 Input Buffer Full Intr.
+1637              IRQ_INT68_PMC4OBE,                  //   INT68  PMC4 Output Buffer Empty Intr.
+1638              IRQ_INT69_PMC4IBF,                  //   INT69  PMC4 Input Buffer Full Intr.
+1639              IRQ_INT70_Null,                     //   INT70  --
+1640              IRQ_INT71_I2BRAM,                   //   INT71  I2BRAM Interrupt
+1641          
+1642              IRQ_INT72_WKO70,                        //   INT72  WKO[70] 
+1643              IRQ_INT73_WKO71,                            //   INT73  WKO[71]     
+1644              IRQ_INT74_WKO72,                    //   INT74  WKO[72]
+1645              IRQ_INT75_WKO73,                    //   INT75  WKO[73]
+1646              IRQ_INT76_WKO74,                    //   INT76  WKO[74]
+1647              IRQ_INT77_WKO75,                    //   INT77  WKO[75]
+1648              IRQ_INT78_WKO76,                    //   INT78  WKO[76]     
+1649              IRQ_INT79_WKO77,                    //   INT79  WKO[77]   
+1650          
+1651              IRQ_INT80_Null,                     //   INT80  --
+1652              IRQ_INT81_SMBusClockHeld,           //   INT81  SMBus clock held interrupt.
+1653              IRQ_INT82_CEC,                      //   INT82  CEC interrupt.
+1654              IRQ_INT83_H2RAMLPC,                 //   INT83  H2RAM LPC Trigger.
+1655              IRQ_INT84_Null,                     //   INT84  --
+1656              IRQ_INT85_WKO88,                    //   INT85  WKO[88] 
+1657              IRQ_INT86_WKO89,                    //   INT86  WKO[89] 
+1658              IRQ_INT87_WKO90,                    //   INT87  WKO[90]
+1659          
+1660              IRQ_INT88_WKO80,                    //   INT88  WKO[80]
+1661              IRQ_INT89_WKO81,                    //   INT89  WKO[81]
+1662              IRQ_INT90_WKO82,                    //   INT90  WKO[82]
+1663              IRQ_INT91_WKO83,                    //   INT91  WKO[83]
+1664              IRQ_INT92_WKO84,                    //   INT92  WKO[84]
+1665              IRQ_INT93_WKO85,                    //   INT93  WKO[85]
+1666              IRQ_INT94_WKO86,                    //   INT94  WKO[86]
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 28  
+
+1667              IRQ_INT95_WKO87,                    //   INT95  WKO[87]
+1668          
+1669              IRQ_INT96_WKO91,                    //   INT96  WKO[91]
+1670              IRQ_INT97_WKO92,                    //   INT97  WKO[92]
+1671              IRQ_INT98_WKO93,                    //   INT98  WKO[93]
+1672              IRQ_INT99_WKO94,                    //   INT99  WKO[94]
+1673              IRQ_INT100_WKO95,                   //   INT100 WKO[95]
+1674              IRQ_INT101_WKO96,                   //   INT101 WKO[96]
+1675              IRQ_INT102_WKO97,                   //   INT102 WKO[97]
+1676              IRQ_INT103_WKO98,                   //   INT103 WKO[98]
+1677          
+1678              IRQ_INT104_WKO99,                   //   INT104 WKO[99]
+1679              IRQ_INT105_WKO100,                  //   INT105 WKO[100]
+1680              IRQ_INT106_WKO101,                  //   INT106 WKO[101]
+1681              IRQ_INT107_WKO102,                  //   INT107 WKO[102]
+1682              IRQ_INT108_WKO103,                  //   INT108 WKO[103]
+1683              IRQ_INT109_WKO104,                  //   INT109 WKO[104]
+1684              IRQ_INT110_WKO105,                  //   INT110 WKO[105]
+1685              IRQ_INT111_WKO106,                  //   INT111 WKO[106]
+1686          
+1687              IRQ_INT112_WKO107,                  //   INT112 WKO[107]
+1688              IRQ_INT113_WKO108,                  //   INT113 WKO[108]
+1689              IRQ_INT114_WKO109,                  //   INT114 WKO[109]
+1690              IRQ_INT115_WKO110,                  //   INT115 WKO[110]
+1691              IRQ_INT116_WKO111,                  //   INT116 WKO[111]
+1692              IRQ_INT117_WKO112,                  //   INT117 WKO[112]
+1693              IRQ_INT118_WKO113,                  //   INT118 WKO[113]
+1694              IRQ_INT119_WKO114,                  //   INT119 WKO[114]
+1695          
+1696              IRQ_INT120_WKO115,                  //   INT120 WKO[115]
+1697              IRQ_INT121_WKO116,                  //   INT121 WKO[116]
+1698              IRQ_INT122_WKO117,                  //   INT122 WKO[117]
+1699              IRQ_INT123_WKO118,                  //   INT123 WKO[118]
+1700              IRQ_INT124_WKO119,                  //   INT124 WKO[119]
+1701              IRQ_INT125_WKO120,                  //   INT125 WKO[120]
+1702              IRQ_INT126_WKO121,                  //   INT126 WKO[121]
+1703              IRQ_INT127_WKO122,                  //   INT127 WKO[122]
+1704          
+1705              IRQ_INT128_WKO128,                  //   INT128 WKO[128]
+1706              IRQ_INT129_WKO129,                  //   INT129 WKO[129]
+1707              IRQ_INT130_WKO130,                  //   INT130 WKO[130]
+1708              IRQ_INT131_WKO131,                  //   INT131 WKO[131]
+1709              IRQ_INT132_WKO132,                  //   INT132 WKO[132]
+1710              IRQ_INT133_WKO133,                  //   INT133 WKO[133]
+1711              IRQ_INT134_WKO134,                  //   INT134 WKO[134]
+1712              IRQ_INT135_Null,                    //   INT135 --
+1713          
+1714              IRQ_INT136_Null,                    //   INT136 --
+1715              IRQ_INT137_Null,                    //   INT137 --
+1716              IRQ_INT138_Null,                    //   INT138 --
+1717              IRQ_INT139_Null,                    //   INT139 --
+1718              IRQ_INT140_Null,                    //   INT140 --
+1719              IRQ_INT141_Null,                    //   INT141 --
+1720              IRQ_INT142_Null,                    //   INT142 --
+1721              IRQ_INT143_Null,                    //   INT143 --
+1722          
+1723              IRQ_INT144_Null,                    //   INT144 --
+1724              IRQ_INT145_Null,                    //   INT145 --
+1725              IRQ_INT146_Null,                    //   INT146 --
+1726              IRQ_INT147_Null,                    //   INT147 --
+1727              IRQ_INT148_Null,                    //   INT148 --
+1728              IRQ_INT149_PMC5OBE,                 //   INT149 PMC5 output buffer empty interrupt.
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 29  
+
+1729              IRQ_INT150_PMC5IBF,                 //   INT150 PMC5 input buffer full interrupt.
+1730              IRQ_INT151_VCI,                     //   INT151 Voltage comparator interrupt.
+1731          };
+1732                                                                  
+1733          void Isr_Int1 (void) interrupt 2 using 2
+1734          {
+1735   1          if(OEM_Isr_Int1_Request)
+1736   1          {
+1737   2              Hook_OEM_Isr_Int1();
+1738   2          }
+1739   1          else
+1740   1          {
+1741   2              if(IVECT==PS2Interrupt2)            // PS/2 Interrupt 2
+1742   2              {
+1743   3                  IRQ_INT18_PS2Interrupt2();
+1744   3              }
+1745   2              else if(IVECT==PS2Interrupt1)       // PS/2 Interrupt 1
+1746   2              {
+1747   3                  IRQ_INT19_PS2Interrupt1();
+1748   3              }
+1749   2              else if(IVECT==PS2Interrupt0)       // PS/2 Interrupt 0
+1750   2              {
+1751   3                  IRQ_INT20_PS2Interrupt0();
+1752   3              }
+1753   2              else
+1754   2              {
+1755   3                  (IRQ_Service[(IVECT-0x10)])();  // Dispatch to service handler.
+1756   3              }
+1757   2          }
+1758   1      
+1759   1          Hook_Isr_Int1();
+1760   1      } 
+1761              
+1762          /* ----------------------------------------------------------------------------
+1763           * FUNCTION:   Isr_Tmr1
+1764           * ISR for TF1 (Timer 1 Interrupt).  Timer 1 is the 2ms Timer (Timer B).
+1765           * ------------------------------------------------------------------------- */
+1766          void Isr_Tmr1(void) interrupt 3 using 2
+1767          {
+1768   1              Stop_Timer_B();
+1769   1              if ( Timer_B.fbit.SEND_ENABLE )  
+1770   1              {   
+1771   2                      F_Service_SEND = 1;                     // Post service request.
+1772   2              Timer_B.fbit.SEND_ENABLE = 0;
+1773   2                      Load_Timer_B();
+1774   2              }
+1775   1      }
+1776          
+1777          /* ----------------------------------------------------------------------------
+1778           * FUNCTION:   Isr_UART
+1779           * ISR for TI or RI (UART Interrupt).
+1780           * ------------------------------------------------------------------------- */
+1781          void Isr_UART(void) interrupt 4 using 2
+1782          {
+1783   1      
+1784   1      }
+1785          
+1786          
+1787          /* ----------------------------------------------------------------------------
+1788           * FUNCTION:   Isr_Tmr2
+1789           * ISR for TF2 or EXF2 (Timer 2 Interrupt).
+1790           * ------------------------------------------------------------------------- */
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 30  
+
+1791          void Isr_Tmr2(void) interrupt 5 using 2
+1792          {
+1793   1      
+1794   1      }
+1795          
+1796          //------------------------------------------------------------------------------
+1797          // The function of disable all interrupts
+1798          //------------------------------------------------------------------------------
+1799          void DisableAllInterrupt(void)
+1800          {
+1801   1              EA = 0;
+1802   1              _nop_();
+1803   1              _nop_();
+1804   1              _nop_();
+1805   1              _nop_();
+1806   1      }
+1807          
+1808          //------------------------------------------------------------------------------
+1809          // The function of enable all interrupts
+1810          //------------------------------------------------------------------------------
+1811          void EnableAllInterrupt(void)
+1812          {
+1813   1              EA = 1;
+1814   1      }
+1815          
+1816          //------------------------------------------------------------------------------
+1817          // The function of enabling KBC Input Buffer Full (60 64 port)Interrupt 
+1818          //------------------------------------------------------------------------------
+1819          void EnableKBCIBFInt(void)
+1820          {
+1821   1          SET_MASK(IER3,Int_KBCIBF);
+1822   1      }
+1823          
+1824          //------------------------------------------------------------------------------
+1825          // The function of enabling PMC Input Buffer Full (62 66 68 6C port)Interrupt 
+1826          //------------------------------------------------------------------------------
+1827          void EnablePMCIBFInt(void)
+1828          {
+1829   1              SET_MASK(IER3,Int_PMCIBF);      
+1830   1      }
+1831          
+1832          //----------------------------------------------------------------------------
+1833          // The function of enabling interrupts
+1834          //----------------------------------------------------------------------------
+1835          void InitEnableInterrupt(void)
+1836          {
+1837   1              ISR0 = 0xFF;
+1838   1              ISR1 = 0xFF;
+1839   1              ISR2 = 0xFF;
+1840   1              ISR3 = 0xFF;
+1841   1              ISR4 = 0xFF;
+1842   1          ISR5 = 0xFF;
+1843   1              ISR6 = 0xFF;
+1844   1          ISR7 = 0xFF;
+1845   1          ISR8 = 0xFF;
+1846   1          ISR9 = 0xFF;
+1847   1      
+1848   1              EX1=1;                                  // enable external 1 interrupt 
+1849   1              EnableAllInterrupt();
+1850   1      }
+1851          
+1852          //----------------------------------------------------------------------------
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 31  
+
+1853          // The function of enabling module interrupt
+1854          //----------------------------------------------------------------------------
+1855          void EnableModuleInterrupt(void)
+1856          {
+1857   1              EnableAllInterrupt();   // enable all interrupts
+1858   1          EnableKBCIBFInt();      // Enable 60/64 port input buffer full interrup
+1859   1              EnablePMCIBFInt();      // Enable PMC Input Buffer Full (62 66 68 6C port)Interrupt
+1860   1      
+1861   1              Hook_EnableInterrupt();
+1862   1      }
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 32  
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION Com00C3 (BEGIN)
+0000         L?0196:
+0000         L?0197:
+0000 900000      E     MOV     DPTR,#PSCTL1
+0003 7411              MOV     A,#011H
+0005 F0                MOVX    @DPTR,A
+0006 900000      E     MOV     DPTR,#PSCTL2
+0009 F0                MOVX    @DPTR,A
+000A 900000      E     MOV     DPTR,#PSCTL3
+000D F0                MOVX    @DPTR,A
+000E 22                RET     
+000F         L?0198:
+000F         L?0199:
+000F D200        E     SETB    F_Service_PS2
+0011 C200        E     CLR     PS2StartBit
+0013 7800        E     MOV     R0,#LOW PS2_SSIRQ_Channel
+0015 76FF              MOV     @R0,#0FFH
+0017 22                RET     
+0018         L?0200:
+0018         L?0201:
+0018 900000      E     MOV     DPTR,#PS2DataPinStatusCounter
+001B E0                MOVX    A,@DPTR
+001C 04                INC     A
+001D F0                MOVX    @DPTR,A
+001E E0                MOVX    A,@DPTR
+001F 22                RET     
+             ; FUNCTION Com00C3 (END)
+
+             ; FUNCTION IrqLock_scan (BEGIN)
+                                           ; SOURCE LINE # 21
+                                           ; SOURCE LINE # 22
+                                           ; SOURCE LINE # 23
+0000 7800        E     MOV     R0,#LOW Int_Var
+0002 E6                MOV     A,@R0
+0003 4480              ORL     A,#080H
+0005 F6                MOV     @R0,A
+                                           ; SOURCE LINE # 25
+0006 22                RET     
+             ; FUNCTION IrqLock_scan (END)
+
+             ; FUNCTION IRQ_INT0_Null (BEGIN)
+                                           ; SOURCE LINE # 30
+                                           ; SOURCE LINE # 31
+                                           ; SOURCE LINE # 33
+0000 22                RET     
+             ; FUNCTION IRQ_INT0_Null (END)
+
+             ; FUNCTION IRQ_INT1_WKO20 (BEGIN)
+                                           ; SOURCE LINE # 38
+                                           ; SOURCE LINE # 39
+                                           ; SOURCE LINE # 40
+0000 020000      E     LJMP    Hook_IRQ_INT1_WKO20
+             ; FUNCTION IRQ_INT1_WKO20 (END)
+
+             ; FUNCTION IRQ_INT2_KBCOBE (BEGIN)
+                                           ; SOURCE LINE # 46
+                                           ; SOURCE LINE # 47
+                                           ; SOURCE LINE # 48
+0000 020000      E     LJMP    Hook_IRQ_INT2_KBCOBE
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 33  
+
+             ; FUNCTION IRQ_INT2_KBCOBE (END)
+
+             ; FUNCTION IRQ_INT3_PMCPMC1OBE (BEGIN)
+                                           ; SOURCE LINE # 54
+                                           ; SOURCE LINE # 55
+                                           ; SOURCE LINE # 56
+0000 020000      E     LJMP    Hook_IRQ_INT3_PMCPMC1OBE
+             ; FUNCTION IRQ_INT3_PMCPMC1OBE (END)
+
+             ; FUNCTION IRQ_INT4_SMBusD (BEGIN)
+                                           ; SOURCE LINE # 62
+                                           ; SOURCE LINE # 63
+                                           ; SOURCE LINE # 64
+0000 020000      E     LJMP    Hook_IRQ_INT4_SMBusD
+             ; FUNCTION IRQ_INT4_SMBusD (END)
+
+             ; FUNCTION IRQ_INT5_WKINTAD (BEGIN)
+                                           ; SOURCE LINE # 70
+                                           ; SOURCE LINE # 71
+                                           ; SOURCE LINE # 72
+0000 020000      E     LJMP    Hook_IRQ_INT5_WKINTAD
+             ; FUNCTION IRQ_INT5_WKINTAD (END)
+
+             ; FUNCTION IRQ_INT6_WKO23 (BEGIN)
+                                           ; SOURCE LINE # 78
+                                           ; SOURCE LINE # 79
+                                           ; SOURCE LINE # 80
+0000 020000      E     LJMP    Hook_IRQ_INT6_WKO23
+             ; FUNCTION IRQ_INT6_WKO23 (END)
+
+             ; FUNCTION IRQ_INT7_PWM (BEGIN)
+                                           ; SOURCE LINE # 86
+                                           ; SOURCE LINE # 87
+                                           ; SOURCE LINE # 88
+0000 020000      E     LJMP    Hook_IRQ_INT7_PWM
+             ; FUNCTION IRQ_INT7_PWM (END)
+
+             ; FUNCTION IRQ_INT8_ADC (BEGIN)
+                                           ; SOURCE LINE # 94
+                                           ; SOURCE LINE # 95
+                                           ; SOURCE LINE # 96
+0000 020000      E     LJMP    Hook_IRQ_INT8_ADC
+             ; FUNCTION IRQ_INT8_ADC (END)
+
+             ; FUNCTION IRQ_INT9_SMBusA (BEGIN)
+                                           ; SOURCE LINE # 102
+                                           ; SOURCE LINE # 103
+                                           ; SOURCE LINE # 104
+0000 020000      E     LJMP    Hook_IRQ_INT9_SMBusA
+             ; FUNCTION IRQ_INT9_SMBusA (END)
+
+             ; FUNCTION IRQ_INT10_SMBusB (BEGIN)
+                                           ; SOURCE LINE # 110
+                                           ; SOURCE LINE # 111
+                                           ; SOURCE LINE # 112
+0000 020000      E     LJMP    Hook_IRQ_INT10_SMBusB
+             ; FUNCTION IRQ_INT10_SMBusB (END)
+
+             ; FUNCTION IRQ_INT11_KBMatrixScan (BEGIN)
+                                           ; SOURCE LINE # 118
+                                           ; SOURCE LINE # 119
+                                           ; SOURCE LINE # 123
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 34  
+
+0000 900000      E     MOV     DPTR,#IER1
+0003 E0                MOVX    A,@DPTR
+0004 54F7              ANL     A,#0F7H
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 124
+0007 900000      E     MOV     DPTR,#ISR1
+000A 7408              MOV     A,#08H
+000C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 125
+000D D200        E     SETB    F_Service_KEY
+                                           ; SOURCE LINE # 127
+000F 020000      E     LJMP    Hook_IRQ_INT11_KBMatrixScan
+             ; FUNCTION IRQ_INT11_KBMatrixScan (END)
+
+             ; FUNCTION IRQ_INT12_WKO26 (BEGIN)
+                                           ; SOURCE LINE # 136
+                                           ; SOURCE LINE # 137
+                                           ; SOURCE LINE # 138
+0000 020000      E     LJMP    Hook_IRQ_INT12_WKO26
+             ; FUNCTION IRQ_INT12_WKO26 (END)
+
+             ; FUNCTION IRQ_INT13_WKINTC (BEGIN)
+                                           ; SOURCE LINE # 144
+                                           ; SOURCE LINE # 145
+                                           ; SOURCE LINE # 146
+0000 020000      E     LJMP    Hook_IRQ_INT13_WKINTC
+             ; FUNCTION IRQ_INT13_WKINTC (END)
+
+             ; FUNCTION IRQ_INT14_WKO25 (BEGIN)
+                                           ; SOURCE LINE # 152
+                                           ; SOURCE LINE # 153
+                                           ; SOURCE LINE # 154
+0000 020000      E     LJMP    Hook_IRQ_INT14_WKO25
+             ; FUNCTION IRQ_INT14_WKO25 (END)
+
+             ; FUNCTION IRQ_INT15_CIR (BEGIN)
+                                           ; SOURCE LINE # 160
+                                           ; SOURCE LINE # 161
+                                           ; SOURCE LINE # 162
+0000 020000      E     LJMP    Hook_IRQ_INT15_CIR
+             ; FUNCTION IRQ_INT15_CIR (END)
+
+             ; FUNCTION IRQ_INT16_SMBusC (BEGIN)
+                                           ; SOURCE LINE # 168
+                                           ; SOURCE LINE # 169
+                                           ; SOURCE LINE # 170
+0000 020000      E     LJMP    Hook_IRQ_INT16_SMBusC
+             ; FUNCTION IRQ_INT16_SMBusC (END)
+
+             ; FUNCTION IRQ_INT17_WKO24 (BEGIN)
+                                           ; SOURCE LINE # 176
+                                           ; SOURCE LINE # 177
+                                           ; SOURCE LINE # 178
+0000 020000      E     LJMP    Hook_IRQ_INT17_WKO24
+             ; FUNCTION IRQ_INT17_WKO24 (END)
+
+             ; FUNCTION IRQ_INT18_PS2Interrupt2 (BEGIN)
+                                           ; SOURCE LINE # 184
+                                           ; SOURCE LINE # 185
+                                           ; SOURCE LINE # 187
+0000 900000      E     MOV     DPTR,#IER2
+0003 E0                MOVX    A,@DPTR
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 35  
+
+0004 54FB              ANL     A,#0FBH
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 188
+0007 900000      E     MOV     DPTR,#ISR2
+000A 7404              MOV     A,#04H
+000C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 190
+000D 300019      E     JNB     SendtoAUXFlag,?C0020
+                                           ; SOURCE LINE # 191
+                                           ; SOURCE LINE # 192
+0010 E4                CLR     A
+0011 900000      E     MOV     DPTR,#PS2DataPinStatusCounter
+0014 F0                MOVX    @DPTR,A
+0015         ?C0021:
+                                           ; SOURCE LINE # 193
+                                           ; SOURCE LINE # 195
+0015 900000      E     MOV     DPTR,#GPDRF
+0018 E0                MOVX    A,@DPTR
+0019 30E502            JNB     ACC.5,?C0024
+                                           ; SOURCE LINE # 196
+                                           ; SOURCE LINE # 197
+001C 800B              SJMP    ?C0020
+                                           ; SOURCE LINE # 198
+001E         ?C0024:
+                                           ; SOURCE LINE # 200
+                                           ; SOURCE LINE # 201
+001E E4                CLR     A
+001F 900000      E     MOV     DPTR,#WNCKR
+0022 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 202
+                                           ; SOURCE LINE # 203
+0023         ?C0023:
+0023 120000      R     LCALL   L?0200
+0026 B405EC            CJNE    A,#05H,?C0021
+                                           ; SOURCE LINE # 204
+0029         ?C0020:
+                                           ; SOURCE LINE # 206
+                                           ; SOURCE LINE # 207
+                                           ; SOURCE LINE # 208
+0029 120000      R     LCALL   L?0196
+                                           ; SOURCE LINE # 210
+002C 7800        E     MOV     R0,#LOW PS2_IRQ_Channel
+002E 7602              MOV     @R0,#02H
+                                           ; SOURCE LINE # 211
+                                           ; SOURCE LINE # 212
+                                           ; SOURCE LINE # 213
+0030 120000      R     LCALL   L?0198
+                                           ; SOURCE LINE # 214
+0033 900000      E     MOV     DPTR,#PSDAT3
+0036 E0                MOVX    A,@DPTR
+0037 7800        E     MOV     R0,#LOW PS2PortxData+02H
+0039 F6                MOV     @R0,A
+                                           ; SOURCE LINE # 267
+003A 020000      E     LJMP    Hook_IRQ_INT18_PS2Interrupt2
+             ; FUNCTION IRQ_INT18_PS2Interrupt2 (END)
+
+             ; FUNCTION IRQ_INT19_PS2Interrupt1 (BEGIN)
+                                           ; SOURCE LINE # 273
+                                           ; SOURCE LINE # 274
+                                           ; SOURCE LINE # 276
+0000 900000      E     MOV     DPTR,#IER2
+0003 E0                MOVX    A,@DPTR
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 36  
+
+0004 54F7              ANL     A,#0F7H
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 277
+0007 900000      E     MOV     DPTR,#ISR2
+000A 7408              MOV     A,#08H
+000C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 279
+000D 300019      E     JNB     SendtoAUXFlag,?C0027
+                                           ; SOURCE LINE # 280
+                                           ; SOURCE LINE # 281
+0010 E4                CLR     A
+0011 900000      E     MOV     DPTR,#PS2DataPinStatusCounter
+0014 F0                MOVX    @DPTR,A
+0015         ?C0028:
+                                           ; SOURCE LINE # 282
+                                           ; SOURCE LINE # 284
+0015 900000      E     MOV     DPTR,#GPDRF
+0018 E0                MOVX    A,@DPTR
+0019 30E302            JNB     ACC.3,?C0031
+                                           ; SOURCE LINE # 285
+                                           ; SOURCE LINE # 286
+001C 800B              SJMP    ?C0027
+                                           ; SOURCE LINE # 287
+001E         ?C0031:
+                                           ; SOURCE LINE # 289
+                                           ; SOURCE LINE # 290
+001E E4                CLR     A
+001F 900000      E     MOV     DPTR,#WNCKR
+0022 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 291
+                                           ; SOURCE LINE # 292
+0023         ?C0030:
+0023 120000      R     LCALL   L?0200
+0026 B405EC            CJNE    A,#05H,?C0028
+                                           ; SOURCE LINE # 293
+0029         ?C0027:
+                                           ; SOURCE LINE # 295
+                                           ; SOURCE LINE # 296
+                                           ; SOURCE LINE # 297
+0029 120000      R     LCALL   L?0196
+                                           ; SOURCE LINE # 299
+002C 7800        E     MOV     R0,#LOW PS2_IRQ_Channel
+002E 7601              MOV     @R0,#01H
+                                           ; SOURCE LINE # 300
+                                           ; SOURCE LINE # 301
+                                           ; SOURCE LINE # 302
+0030 120000      R     LCALL   L?0198
+                                           ; SOURCE LINE # 303
+0033 900000      E     MOV     DPTR,#PSDAT2
+0036 E0                MOVX    A,@DPTR
+0037 7800        E     MOV     R0,#LOW PS2PortxData+01H
+0039 F6                MOV     @R0,A
+                                           ; SOURCE LINE # 356
+003A 020000      E     LJMP    Hook_IRQ_INT19_PS2Interrupt1
+             ; FUNCTION IRQ_INT19_PS2Interrupt1 (END)
+
+             ; FUNCTION IRQ_INT20_PS2Interrupt0 (BEGIN)
+                                           ; SOURCE LINE # 362
+                                           ; SOURCE LINE # 363
+                                           ; SOURCE LINE # 365
+0000 900000      E     MOV     DPTR,#IER2
+0003 E0                MOVX    A,@DPTR
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 37  
+
+0004 54EF              ANL     A,#0EFH
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 366
+0007 900000      E     MOV     DPTR,#ISR2
+000A 7410              MOV     A,#010H
+000C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 368
+000D 300019      E     JNB     SendtoAUXFlag,?C0034
+                                           ; SOURCE LINE # 369
+                                           ; SOURCE LINE # 370
+0010 E4                CLR     A
+0011 900000      E     MOV     DPTR,#PS2DataPinStatusCounter
+0014 F0                MOVX    @DPTR,A
+0015         ?C0035:
+                                           ; SOURCE LINE # 371
+                                           ; SOURCE LINE # 373
+0015 900000      E     MOV     DPTR,#GPDRF
+0018 E0                MOVX    A,@DPTR
+0019 30E102            JNB     ACC.1,?C0038
+                                           ; SOURCE LINE # 374
+                                           ; SOURCE LINE # 375
+001C 800B              SJMP    ?C0034
+                                           ; SOURCE LINE # 376
+001E         ?C0038:
+                                           ; SOURCE LINE # 378
+                                           ; SOURCE LINE # 379
+001E E4                CLR     A
+001F 900000      E     MOV     DPTR,#WNCKR
+0022 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 380
+                                           ; SOURCE LINE # 381
+0023         ?C0037:
+0023 120000      R     LCALL   L?0201
+0026 B405EC            CJNE    A,#05H,?C0035
+                                           ; SOURCE LINE # 382
+0029         ?C0034:
+                                           ; SOURCE LINE # 384
+                                           ; SOURCE LINE # 385
+                                           ; SOURCE LINE # 386
+0029 120000      R     LCALL   L?0197
+                                           ; SOURCE LINE # 388
+002C E4                CLR     A
+002D 7800        E     MOV     R0,#LOW PS2_IRQ_Channel
+002F F6                MOV     @R0,A
+                                           ; SOURCE LINE # 389
+                                           ; SOURCE LINE # 390
+                                           ; SOURCE LINE # 391
+0030 120000      R     LCALL   L?0199
+                                           ; SOURCE LINE # 392
+0033 900000      E     MOV     DPTR,#PSDAT1
+0036 E0                MOVX    A,@DPTR
+0037 7800        E     MOV     R0,#LOW PS2PortxData
+0039 F6                MOV     @R0,A
+                                           ; SOURCE LINE # 445
+003A 020000      E     LJMP    Hook_IRQ_INT20_PS2Interrupt0
+             ; FUNCTION IRQ_INT20_PS2Interrupt0 (END)
+
+             ; FUNCTION IRQ_INT21_WKO22 (BEGIN)
+                                           ; SOURCE LINE # 451
+                                           ; SOURCE LINE # 452
+                                           ; SOURCE LINE # 453
+0000 020000      E     LJMP    Hook_IRQ_INT21_WKO22
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 38  
+
+             ; FUNCTION IRQ_INT21_WKO22 (END)
+
+             ; FUNCTION IRQ_INT22_SMFISemaphore (BEGIN)
+                                           ; SOURCE LINE # 459
+                                           ; SOURCE LINE # 460
+                                           ; SOURCE LINE # 461
+0000 020000      E     LJMP    Hook_IRQ_INT22_SMFISemaphore
+             ; FUNCTION IRQ_INT22_SMFISemaphore (END)
+
+             ; FUNCTION IRQ_INT23_Null (BEGIN)
+                                           ; SOURCE LINE # 467
+                                           ; SOURCE LINE # 468
+                                           ; SOURCE LINE # 469
+0000 020000      E     LJMP    Hook_IRQ_INT23_Null
+             ; FUNCTION IRQ_INT23_Null (END)
+
+             ; FUNCTION IRQ_INT24_KBCIBF (BEGIN)
+                                           ; SOURCE LINE # 475
+                                           ; SOURCE LINE # 476
+                                           ; SOURCE LINE # 477
+0000 120000      R     LCALL   IrqLock_scan
+                                           ; SOURCE LINE # 478
+0003 900000      E     MOV     DPTR,#IER3
+0006 E0                MOVX    A,@DPTR
+0007 54FE              ANL     A,#0FEH
+0009 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 479
+000A 900000      E     MOV     DPTR,#ISR3
+000D 7401              MOV     A,#01H
+000F F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 480
+0010 D200        E     SETB    F_Service_PCI
+                                           ; SOURCE LINE # 482
+0012 020000      E     LJMP    Hook_IRQ_INT24_KBCIBF
+             ; FUNCTION IRQ_INT24_KBCIBF (END)
+
+             ; FUNCTION IRQ_INT25_PMCPMC1IBF (BEGIN)
+                                           ; SOURCE LINE # 488
+                                           ; SOURCE LINE # 489
+                                           ; SOURCE LINE # 490
+0000 900000      E     MOV     DPTR,#PM2STS
+0003 E0                MOVX    A,@DPTR
+0004 30E104            JNB     ACC.1,?C0045
+                                           ; SOURCE LINE # 491
+                                           ; SOURCE LINE # 492
+0007 D200        E     SETB    F_Service_PCI3
+                                           ; SOURCE LINE # 493
+0009 8002              SJMP    ?C0046
+000B         ?C0045:
+                                           ; SOURCE LINE # 495
+                                           ; SOURCE LINE # 496
+000B D200        E     SETB    F_Service_PCI2
+                                           ; SOURCE LINE # 497
+000D         ?C0046:
+                                           ; SOURCE LINE # 498
+000D 900000      E     MOV     DPTR,#IER3
+0010 E0                MOVX    A,@DPTR
+0011 54FD              ANL     A,#0FDH
+0013 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 499
+0014 900000      E     MOV     DPTR,#ISR3
+0017 7402              MOV     A,#02H
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 39  
+
+0019 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 501
+001A 020000      E     LJMP    Hook_IRQ_INT25_PMCPMC1IBF
+             ; FUNCTION IRQ_INT25_PMCPMC1IBF (END)
+
+             ; FUNCTION IRQ_INT26_PMC2OBE (BEGIN)
+                                           ; SOURCE LINE # 507
+                                           ; SOURCE LINE # 508
+                                           ; SOURCE LINE # 509
+0000 020000      E     LJMP    Hook_IRQ_INT26_PMC2OBE
+             ; FUNCTION IRQ_INT26_PMC2OBE (END)
+
+             ; FUNCTION IRQ_INT27_PMC2IBF (BEGIN)
+                                           ; SOURCE LINE # 515
+                                           ; SOURCE LINE # 516
+                                           ; SOURCE LINE # 517
+0000 020000      E     LJMP    Hook_IRQ_INT27_PMC2IBF
+             ; FUNCTION IRQ_INT27_PMC2IBF (END)
+
+             ; FUNCTION IRQ_INT28_GINTofGPD5 (BEGIN)
+                                           ; SOURCE LINE # 523
+                                           ; SOURCE LINE # 524
+                                           ; SOURCE LINE # 525
+0000 020000      E     LJMP    Hook_IRQ_INT28_GINTofGPD5
+             ; FUNCTION IRQ_INT28_GINTofGPD5 (END)
+
+             ; FUNCTION IRQ_INT29_EGPC (BEGIN)
+                                           ; SOURCE LINE # 531
+                                           ; SOURCE LINE # 532
+                                           ; SOURCE LINE # 533
+0000 020000      E     LJMP    Hook_IRQ_INT29_EGPC
+             ; FUNCTION IRQ_INT29_EGPC (END)
+
+             ; FUNCTION IRQ_INT30_ET1 (BEGIN)
+                                           ; SOURCE LINE # 539
+                                           ; SOURCE LINE # 540
+                                           ; SOURCE LINE # 541
+0000 020000      E     LJMP    Hook_IRQ_INT30_ET1
+             ; FUNCTION IRQ_INT30_ET1 (END)
+
+             ; FUNCTION IRQ_INT31_WKO21 (BEGIN)
+                                           ; SOURCE LINE # 547
+                                           ; SOURCE LINE # 548
+                                           ; SOURCE LINE # 549
+0000 020000      E     LJMP    Hook_IRQ_INT31_WKO21
+             ; FUNCTION IRQ_INT31_WKO21 (END)
+
+             ; FUNCTION IRQ_INT32_GPINT0 (BEGIN)
+                                           ; SOURCE LINE # 555
+                                           ; SOURCE LINE # 556
+                                           ; SOURCE LINE # 557
+0000 020000      E     LJMP    Hook_IRQ_INT32_GPINT0
+             ; FUNCTION IRQ_INT32_GPINT0 (END)
+
+             ; FUNCTION IRQ_INT33_GPINT1 (BEGIN)
+                                           ; SOURCE LINE # 563
+                                           ; SOURCE LINE # 564
+                                           ; SOURCE LINE # 565
+0000 020000      E     LJMP    Hook_IRQ_INT33_GPINT1
+             ; FUNCTION IRQ_INT33_GPINT1 (END)
+
+             ; FUNCTION IRQ_INT34_GPINT2 (BEGIN)
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 40  
+
+                                           ; SOURCE LINE # 571
+                                           ; SOURCE LINE # 572
+                                           ; SOURCE LINE # 573
+0000 020000      E     LJMP    Hook_IRQ_INT34_GPINT2
+             ; FUNCTION IRQ_INT34_GPINT2 (END)
+
+             ; FUNCTION IRQ_INT35_GPINT3 (BEGIN)
+                                           ; SOURCE LINE # 579
+                                           ; SOURCE LINE # 580
+                                           ; SOURCE LINE # 581
+0000 020000      E     LJMP    Hook_IRQ_INT35_GPINT3
+             ; FUNCTION IRQ_INT35_GPINT3 (END)
+
+             ; FUNCTION IRQ_INT36_CIRGPINT (BEGIN)
+                                           ; SOURCE LINE # 587
+                                           ; SOURCE LINE # 588
+                                           ; SOURCE LINE # 589
+0000 020000      E     LJMP    Hook_IRQ_INT36_CIRGPINT
+             ; FUNCTION IRQ_INT36_CIRGPINT (END)
+
+             ; FUNCTION IRQ_INT37_SSPI (BEGIN)
+                                           ; SOURCE LINE # 595
+                                           ; SOURCE LINE # 596
+                                           ; SOURCE LINE # 597
+0000 020000      E     LJMP    Hook_IRQ_INT37_SSPI
+             ; FUNCTION IRQ_INT37_SSPI (END)
+
+             ; FUNCTION IRQ_INT38_UART1 (BEGIN)
+                                           ; SOURCE LINE # 603
+                                           ; SOURCE LINE # 604
+                                           ; SOURCE LINE # 605
+0000 020000      E     LJMP    Hook_IRQ_INT38_UART1
+             ; FUNCTION IRQ_INT38_UART1 (END)
+
+             ; FUNCTION IRQ_INT39_UART2 (BEGIN)
+                                           ; SOURCE LINE # 611
+                                           ; SOURCE LINE # 612
+                                           ; SOURCE LINE # 613
+0000 020000      E     LJMP    Hook_IRQ_INT39_UART2
+             ; FUNCTION IRQ_INT39_UART2 (END)
+
+             ; FUNCTION IRQ_INT40_Null (BEGIN)
+                                           ; SOURCE LINE # 619
+                                           ; SOURCE LINE # 620
+                                           ; SOURCE LINE # 621
+0000 020000      E     LJMP    Hook_IRQ_INT40_Null
+             ; FUNCTION IRQ_INT40_Null (END)
+
+             ; FUNCTION IRQ_INT41_Null (BEGIN)
+                                           ; SOURCE LINE # 627
+                                           ; SOURCE LINE # 628
+                                           ; SOURCE LINE # 629
+0000 020000      E     LJMP    Hook_IRQ_INT41_Null
+             ; FUNCTION IRQ_INT41_Null (END)
+
+             ; FUNCTION IRQ_INT42_Null (BEGIN)
+                                           ; SOURCE LINE # 635
+                                           ; SOURCE LINE # 636
+                                           ; SOURCE LINE # 637
+0000 020000      E     LJMP    Hook_IRQ_INT42_Null
+             ; FUNCTION IRQ_INT42_Null (END)
+
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 41  
+
+             ; FUNCTION IRQ_INT43_Null (BEGIN)
+                                           ; SOURCE LINE # 643
+                                           ; SOURCE LINE # 644
+                                           ; SOURCE LINE # 645
+0000 020000      E     LJMP    Hook_IRQ_INT43_Null
+             ; FUNCTION IRQ_INT43_Null (END)
+
+             ; FUNCTION IRQ_INT44_Null (BEGIN)
+                                           ; SOURCE LINE # 651
+                                           ; SOURCE LINE # 652
+                                           ; SOURCE LINE # 653
+0000 020000      E     LJMP    Hook_IRQ_INT44_Null
+             ; FUNCTION IRQ_INT44_Null (END)
+
+             ; FUNCTION IRQ_INT45_Null (BEGIN)
+                                           ; SOURCE LINE # 659
+                                           ; SOURCE LINE # 660
+                                           ; SOURCE LINE # 661
+0000 020000      E     LJMP    Hook_IRQ_INT45_Null
+             ; FUNCTION IRQ_INT45_Null (END)
+
+             ; FUNCTION IRQ_INT46_Null (BEGIN)
+                                           ; SOURCE LINE # 667
+                                           ; SOURCE LINE # 668
+                                           ; SOURCE LINE # 669
+0000 020000      E     LJMP    Hook_IRQ_INT46_Null
+             ; FUNCTION IRQ_INT46_Null (END)
+
+             ; FUNCTION IRQ_INT47_Null (BEGIN)
+                                           ; SOURCE LINE # 675
+                                           ; SOURCE LINE # 676
+                                           ; SOURCE LINE # 677
+0000 020000      E     LJMP    Hook_IRQ_INT47_Null
+             ; FUNCTION IRQ_INT47_Null (END)
+
+             ; FUNCTION IRQ_INT48_WKO60 (BEGIN)
+                                           ; SOURCE LINE # 683
+                                           ; SOURCE LINE # 684
+                                           ; SOURCE LINE # 685
+0000 020000      E     LJMP    Hook_IRQ_INT48_WKO60
+             ; FUNCTION IRQ_INT48_WKO60 (END)
+
+             ; FUNCTION IRQ_INT49_WKO61 (BEGIN)
+                                           ; SOURCE LINE # 691
+                                           ; SOURCE LINE # 692
+                                           ; SOURCE LINE # 693
+0000 020000      E     LJMP    Hook_IRQ_INT49_WKO61
+             ; FUNCTION IRQ_INT49_WKO61 (END)
+
+             ; FUNCTION IRQ_INT50_WKO62 (BEGIN)
+                                           ; SOURCE LINE # 699
+                                           ; SOURCE LINE # 700
+                                           ; SOURCE LINE # 701
+0000 020000      E     LJMP    Hook_IRQ_INT50_WKO62
+             ; FUNCTION IRQ_INT50_WKO62 (END)
+
+             ; FUNCTION IRQ_INT51_WKO63 (BEGIN)
+                                           ; SOURCE LINE # 707
+                                           ; SOURCE LINE # 708
+                                           ; SOURCE LINE # 709
+0000 020000      E     LJMP    Hook_IRQ_INT51_WKO63
+             ; FUNCTION IRQ_INT51_WKO63 (END)
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 42  
+
+
+             ; FUNCTION IRQ_INT52_WKO64 (BEGIN)
+                                           ; SOURCE LINE # 715
+                                           ; SOURCE LINE # 716
+                                           ; SOURCE LINE # 717
+0000 020000      E     LJMP    Hook_IRQ_INT52_WKO64
+             ; FUNCTION IRQ_INT52_WKO64 (END)
+
+             ; FUNCTION IRQ_INT53_WKO65 (BEGIN)
+                                           ; SOURCE LINE # 723
+                                           ; SOURCE LINE # 724
+                                           ; SOURCE LINE # 725
+0000 020000      E     LJMP    Hook_IRQ_INT53_WKO65
+             ; FUNCTION IRQ_INT53_WKO65 (END)
+
+             ; FUNCTION IRQ_INT54_WKO66 (BEGIN)
+                                           ; SOURCE LINE # 731
+                                           ; SOURCE LINE # 732
+                                           ; SOURCE LINE # 733
+0000 020000      E     LJMP    Hook_IRQ_INT54_WKO66
+             ; FUNCTION IRQ_INT54_WKO66 (END)
+
+             ; FUNCTION IRQ_INT55_WKO67 (BEGIN)
+                                           ; SOURCE LINE # 739
+                                           ; SOURCE LINE # 740
+                                           ; SOURCE LINE # 741
+0000 020000      E     LJMP    Hook_IRQ_INT55_WKO67
+             ; FUNCTION IRQ_INT55_WKO67 (END)
+
+             ; FUNCTION IRQ_INT56_Null (BEGIN)
+                                           ; SOURCE LINE # 747
+                                           ; SOURCE LINE # 748
+                                           ; SOURCE LINE # 749
+0000 020000      E     LJMP    Hook_IRQ_INT56_Null
+             ; FUNCTION IRQ_INT56_Null (END)
+
+             ; FUNCTION IRQ_INT57_Null (BEGIN)
+                                           ; SOURCE LINE # 755
+                                           ; SOURCE LINE # 756
+                                           ; SOURCE LINE # 757
+0000 020000      E     LJMP    Hook_IRQ_INT57_Null
+             ; FUNCTION IRQ_INT57_Null (END)
+
+             ; FUNCTION IRQ_INT58_ET2 (BEGIN)
+                                           ; SOURCE LINE # 763
+                                           ; SOURCE LINE # 764
+                                           ; SOURCE LINE # 765
+0000 020000      E     LJMP    Hook_IRQ_INT58_ET2
+             ; FUNCTION IRQ_INT58_ET2 (END)
+
+             ; FUNCTION IRQ_INT59_DeferredSPIInstruction (BEGIN)
+                                           ; SOURCE LINE # 771
+                                           ; SOURCE LINE # 772
+                                           ; SOURCE LINE # 773
+0000 020000      E     LJMP    Hook_IRQ_INT59_DeferredSPIInstruction
+             ; FUNCTION IRQ_INT59_DeferredSPIInstruction (END)
+
+             ; FUNCTION IRQ_INT60_TMRINTA0 (BEGIN)
+                                           ; SOURCE LINE # 779
+                                           ; SOURCE LINE # 780
+                                           ; SOURCE LINE # 781
+0000 020000      E     LJMP    Hook_IRQ_INT60_TMRINTA0
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 43  
+
+             ; FUNCTION IRQ_INT60_TMRINTA0 (END)
+
+             ; FUNCTION IRQ_INT61_TMRINTA1 (BEGIN)
+                                           ; SOURCE LINE # 787
+                                           ; SOURCE LINE # 788
+                                           ; SOURCE LINE # 789
+0000 020000      E     LJMP    Hook_IRQ_INT61_TMRINTA1
+             ; FUNCTION IRQ_INT61_TMRINTA1 (END)
+
+             ; FUNCTION IRQ_INT62_TMRINTB0 (BEGIN)
+                                           ; SOURCE LINE # 795
+                                           ; SOURCE LINE # 796
+                                           ; SOURCE LINE # 797
+0000 020000      E     LJMP    Hook_IRQ_INT62_TMRINTB0
+             ; FUNCTION IRQ_INT62_TMRINTB0 (END)
+
+             ; FUNCTION IRQ_INT63_TMRINTB1 (BEGIN)
+                                           ; SOURCE LINE # 803
+                                           ; SOURCE LINE # 804
+                                           ; SOURCE LINE # 805
+0000 020000      E     LJMP    Hook_IRQ_INT63_TMRINTB1
+             ; FUNCTION IRQ_INT63_TMRINTB1 (END)
+
+             ; FUNCTION IRQ_INT64_PMC2EXOBE (BEGIN)
+                                           ; SOURCE LINE # 811
+                                           ; SOURCE LINE # 812
+                                           ; SOURCE LINE # 813
+0000 020000      E     LJMP    Hook_IRQ_INT64_PMC2EXOBE
+             ; FUNCTION IRQ_INT64_PMC2EXOBE (END)
+
+             ; FUNCTION IRQ_INT65_PMC2EXIBF (BEGIN)
+                                           ; SOURCE LINE # 819
+                                           ; SOURCE LINE # 820
+                                           ; SOURCE LINE # 821
+0000 020000      E     LJMP    Hook_IRQ_INT65_PMC2EXIBF
+             ; FUNCTION IRQ_INT65_PMC2EXIBF (END)
+
+             ; FUNCTION IRQ_INT66_PMC3OBE (BEGIN)
+                                           ; SOURCE LINE # 827
+                                           ; SOURCE LINE # 828
+                                           ; SOURCE LINE # 829
+0000 020000      E     LJMP    Hook_IRQ_INT66_PMC3OBE
+             ; FUNCTION IRQ_INT66_PMC3OBE (END)
+
+             ; FUNCTION IRQ_INT67_PMC3IBF (BEGIN)
+                                           ; SOURCE LINE # 835
+                                           ; SOURCE LINE # 836
+                                           ; SOURCE LINE # 837
+0000 020000      E     LJMP    Hook_IRQ_INT67_PMC3IBF
+             ; FUNCTION IRQ_INT67_PMC3IBF (END)
+
+             ; FUNCTION IRQ_INT68_PMC4OBE (BEGIN)
+                                           ; SOURCE LINE # 843
+                                           ; SOURCE LINE # 844
+                                           ; SOURCE LINE # 845
+0000 020000      E     LJMP    Hook_IRQ_INT68_PMC4OBE
+             ; FUNCTION IRQ_INT68_PMC4OBE (END)
+
+             ; FUNCTION IRQ_INT69_PMC4IBF (BEGIN)
+                                           ; SOURCE LINE # 851
+                                           ; SOURCE LINE # 852
+                                           ; SOURCE LINE # 853
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 44  
+
+0000 020000      E     LJMP    Hook_IRQ_INT69_PMC4IBF
+             ; FUNCTION IRQ_INT69_PMC4IBF (END)
+
+             ; FUNCTION IRQ_INT70_Null (BEGIN)
+                                           ; SOURCE LINE # 859
+                                           ; SOURCE LINE # 860
+                                           ; SOURCE LINE # 861
+0000 020000      E     LJMP    Hook_IRQ_INT70_Null
+             ; FUNCTION IRQ_INT70_Null (END)
+
+             ; FUNCTION IRQ_INT71_I2BRAM (BEGIN)
+                                           ; SOURCE LINE # 867
+                                           ; SOURCE LINE # 868
+                                           ; SOURCE LINE # 869
+0000 020000      E     LJMP    Hook_IRQ_INT71_I2BRAM
+             ; FUNCTION IRQ_INT71_I2BRAM (END)
+
+             ; FUNCTION IRQ_INT72_WKO70 (BEGIN)
+                                           ; SOURCE LINE # 875
+                                           ; SOURCE LINE # 876
+                                           ; SOURCE LINE # 877
+0000 020000      E     LJMP    Hook_IRQ_INT72_WKO70
+             ; FUNCTION IRQ_INT72_WKO70 (END)
+
+             ; FUNCTION IRQ_INT73_WKO71 (BEGIN)
+                                           ; SOURCE LINE # 883
+                                           ; SOURCE LINE # 884
+                                           ; SOURCE LINE # 885
+0000 020000      E     LJMP    Hook_IRQ_INT73_WKO71
+             ; FUNCTION IRQ_INT73_WKO71 (END)
+
+             ; FUNCTION IRQ_INT74_WKO72 (BEGIN)
+                                           ; SOURCE LINE # 891
+                                           ; SOURCE LINE # 892
+                                           ; SOURCE LINE # 893
+0000 020000      E     LJMP    Hook_IRQ_INT74_WKO72
+             ; FUNCTION IRQ_INT74_WKO72 (END)
+
+             ; FUNCTION IRQ_INT75_WKO73 (BEGIN)
+                                           ; SOURCE LINE # 899
+                                           ; SOURCE LINE # 900
+                                           ; SOURCE LINE # 901
+0000 020000      E     LJMP    Hook_IRQ_INT75_WKO73
+             ; FUNCTION IRQ_INT75_WKO73 (END)
+
+             ; FUNCTION IRQ_INT76_WKO74 (BEGIN)
+                                           ; SOURCE LINE # 907
+                                           ; SOURCE LINE # 908
+                                           ; SOURCE LINE # 909
+0000 020000      E     LJMP    Hook_IRQ_INT76_WKO74
+             ; FUNCTION IRQ_INT76_WKO74 (END)
+
+             ; FUNCTION IRQ_INT77_WKO75 (BEGIN)
+                                           ; SOURCE LINE # 915
+                                           ; SOURCE LINE # 916
+                                           ; SOURCE LINE # 917
+0000 020000      E     LJMP    Hook_IRQ_INT77_WKO75
+             ; FUNCTION IRQ_INT77_WKO75 (END)
+
+             ; FUNCTION IRQ_INT78_WKO76 (BEGIN)
+                                           ; SOURCE LINE # 923
+                                           ; SOURCE LINE # 924
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 45  
+
+                                           ; SOURCE LINE # 925
+0000 020000      E     LJMP    Hook_IRQ_INT78_WKO76
+             ; FUNCTION IRQ_INT78_WKO76 (END)
+
+             ; FUNCTION IRQ_INT79_WKO77 (BEGIN)
+                                           ; SOURCE LINE # 931
+                                           ; SOURCE LINE # 932
+                                           ; SOURCE LINE # 933
+0000 020000      E     LJMP    Hook_IRQ_INT79_WKO77
+             ; FUNCTION IRQ_INT79_WKO77 (END)
+
+             ; FUNCTION IRQ_INT80_Null (BEGIN)
+                                           ; SOURCE LINE # 939
+                                           ; SOURCE LINE # 940
+                                           ; SOURCE LINE # 941
+0000 020000      E     LJMP    Hook_IRQ_INT80_Null
+             ; FUNCTION IRQ_INT80_Null (END)
+
+             ; FUNCTION IRQ_INT81_SMBusClockHeld (BEGIN)
+                                           ; SOURCE LINE # 947
+                                           ; SOURCE LINE # 948
+                                           ; SOURCE LINE # 949
+0000 020000      E     LJMP    Hook_IRQ_INT81_SMBusClockHeld
+             ; FUNCTION IRQ_INT81_SMBusClockHeld (END)
+
+             ; FUNCTION IRQ_INT82_CEC (BEGIN)
+                                           ; SOURCE LINE # 955
+                                           ; SOURCE LINE # 956
+                                           ; SOURCE LINE # 957
+0000 020000      E     LJMP    Hook_IRQ_INT82_CEC
+             ; FUNCTION IRQ_INT82_CEC (END)
+
+             ; FUNCTION IRQ_INT83_H2RAMLPC (BEGIN)
+                                           ; SOURCE LINE # 963
+                                           ; SOURCE LINE # 964
+                                           ; SOURCE LINE # 965
+0000 020000      E     LJMP    Hook_IRQ_INT83_H2RAMLPC
+             ; FUNCTION IRQ_INT83_H2RAMLPC (END)
+
+             ; FUNCTION IRQ_INT84_Null (BEGIN)
+                                           ; SOURCE LINE # 971
+                                           ; SOURCE LINE # 972
+                                           ; SOURCE LINE # 984
+0000 22                RET     
+             ; FUNCTION IRQ_INT84_Null (END)
+
+             ; FUNCTION IRQ_INT85_WKO88 (BEGIN)
+                                           ; SOURCE LINE # 989
+                                           ; SOURCE LINE # 990
+                                           ; SOURCE LINE # 991
+0000 020000      E     LJMP    Hook_IRQ_INT85_WKO88
+             ; FUNCTION IRQ_INT85_WKO88 (END)
+
+             ; FUNCTION IRQ_INT86_WKO89 (BEGIN)
+                                           ; SOURCE LINE # 997
+                                           ; SOURCE LINE # 998
+                                           ; SOURCE LINE # 999
+0000 020000      E     LJMP    Hook_IRQ_INT86_WKO89
+             ; FUNCTION IRQ_INT86_WKO89 (END)
+
+             ; FUNCTION IRQ_INT87_WKO90 (BEGIN)
+                                           ; SOURCE LINE # 1005
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 46  
+
+                                           ; SOURCE LINE # 1006
+                                           ; SOURCE LINE # 1007
+0000 020000      E     LJMP    Hook_IRQ_INT87_WKO90
+             ; FUNCTION IRQ_INT87_WKO90 (END)
+
+             ; FUNCTION IRQ_INT88_WKO80 (BEGIN)
+                                           ; SOURCE LINE # 1013
+                                           ; SOURCE LINE # 1014
+                                           ; SOURCE LINE # 1015
+0000 020000      E     LJMP    Hook_IRQ_INT88_WKO80
+             ; FUNCTION IRQ_INT88_WKO80 (END)
+
+             ; FUNCTION IRQ_INT89_WKO81 (BEGIN)
+                                           ; SOURCE LINE # 1021
+                                           ; SOURCE LINE # 1022
+                                           ; SOURCE LINE # 1023
+0000 020000      E     LJMP    Hook_IRQ_INT89_WKO81
+             ; FUNCTION IRQ_INT89_WKO81 (END)
+
+             ; FUNCTION IRQ_INT90_WKO82 (BEGIN)
+                                           ; SOURCE LINE # 1029
+                                           ; SOURCE LINE # 1030
+                                           ; SOURCE LINE # 1031
+0000 020000      E     LJMP    Hook_IRQ_INT90_WKO82
+             ; FUNCTION IRQ_INT90_WKO82 (END)
+
+             ; FUNCTION IRQ_INT91_WKO83 (BEGIN)
+                                           ; SOURCE LINE # 1037
+                                           ; SOURCE LINE # 1038
+                                           ; SOURCE LINE # 1039
+0000 020000      E     LJMP    Hook_IRQ_INT91_WKO83
+             ; FUNCTION IRQ_INT91_WKO83 (END)
+
+             ; FUNCTION IRQ_INT92_WKO84 (BEGIN)
+                                           ; SOURCE LINE # 1045
+                                           ; SOURCE LINE # 1046
+                                           ; SOURCE LINE # 1047
+0000 020000      E     LJMP    Hook_IRQ_INT92_WKO84
+             ; FUNCTION IRQ_INT92_WKO84 (END)
+
+             ; FUNCTION IRQ_INT93_WKO85 (BEGIN)
+                                           ; SOURCE LINE # 1053
+                                           ; SOURCE LINE # 1054
+                                           ; SOURCE LINE # 1055
+0000 020000      E     LJMP    Hook_IRQ_INT93_WKO85
+             ; FUNCTION IRQ_INT93_WKO85 (END)
+
+             ; FUNCTION IRQ_INT94_WKO86 (BEGIN)
+                                           ; SOURCE LINE # 1061
+                                           ; SOURCE LINE # 1062
+                                           ; SOURCE LINE # 1063
+0000 020000      E     LJMP    Hook_IRQ_INT94_WKO86
+             ; FUNCTION IRQ_INT94_WKO86 (END)
+
+             ; FUNCTION IRQ_INT95_WKO87 (BEGIN)
+                                           ; SOURCE LINE # 1069
+                                           ; SOURCE LINE # 1070
+                                           ; SOURCE LINE # 1071
+0000 020000      E     LJMP    Hook_IRQ_INT95_WKO87
+             ; FUNCTION IRQ_INT95_WKO87 (END)
+
+             ; FUNCTION IRQ_INT96_WKO91 (BEGIN)
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 47  
+
+                                           ; SOURCE LINE # 1077
+                                           ; SOURCE LINE # 1078
+                                           ; SOURCE LINE # 1079
+0000 020000      E     LJMP    Hook_IRQ_INT96_WKO91
+             ; FUNCTION IRQ_INT96_WKO91 (END)
+
+             ; FUNCTION IRQ_INT97_WKO92 (BEGIN)
+                                           ; SOURCE LINE # 1085
+                                           ; SOURCE LINE # 1086
+                                           ; SOURCE LINE # 1087
+0000 020000      E     LJMP    Hook_IRQ_INT97_WKO92
+             ; FUNCTION IRQ_INT97_WKO92 (END)
+
+             ; FUNCTION IRQ_INT98_WKO93 (BEGIN)
+                                           ; SOURCE LINE # 1093
+                                           ; SOURCE LINE # 1094
+                                           ; SOURCE LINE # 1095
+0000 020000      E     LJMP    Hook_IRQ_INT98_WKO93
+             ; FUNCTION IRQ_INT98_WKO93 (END)
+
+             ; FUNCTION IRQ_INT99_WKO94 (BEGIN)
+                                           ; SOURCE LINE # 1101
+                                           ; SOURCE LINE # 1102
+                                           ; SOURCE LINE # 1103
+0000 020000      E     LJMP    Hook_IRQ_INT99_WKO94
+             ; FUNCTION IRQ_INT99_WKO94 (END)
+
+             ; FUNCTION IRQ_INT100_WKO95 (BEGIN)
+                                           ; SOURCE LINE # 1109
+                                           ; SOURCE LINE # 1110
+                                           ; SOURCE LINE # 1111
+0000 020000      E     LJMP    Hook_IRQ_INT100_WKO95
+             ; FUNCTION IRQ_INT100_WKO95 (END)
+
+             ; FUNCTION IRQ_INT101_WKO96 (BEGIN)
+                                           ; SOURCE LINE # 1117
+                                           ; SOURCE LINE # 1118
+                                           ; SOURCE LINE # 1119
+0000 020000      E     LJMP    Hook_IRQ_INT101_WKO96
+             ; FUNCTION IRQ_INT101_WKO96 (END)
+
+             ; FUNCTION IRQ_INT102_WKO97 (BEGIN)
+                                           ; SOURCE LINE # 1125
+                                           ; SOURCE LINE # 1126
+                                           ; SOURCE LINE # 1127
+0000 020000      E     LJMP    Hook_IRQ_INT102_WKO97
+             ; FUNCTION IRQ_INT102_WKO97 (END)
+
+             ; FUNCTION IRQ_INT103_WKO98 (BEGIN)
+                                           ; SOURCE LINE # 1133
+                                           ; SOURCE LINE # 1134
+                                           ; SOURCE LINE # 1135
+0000 020000      E     LJMP    Hook_IRQ_INT103_WKO98
+             ; FUNCTION IRQ_INT103_WKO98 (END)
+
+             ; FUNCTION IRQ_INT104_WKO99 (BEGIN)
+                                           ; SOURCE LINE # 1141
+                                           ; SOURCE LINE # 1142
+                                           ; SOURCE LINE # 1143
+0000 020000      E     LJMP    Hook_IRQ_INT104_WKO99
+             ; FUNCTION IRQ_INT104_WKO99 (END)
+
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 48  
+
+             ; FUNCTION IRQ_INT105_WKO100 (BEGIN)
+                                           ; SOURCE LINE # 1149
+                                           ; SOURCE LINE # 1150
+                                           ; SOURCE LINE # 1151
+0000 020000      E     LJMP    Hook_IRQ_INT105_WKO100
+             ; FUNCTION IRQ_INT105_WKO100 (END)
+
+             ; FUNCTION IRQ_INT106_WKO101 (BEGIN)
+                                           ; SOURCE LINE # 1157
+                                           ; SOURCE LINE # 1158
+                                           ; SOURCE LINE # 1159
+0000 020000      E     LJMP    Hook_IRQ_INT106_WKO101
+             ; FUNCTION IRQ_INT106_WKO101 (END)
+
+             ; FUNCTION IRQ_INT107_WKO102 (BEGIN)
+                                           ; SOURCE LINE # 1165
+                                           ; SOURCE LINE # 1166
+                                           ; SOURCE LINE # 1167
+0000 020000      E     LJMP    Hook_IRQ_INT107_WKO102
+             ; FUNCTION IRQ_INT107_WKO102 (END)
+
+             ; FUNCTION IRQ_INT108_WKO103 (BEGIN)
+                                           ; SOURCE LINE # 1173
+                                           ; SOURCE LINE # 1174
+                                           ; SOURCE LINE # 1175
+0000 020000      E     LJMP    Hook_IRQ_INT108_WKO103
+             ; FUNCTION IRQ_INT108_WKO103 (END)
+
+             ; FUNCTION IRQ_INT109_WKO104 (BEGIN)
+                                           ; SOURCE LINE # 1181
+                                           ; SOURCE LINE # 1182
+                                           ; SOURCE LINE # 1183
+0000 020000      E     LJMP    Hook_IRQ_INT109_WKO104
+             ; FUNCTION IRQ_INT109_WKO104 (END)
+
+             ; FUNCTION IRQ_INT110_WKO105 (BEGIN)
+                                           ; SOURCE LINE # 1189
+                                           ; SOURCE LINE # 1190
+                                           ; SOURCE LINE # 1191
+0000 020000      E     LJMP    Hook_IRQ_INT110_WKO105
+             ; FUNCTION IRQ_INT110_WKO105 (END)
+
+             ; FUNCTION IRQ_INT111_WKO106 (BEGIN)
+                                           ; SOURCE LINE # 1197
+                                           ; SOURCE LINE # 1198
+                                           ; SOURCE LINE # 1199
+0000 020000      E     LJMP    Hook_IRQ_INT111_WKO106
+             ; FUNCTION IRQ_INT111_WKO106 (END)
+
+             ; FUNCTION IRQ_INT112_WKO107 (BEGIN)
+                                           ; SOURCE LINE # 1205
+                                           ; SOURCE LINE # 1206
+                                           ; SOURCE LINE # 1207
+0000 020000      E     LJMP    Hook_IRQ_INT112_WKO107
+             ; FUNCTION IRQ_INT112_WKO107 (END)
+
+             ; FUNCTION IRQ_INT113_WKO108 (BEGIN)
+                                           ; SOURCE LINE # 1213
+                                           ; SOURCE LINE # 1214
+                                           ; SOURCE LINE # 1215
+0000 020000      E     LJMP    Hook_IRQ_INT113_WKO108
+             ; FUNCTION IRQ_INT113_WKO108 (END)
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 49  
+
+
+             ; FUNCTION IRQ_INT114_WKO109 (BEGIN)
+                                           ; SOURCE LINE # 1221
+                                           ; SOURCE LINE # 1222
+                                           ; SOURCE LINE # 1223
+0000 020000      E     LJMP    Hook_IRQ_INT114_WKO109
+             ; FUNCTION IRQ_INT114_WKO109 (END)
+
+             ; FUNCTION IRQ_INT115_WKO110 (BEGIN)
+                                           ; SOURCE LINE # 1229
+                                           ; SOURCE LINE # 1230
+                                           ; SOURCE LINE # 1231
+0000 020000      E     LJMP    Hook_IRQ_INT115_WKO110
+             ; FUNCTION IRQ_INT115_WKO110 (END)
+
+             ; FUNCTION IRQ_INT116_WKO111 (BEGIN)
+                                           ; SOURCE LINE # 1237
+                                           ; SOURCE LINE # 1238
+                                           ; SOURCE LINE # 1239
+0000 020000      E     LJMP    Hook_IRQ_INT116_WKO111
+             ; FUNCTION IRQ_INT116_WKO111 (END)
+
+             ; FUNCTION IRQ_INT117_WKO112 (BEGIN)
+                                           ; SOURCE LINE # 1245
+                                           ; SOURCE LINE # 1246
+                                           ; SOURCE LINE # 1247
+0000 020000      E     LJMP    Hook_IRQ_INT117_WKO112
+             ; FUNCTION IRQ_INT117_WKO112 (END)
+
+             ; FUNCTION IRQ_INT118_WKO113 (BEGIN)
+                                           ; SOURCE LINE # 1253
+                                           ; SOURCE LINE # 1254
+                                           ; SOURCE LINE # 1255
+0000 020000      E     LJMP    Hook_IRQ_INT118_WKO113
+             ; FUNCTION IRQ_INT118_WKO113 (END)
+
+             ; FUNCTION IRQ_INT119_WKO114 (BEGIN)
+                                           ; SOURCE LINE # 1261
+                                           ; SOURCE LINE # 1262
+                                           ; SOURCE LINE # 1263
+0000 020000      E     LJMP    Hook_IRQ_INT119_WKO114
+             ; FUNCTION IRQ_INT119_WKO114 (END)
+
+             ; FUNCTION IRQ_INT120_WKO115 (BEGIN)
+                                           ; SOURCE LINE # 1269
+                                           ; SOURCE LINE # 1270
+                                           ; SOURCE LINE # 1271
+0000 020000      E     LJMP    Hook_IRQ_INT120_WKO115
+             ; FUNCTION IRQ_INT120_WKO115 (END)
+
+             ; FUNCTION IRQ_INT121_WKO116 (BEGIN)
+                                           ; SOURCE LINE # 1277
+                                           ; SOURCE LINE # 1278
+                                           ; SOURCE LINE # 1279
+0000 020000      E     LJMP    Hook_IRQ_INT121_WKO116
+             ; FUNCTION IRQ_INT121_WKO116 (END)
+
+             ; FUNCTION IRQ_INT122_WKO117 (BEGIN)
+                                           ; SOURCE LINE # 1285
+                                           ; SOURCE LINE # 1286
+                                           ; SOURCE LINE # 1287
+0000 020000      E     LJMP    Hook_IRQ_INT122_WKO117
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 50  
+
+             ; FUNCTION IRQ_INT122_WKO117 (END)
+
+             ; FUNCTION IRQ_INT123_WKO118 (BEGIN)
+                                           ; SOURCE LINE # 1293
+                                           ; SOURCE LINE # 1294
+                                           ; SOURCE LINE # 1295
+0000 020000      E     LJMP    Hook_IRQ_INT123_WKO118
+             ; FUNCTION IRQ_INT123_WKO118 (END)
+
+             ; FUNCTION IRQ_INT124_WKO119 (BEGIN)
+                                           ; SOURCE LINE # 1301
+                                           ; SOURCE LINE # 1302
+                                           ; SOURCE LINE # 1303
+0000 020000      E     LJMP    Hook_IRQ_INT124_WKO119
+             ; FUNCTION IRQ_INT124_WKO119 (END)
+
+             ; FUNCTION IRQ_INT125_WKO120 (BEGIN)
+                                           ; SOURCE LINE # 1309
+                                           ; SOURCE LINE # 1310
+                                           ; SOURCE LINE # 1311
+0000 020000      E     LJMP    Hook_IRQ_INT125_WKO120
+             ; FUNCTION IRQ_INT125_WKO120 (END)
+
+             ; FUNCTION IRQ_INT126_WKO121 (BEGIN)
+                                           ; SOURCE LINE # 1317
+                                           ; SOURCE LINE # 1318
+                                           ; SOURCE LINE # 1319
+0000 020000      E     LJMP    Hook_IRQ_INT126_WKO121
+             ; FUNCTION IRQ_INT126_WKO121 (END)
+
+             ; FUNCTION IRQ_INT127_WKO122 (BEGIN)
+                                           ; SOURCE LINE # 1325
+                                           ; SOURCE LINE # 1326
+                                           ; SOURCE LINE # 1327
+0000 020000      E     LJMP    Hook_IRQ_INT127_WKO122
+             ; FUNCTION IRQ_INT127_WKO122 (END)
+
+             ; FUNCTION IRQ_INT128_WKO128 (BEGIN)
+                                           ; SOURCE LINE # 1333
+                                           ; SOURCE LINE # 1334
+                                           ; SOURCE LINE # 1335
+0000 020000      E     LJMP    Hook_IRQ_INT128_WKO128
+             ; FUNCTION IRQ_INT128_WKO128 (END)
+
+             ; FUNCTION IRQ_INT129_WKO129 (BEGIN)
+                                           ; SOURCE LINE # 1341
+                                           ; SOURCE LINE # 1342
+                                           ; SOURCE LINE # 1343
+0000 020000      E     LJMP    Hook_IRQ_INT129_WKO129
+             ; FUNCTION IRQ_INT129_WKO129 (END)
+
+             ; FUNCTION IRQ_INT130_WKO130 (BEGIN)
+                                           ; SOURCE LINE # 1349
+                                           ; SOURCE LINE # 1350
+                                           ; SOURCE LINE # 1351
+0000 020000      E     LJMP    Hook_IRQ_INT130_WKO130
+             ; FUNCTION IRQ_INT130_WKO130 (END)
+
+             ; FUNCTION IRQ_INT131_WKO131 (BEGIN)
+                                           ; SOURCE LINE # 1357
+                                           ; SOURCE LINE # 1358
+                                           ; SOURCE LINE # 1359
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 51  
+
+0000 020000      E     LJMP    Hook_IRQ_INT131_WKO131
+             ; FUNCTION IRQ_INT131_WKO131 (END)
+
+             ; FUNCTION IRQ_INT132_WKO132 (BEGIN)
+                                           ; SOURCE LINE # 1365
+                                           ; SOURCE LINE # 1366
+                                           ; SOURCE LINE # 1367
+0000 020000      E     LJMP    Hook_IRQ_INT132_WKO132
+             ; FUNCTION IRQ_INT132_WKO132 (END)
+
+             ; FUNCTION IRQ_INT133_WKO133 (BEGIN)
+                                           ; SOURCE LINE # 1373
+                                           ; SOURCE LINE # 1374
+                                           ; SOURCE LINE # 1375
+0000 020000      E     LJMP    Hook_IRQ_INT133_WKO133
+             ; FUNCTION IRQ_INT133_WKO133 (END)
+
+             ; FUNCTION IRQ_INT134_WKO134 (BEGIN)
+                                           ; SOURCE LINE # 1381
+                                           ; SOURCE LINE # 1382
+                                           ; SOURCE LINE # 1383
+0000 020000      E     LJMP    Hook_IRQ_INT134_WKO134
+             ; FUNCTION IRQ_INT134_WKO134 (END)
+
+             ; FUNCTION IRQ_INT135_Null (BEGIN)
+                                           ; SOURCE LINE # 1389
+                                           ; SOURCE LINE # 1390
+                                           ; SOURCE LINE # 1391
+0000 020000      E     LJMP    Hook_IRQ_INT135_Null
+             ; FUNCTION IRQ_INT135_Null (END)
+
+             ; FUNCTION IRQ_INT136_Null (BEGIN)
+                                           ; SOURCE LINE # 1397
+                                           ; SOURCE LINE # 1398
+                                           ; SOURCE LINE # 1399
+0000 020000      E     LJMP    Hook_IRQ_INT136_Null
+             ; FUNCTION IRQ_INT136_Null (END)
+
+             ; FUNCTION IRQ_INT137_Null (BEGIN)
+                                           ; SOURCE LINE # 1405
+                                           ; SOURCE LINE # 1406
+                                           ; SOURCE LINE # 1407
+0000 020000      E     LJMP    Hook_IRQ_INT137_Null
+             ; FUNCTION IRQ_INT137_Null (END)
+
+             ; FUNCTION IRQ_INT138_Null (BEGIN)
+                                           ; SOURCE LINE # 1413
+                                           ; SOURCE LINE # 1414
+                                           ; SOURCE LINE # 1415
+0000 020000      E     LJMP    Hook_IRQ_INT138_Null
+             ; FUNCTION IRQ_INT138_Null (END)
+
+             ; FUNCTION IRQ_INT139_Null (BEGIN)
+                                           ; SOURCE LINE # 1421
+                                           ; SOURCE LINE # 1422
+                                           ; SOURCE LINE # 1423
+0000 020000      E     LJMP    Hook_IRQ_INT139_Null
+             ; FUNCTION IRQ_INT139_Null (END)
+
+             ; FUNCTION IRQ_INT140_Null (BEGIN)
+                                           ; SOURCE LINE # 1429
+                                           ; SOURCE LINE # 1430
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 52  
+
+                                           ; SOURCE LINE # 1431
+0000 020000      E     LJMP    Hook_IRQ_INT140_Null
+             ; FUNCTION IRQ_INT140_Null (END)
+
+             ; FUNCTION IRQ_INT141_Null (BEGIN)
+                                           ; SOURCE LINE # 1437
+                                           ; SOURCE LINE # 1438
+                                           ; SOURCE LINE # 1439
+0000 020000      E     LJMP    Hook_IRQ_INT141_Null
+             ; FUNCTION IRQ_INT141_Null (END)
+
+             ; FUNCTION IRQ_INT142_Null (BEGIN)
+                                           ; SOURCE LINE # 1445
+                                           ; SOURCE LINE # 1446
+                                           ; SOURCE LINE # 1447
+0000 020000      E     LJMP    Hook_IRQ_INT142_Null
+             ; FUNCTION IRQ_INT142_Null (END)
+
+             ; FUNCTION IRQ_INT143_Null (BEGIN)
+                                           ; SOURCE LINE # 1453
+                                           ; SOURCE LINE # 1454
+                                           ; SOURCE LINE # 1455
+0000 020000      E     LJMP    Hook_IRQ_INT143_Null
+             ; FUNCTION IRQ_INT143_Null (END)
+
+             ; FUNCTION IRQ_INT144_Null (BEGIN)
+                                           ; SOURCE LINE # 1461
+                                           ; SOURCE LINE # 1462
+                                           ; SOURCE LINE # 1463
+0000 020000      E     LJMP    Hook_IRQ_INT144_Null
+             ; FUNCTION IRQ_INT144_Null (END)
+
+             ; FUNCTION IRQ_INT145_Null (BEGIN)
+                                           ; SOURCE LINE # 1469
+                                           ; SOURCE LINE # 1470
+                                           ; SOURCE LINE # 1471
+0000 020000      E     LJMP    Hook_IRQ_INT145_Null
+             ; FUNCTION IRQ_INT145_Null (END)
+
+             ; FUNCTION IRQ_INT146_Null (BEGIN)
+                                           ; SOURCE LINE # 1477
+                                           ; SOURCE LINE # 1478
+                                           ; SOURCE LINE # 1479
+0000 020000      E     LJMP    Hook_IRQ_INT146_Null
+             ; FUNCTION IRQ_INT146_Null (END)
+
+             ; FUNCTION IRQ_INT147_Null (BEGIN)
+                                           ; SOURCE LINE # 1485
+                                           ; SOURCE LINE # 1486
+                                           ; SOURCE LINE # 1487
+0000 020000      E     LJMP    Hook_IRQ_INT147_Null
+             ; FUNCTION IRQ_INT147_Null (END)
+
+             ; FUNCTION IRQ_INT148_Null (BEGIN)
+                                           ; SOURCE LINE # 1493
+                                           ; SOURCE LINE # 1494
+                                           ; SOURCE LINE # 1495
+0000 020000      E     LJMP    Hook_IRQ_INT148_Null
+             ; FUNCTION IRQ_INT148_Null (END)
+
+             ; FUNCTION IRQ_INT149_PMC5OBE (BEGIN)
+                                           ; SOURCE LINE # 1501
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 53  
+
+                                           ; SOURCE LINE # 1502
+                                           ; SOURCE LINE # 1503
+0000 020000      E     LJMP    Hook_IRQ_INT149_PMC5OBE
+             ; FUNCTION IRQ_INT149_PMC5OBE (END)
+
+             ; FUNCTION IRQ_INT150_PMC5IBF (BEGIN)
+                                           ; SOURCE LINE # 1509
+                                           ; SOURCE LINE # 1510
+                                           ; SOURCE LINE # 1511
+0000 020000      E     LJMP    Hook_IRQ_INT150_PMC5IBF
+             ; FUNCTION IRQ_INT150_PMC5IBF (END)
+
+             ; FUNCTION IRQ_INT151_VCI (BEGIN)
+                                           ; SOURCE LINE # 1517
+                                           ; SOURCE LINE # 1518
+                                           ; SOURCE LINE # 1519
+0000 020000      E     LJMP    Hook_IRQ_INT151_VCI
+             ; FUNCTION IRQ_INT151_VCI (END)
+
+             ; FUNCTION Isr_Int0 (BEGIN)
+                                           ; SOURCE LINE # 1526
+                                           ; SOURCE LINE # 1529
+0000 32                RETI    
+             ; FUNCTION Isr_Int0 (END)
+
+             ; FUNCTION Isr_Tmr0 (BEGIN)
+0000 C0E0              PUSH    ACC
+0002 C0F0              PUSH    B
+0004 C083              PUSH    DPH
+0006 C082              PUSH    DPL
+0008 C0D0              PUSH    PSW
+000A 75D010            MOV     PSW,#010H
+                                           ; SOURCE LINE # 1546
+                                           ; SOURCE LINE # 1548
+000D 120000      E     LCALL   Load_Timer_A
+                                           ; SOURCE LINE # 1549
+0010 D200        E     SETB    F_Service_MS_1
+                                           ; SOURCE LINE # 1550
+0012 D0D0              POP     PSW
+0014 D082              POP     DPL
+0016 D083              POP     DPH
+0018 D0F0              POP     B
+001A D0E0              POP     ACC
+001C 32                RETI    
+             ; FUNCTION Isr_Tmr0 (END)
+
+             ; FUNCTION Isr_Int1 (BEGIN)
+0000 C0E0              PUSH    ACC
+0002 C0F0              PUSH    B
+0004 C083              PUSH    DPH
+0006 C082              PUSH    DPL
+0008 C0D0              PUSH    PSW
+000A 75D010            MOV     PSW,#010H
+                                           ; SOURCE LINE # 1733
+                                           ; SOURCE LINE # 1735
+000D 300005      E     JNB     OEM_Isr_Int1_Request,?C0176
+                                           ; SOURCE LINE # 1736
+                                           ; SOURCE LINE # 1737
+0010 120000      E     LCALL   Hook_OEM_Isr_Int1
+                                           ; SOURCE LINE # 1738
+0013 803E              SJMP    ?C0177
+0015         ?C0176:
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 54  
+
+                                           ; SOURCE LINE # 1740
+                                           ; SOURCE LINE # 1741
+0015 900000      E     MOV     DPTR,#IVECT
+0018 E0                MOVX    A,@DPTR
+0019 B42205            CJNE    A,#022H,?C0178
+                                           ; SOURCE LINE # 1742
+                                           ; SOURCE LINE # 1743
+001C 120000      R     LCALL   IRQ_INT18_PS2Interrupt2
+                                           ; SOURCE LINE # 1744
+001F 8032              SJMP    ?C0177
+0021         ?C0178:
+                                           ; SOURCE LINE # 1745
+0021 900000      E     MOV     DPTR,#IVECT
+0024 E0                MOVX    A,@DPTR
+0025 B42305            CJNE    A,#023H,?C0180
+                                           ; SOURCE LINE # 1746
+                                           ; SOURCE LINE # 1747
+0028 120000      R     LCALL   IRQ_INT19_PS2Interrupt1
+                                           ; SOURCE LINE # 1748
+002B 8026              SJMP    ?C0177
+002D         ?C0180:
+                                           ; SOURCE LINE # 1749
+002D 900000      E     MOV     DPTR,#IVECT
+0030 E0                MOVX    A,@DPTR
+0031 B42405            CJNE    A,#024H,?C0182
+                                           ; SOURCE LINE # 1750
+                                           ; SOURCE LINE # 1751
+0034 120000      R     LCALL   IRQ_INT20_PS2Interrupt0
+                                           ; SOURCE LINE # 1752
+0037 801A              SJMP    ?C0177
+0039         ?C0182:
+                                           ; SOURCE LINE # 1754
+                                           ; SOURCE LINE # 1755
+0039 900000      E     MOV     DPTR,#IVECT
+003C E0                MOVX    A,@DPTR
+003D 75F002            MOV     B,#02H
+0040 900000      R     MOV     DPTR,#IRQ_Service-020H
+0043 120000      E     LCALL   ?C?OFFXADD
+0046 E4                CLR     A
+0047 93                MOVC    A,@A+DPTR
+0048 FE                MOV     R6,A
+0049 7401              MOV     A,#01H
+004B 93                MOVC    A,@A+DPTR
+004C CA                XCH     A,R2
+004D EE                MOV     A,R6
+004E CA                XCH     A,R2
+004F F9                MOV     R1,A
+0050 120000      E     LCALL   ?C?ICALL
+                                           ; SOURCE LINE # 1756
+                                           ; SOURCE LINE # 1757
+0053         ?C0177:
+                                           ; SOURCE LINE # 1759
+0053 120000      E     LCALL   Hook_Isr_Int1
+                                           ; SOURCE LINE # 1760
+0056 D0D0              POP     PSW
+0058 D082              POP     DPL
+005A D083              POP     DPH
+005C D0F0              POP     B
+005E D0E0              POP     ACC
+0060 32                RETI    
+             ; FUNCTION Isr_Int1 (END)
+
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 55  
+
+             ; FUNCTION Isr_Tmr1 (BEGIN)
+0000 C0E0              PUSH    ACC
+0002 C0F0              PUSH    B
+0004 C083              PUSH    DPH
+0006 C082              PUSH    DPL
+0008 C0D0              PUSH    PSW
+000A 75D010            MOV     PSW,#010H
+                                           ; SOURCE LINE # 1766
+                                           ; SOURCE LINE # 1768
+000D 120000      E     LCALL   Stop_Timer_B
+                                           ; SOURCE LINE # 1769
+0010 E500        E     MOV     A,Timer_B
+0012 30E408            JNB     ACC.4,?C0186
+                                           ; SOURCE LINE # 1770
+                                           ; SOURCE LINE # 1771
+0015 D200        E     SETB    F_Service_SEND
+                                           ; SOURCE LINE # 1772
+0017 5300EF      E     ANL     Timer_B,#0EFH
+                                           ; SOURCE LINE # 1773
+001A 120000      E     LCALL   Load_Timer_B
+                                           ; SOURCE LINE # 1774
+                                           ; SOURCE LINE # 1775
+001D         ?C0186:
+001D D0D0              POP     PSW
+001F D082              POP     DPL
+0021 D083              POP     DPH
+0023 D0F0              POP     B
+0025 D0E0              POP     ACC
+0027 32                RETI    
+             ; FUNCTION Isr_Tmr1 (END)
+
+             ; FUNCTION Isr_UART (BEGIN)
+                                           ; SOURCE LINE # 1781
+                                           ; SOURCE LINE # 1784
+0000 32                RETI    
+             ; FUNCTION Isr_UART (END)
+
+             ; FUNCTION Isr_Tmr2 (BEGIN)
+                                           ; SOURCE LINE # 1791
+                                           ; SOURCE LINE # 1794
+0000 32                RETI    
+             ; FUNCTION Isr_Tmr2 (END)
+
+             ; FUNCTION DisableAllInterrupt (BEGIN)
+                                           ; SOURCE LINE # 1799
+                                           ; SOURCE LINE # 1800
+                                           ; SOURCE LINE # 1801
+0000 C2AF              CLR     EA
+                                           ; SOURCE LINE # 1802
+0002 00                NOP     
+                                           ; SOURCE LINE # 1803
+0003 00                NOP     
+                                           ; SOURCE LINE # 1804
+0004 00                NOP     
+                                           ; SOURCE LINE # 1805
+0005 00                NOP     
+                                           ; SOURCE LINE # 1806
+0006 22                RET     
+             ; FUNCTION DisableAllInterrupt (END)
+
+             ; FUNCTION EnableAllInterrupt (BEGIN)
+                                           ; SOURCE LINE # 1811
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 56  
+
+                                           ; SOURCE LINE # 1812
+                                           ; SOURCE LINE # 1813
+0000 D2AF              SETB    EA
+                                           ; SOURCE LINE # 1814
+0002 22                RET     
+             ; FUNCTION EnableAllInterrupt (END)
+
+             ; FUNCTION EnableKBCIBFInt (BEGIN)
+                                           ; SOURCE LINE # 1819
+                                           ; SOURCE LINE # 1820
+                                           ; SOURCE LINE # 1821
+0000 900000      E     MOV     DPTR,#IER3
+0003 E0                MOVX    A,@DPTR
+0004 4401              ORL     A,#01H
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1822
+0007 22                RET     
+             ; FUNCTION EnableKBCIBFInt (END)
+
+             ; FUNCTION EnablePMCIBFInt (BEGIN)
+                                           ; SOURCE LINE # 1827
+                                           ; SOURCE LINE # 1828
+                                           ; SOURCE LINE # 1829
+0000 900000      E     MOV     DPTR,#IER3
+0003 E0                MOVX    A,@DPTR
+0004 4402              ORL     A,#02H
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1830
+0007 22                RET     
+             ; FUNCTION EnablePMCIBFInt (END)
+
+             ; FUNCTION InitEnableInterrupt (BEGIN)
+                                           ; SOURCE LINE # 1835
+                                           ; SOURCE LINE # 1836
+                                           ; SOURCE LINE # 1837
+0000 900000      E     MOV     DPTR,#ISR0
+0003 74FF              MOV     A,#0FFH
+0005 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1838
+0006 900000      E     MOV     DPTR,#ISR1
+0009 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1839
+000A 900000      E     MOV     DPTR,#ISR2
+000D F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1840
+000E 900000      E     MOV     DPTR,#ISR3
+0011 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1841
+0012 900000      E     MOV     DPTR,#ISR4
+0015 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1842
+0016 900000      E     MOV     DPTR,#ISR5
+0019 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1843
+001A 900000      E     MOV     DPTR,#ISR6
+001D F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1844
+001E 900000      E     MOV     DPTR,#ISR7
+0021 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1845
+0022 900000      E     MOV     DPTR,#ISR8
+0025 F0                MOVX    @DPTR,A
+C51 COMPILER V9.03   CORE_IRQ                                                              02/02/2015 14:30:08 PAGE 57  
+
+                                           ; SOURCE LINE # 1846
+0026 900000      E     MOV     DPTR,#ISR9
+0029 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 1848
+002A D2AA              SETB    EX1
+                                           ; SOURCE LINE # 1849
+002C 020000      R     LJMP    EnableAllInterrupt
+             ; FUNCTION InitEnableInterrupt (END)
+
+             ; FUNCTION EnableModuleInterrupt (BEGIN)
+                                           ; SOURCE LINE # 1855
+                                           ; SOURCE LINE # 1856
+                                           ; SOURCE LINE # 1857
+0000 120000      R     LCALL   EnableAllInterrupt
+                                           ; SOURCE LINE # 1858
+0003 120000      R     LCALL   EnableKBCIBFInt
+                                           ; SOURCE LINE # 1859
+0006 120000      R     LCALL   EnablePMCIBFInt
+                                           ; SOURCE LINE # 1861
+0009 020000      E     LJMP    Hook_EnableInterrupt
+             ; FUNCTION EnableModuleInterrupt (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    978    ----
+   CONSTANT SIZE    =    304    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

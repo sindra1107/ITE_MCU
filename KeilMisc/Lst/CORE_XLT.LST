@@ -1,0 +1,2764 @@
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE CORE_XLT
+OBJECT MODULE PLACED IN Code\CORE\CORE_XLT.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\CORE\CORE_XLT.C LA WL(1) CD OT(9,SIZE) NOAREGS OR INCDI
+                    -R(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*-----------------------------------------------------------------------------
+   2           * TITLE: CORE_XLT.C - Scan Matrix handler at CORE level
+   3           *
+   4           * The procedure Send_Scan2 of this module is called to translate keyboard
+   5           * scanner contact events into set 2 scan codes.
+   6           *
+   7           * Copyright (c) 1983-2007, Insyde Software Corporation. All Rights Reserved.
+   8           *
+   9           * You may not reproduce, distribute, publish, display, perform, modify, adapt,
+  10           * transmit, broadcast, present, recite, release, license or otherwise exploit
+  11           * any part of this publication in any form, by any means, without the prior
+  12           * written permission of Insyde Software Corporation.
+  13           *---------------------------------------------------------------------------*/
+  14           
+  15          #include <CORE_INCLUDE.H>
+  16          #include <OEM_INCLUDE.H>
+  17          
+  18          /* ----------------------------------------------------------------------------
+  19           * FUNCTION: Send_Scan2
+  20           *
+  21           * Input: key   = Row/Column number
+  22           *                key.field.output = 0 - 15
+  23           *                key.field.input  = 0 - 7
+  24           *
+  25           *        event = Contact event (MAKE_EVENT, BREAK_EVENT, or REPEAT_EVENT)
+  26           *
+  27           *        Scanner_State byte
+  28           *
+  29           *        Ext_Cb3_OVL_STATE
+  30           *
+  31           * On return, Scanner_State byte and Ext_Cb3_OVL_STATE are updated.
+  32           *
+  33           * Combination flag for each row/column
+  34           *     0 = Insyde Software key number 2 in Row/Column Table
+  35           *     1 = index for control_ptr_table in Row/Column Table
+  36           *
+  37           * Insyde Software Key Number 2
+  38           *     01-7F = Same as Scan Code, Set 2
+  39           *     80-FF = E0-prefix, cursor, printscreen, pause/break, special key
+  40           * ------------------------------------------------------------------------- */
+  41          void Send_Scan2(union KEY key, BYTE event)
+  42          {
+  43   1              if(IS_MASK_SET(UtilityFlag,KBDebug))
+  44   1              {
+  45   2                      if(KeyScanACK==KU_ACK_Start)
+  46   2                      {
+  47   3                              if(event==MAKE_EVENT)
+  48   3                              {
+  49   4                                      KeyScanKSI = key.field.input;
+  50   4                                      KeyScanKSO = key.field.output;
+  51   4                      //*******************************************************
+  52   4                      #ifndef KB_HW_KeyScan   // Firmware scan keyboard
+  53   4                      //*******************************************************
+  54   4                                      KeyScanACK = KU_ACK_Keyboard;
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 2   
+
+  55   4                      //*******************************************************
+  56   4                      #else                   // Hardware scan keyboard
+                              //*******************************************************
+                              if(KB_HW_ExtendKeyIndex==0x00)  // KSO0 ~ KSO15
+                              {
+                                                  KeyScanACK = KU_ACK_Keyboard;
+                              }
+                              else                            // KSO16, KSO17
+                              {
+                                  KeyScanACK = KU_ACK_FullKeyboard;
+                              }
+                              //*******************************************************
+                              #endif  // KB_HW_KeyScan 
+  68   4                      //*******************************************************
+  69   4                              }
+  70   3                      }
+  71   2              }
+  72   1              else
+  73   1              {
+  74   2              //*******************************************************
+  75   2              #ifndef KB_HW_KeyScan           // Firmware scan keyboard
+  76   2              //*******************************************************
+  77   2              ITempB04 = (key.field.input << 4) | key.field.output;
+  78   2                      ITempB03 = *(Scanner_Table_Pntr + ITempB04);
+  79   2              //*******************************************************
+  80   2              #else                           // Hardware scan keyboard
+                      //*******************************************************
+                      if(KB_HW_ExtendKeyIndex==0x00)  // KSO0 ~ KSO15
+                      {
+                          ITempB04 = (key.field.input << 4) | key.field.output;
+                                  ITempB03 = *(Scanner_Table_Pntr + ITempB04);
+                      }
+                      else                            // KSO16, KSO17
+                      {
+                          ITempB04 = (key.field.input *3) + key.field.output;
+                          ITempB03 = *(Extendkey_Table_Pntr + ITempB04);
+                      }
+                      //*******************************************************
+                      #endif  // KB_HW_KeyScan 
+  94   2              //*******************************************************
+  95   2                      Hook_keyboard(key.field.input, key.field.output);
+  96   2              Send_Key(ITempB03, event);
+  97   2              }
+  98   1      }
+  99          
+ 100          //*****************************************************************************
+ 101          //
+ 102          //  The function for clearing Fn key bundled flag.
+ 103          //
+ 104          //  parameter :
+ 105          //      none
+ 106          //
+ 107          //  return :
+ 108          //      none
+ 109          //
+ 110          //*****************************************************************************
+ 111          void ClearFnKeyBundledFalg(void)
+ 112          {
+ 113   1          BYTE index;
+ 114   1      
+ 115   1          for(index=0x00; index<16; index++)
+ 116   1          {
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 3   
+
+ 117   2              FnKeyBundledFalg[index]=0x00;
+ 118   2          }
+ 119   1      }
+ 120          
+ 121          //*****************************************************************************
+ 122          //
+ 123          //  The function for checking Fn key bundled flag.
+ 124          //
+ 125          //  parameter :
+ 126          //      p_table_entry : The value of Rc_ROM_Tables.
+ 127          //      p_event       : MAKE_EVENT || BREAK_EVENT || REPEAT_EVENT
+ 128          //
+ 129          //  return :
+ 130          //      l_Fn_bundled :  0 --> no fn key status
+ 131          //                      1 --> with fn key status
+ 132          //
+ 133          //*****************************************************************************
+ 134          BYTE CheckFnKeyBundledFalg(BYTE p_table_entry, BYTE p_event)
+ 135          {
+ 136   1          BYTE l_Fn_bundled;
+ 137   1          BYTE l_buffer_index;
+ 138   1          BYTE l_buffer_mask;
+ 139   1      
+ 140   1          l_Fn_bundled = 0x00;                            // pre-set no bundled fn key
+ 141   1          
+ 142   1          if(p_table_entry >= SSKEY2_SPE_CODE)
+ 143   1          {
+ 144   2              l_buffer_index = ((p_table_entry-0x90)/8);  // index of buffer "FnKeyBundledFalg"
+ 145   2              l_buffer_mask = ((p_table_entry-0x90)%8);   // mask of buffer "FnKeyBundledFalg"
+ 146   2      
+ 147   2              if(p_event==BREAK_EVENT)                    // Key break
+ 148   2              {
+ 149   3                  if(temp_scanner_state.field.tFN)        // with Fn key
+ 150   3                  {
+ 151   4                      if(IS_MASK_CLEAR(FnKeyBundledFalg[l_buffer_index], BIT(l_buffer_mask))) //with fn key but 
+             -no bundled fn key flag.
+ 152   4                      {
+ 153   5                          l_Fn_bundled = 0x00;            // with fn key but on bundled fn key flag.
+ 154   5                      }
+ 155   4                      else
+ 156   4                      {
+ 157   5                          l_Fn_bundled = 0x01;            // with fn key and bundled fn key flag.
+ 158   5                      }
+ 159   4                  }
+ 160   3                  else                                    // without Fn key
+ 161   3                  {
+ 162   4                      if(IS_MASK_SET(FnKeyBundledFalg[l_buffer_index], BIT(l_buffer_mask)))
+ 163   4                      {
+ 164   5                          l_Fn_bundled = 0x01;            // no fn key but with bundled fn key flag.
+ 165   5                      }
+ 166   4                      else
+ 167   4                      {
+ 168   5                          l_Fn_bundled = 0x00;            // no fn key and no bundled fn key flag.
+ 169   5                      }
+ 170   4                  }
+ 171   3                  CLEAR_MASK(FnKeyBundledFalg[l_buffer_index], BIT(l_buffer_mask));
+ 172   3              }
+ 173   2              else                                        // Key make or repeat
+ 174   2              {
+ 175   3                  #if KB_FnStickKey
+                          if(temp_scanner_state.field.tFN || FnStickKey)  // Fn key or Stick key flag
+                          #else
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 4   
+
+ 178   3                  if(temp_scanner_state.field.tFN)        // Fn key
+ 179   3                  #endif
+ 180   3                  {
+ 181   4                      if(p_event==MAKE_EVENT)             // Key make
+ 182   4                      {
+ 183   5                          SET_MASK(FnKeyBundledFalg[l_buffer_index], BIT(l_buffer_mask));
+ 184   5                      }
+ 185   4                      else                                // Key repeat
+ 186   4                      {
+ 187   5      
+ 188   5                      }
+ 189   4                  }
+ 190   3                  else                                    // No Fn key
+ 191   3                  {
+ 192   4      
+ 193   4                  }
+ 194   3      
+ 195   3                  if(temp_scanner_state.field.tFN || IS_MASK_SET(FnKeyBundledFalg[l_buffer_index], BIT(l_buffer_
+             -mask)))
+ 196   3                  {
+ 197   4                      l_Fn_bundled = 0x01;                // with fn key or bundled fn key flag.
+ 198   4                  }
+ 199   3              }
+ 200   2          }
+ 201   1      
+ 202   1          return(l_Fn_bundled);
+ 203   1      }
+ 204          
+ 205          /* ----------------------------------------------------------------------------
+ 206           * FUNCTION: Send_Key
+ 207           * ------------------------------------------------------------------------- */
+ 208          void Send_Key(BYTE table_entry, BYTE event)
+ 209          {
+ 210   1          BYTE temp;
+ 211   1          const BYTE code *pntr;
+ 212   1          BYTE temp_table_entry;
+ 213   1      
+ 214   1          OEM_Hook_Send_Key(table_entry,event);
+ 215   1      
+ 216   1          if(OEM_Hook_Skip_Send_Key()==0xFF)
+ 217   1          {
+ 218   2              return;
+ 219   2          }
+ 220   1      
+ 221   1          temp_table_entry = table_entry;
+ 222   1      
+ 223   1          Buffer_Mark();                                                                      // Mark Buffer in case of overrun.
+ 224   1          temp_scanner_state.byte = Scanner_State;
+ 225   1          if (table_entry >= SSKEY2_OVL_CODE)                         // Fn key + any key.
+ 226   1          {   
+ 227   2              /*
+ 228   2              temp = (table_entry - SSKEY2_OVL_CODE);
+ 229   2              temp = temp << 1;                                               // Multiply 2 because each entry takes 2 bytes 
+ 230   2                      if (temp_scanner_state.field.tFN)
+ 231   2                      {                                                                               // Fn key
+ 232   2                  temp++; // Increment index to get the odd byte of table entry 
+ 233   2              }
+ 234   2              table_entry = sskey2_overlay_table[temp];       // Get a sskey2 value. 
+ 235   2              */
+ 236   2              
+ 237   2              temp = (table_entry - SSKEY2_OVL_CODE);
+ 238   2              temp = temp << 1;// Multiply 2 because each entry takes 2 bytes 
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 5   
+
+ 239   2              if(CheckFnKeyBundledFalg(temp_table_entry, event)==0x01)
+ 240   2              {
+ 241   3                  temp++; // Increment index to get the odd byte of table entry 
+ 242   3              }
+ 243   2                  
+ 244   2              table_entry = sskey2_overlay_table[temp];       // Get a sskey2 value. 
+ 245   2          }
+ 246   1          else if (table_entry >= SSKEY2_SPE_CODE)            // Combination Key
+ 247   1          {  
+ 248   2              temp = (table_entry - SSKEY2_SPE_CODE);         // Get index into table. 
+ 249   2              table_entry = sskey2_A2_table[temp].comb;       // table_entry contains the combination table entry. 
+ 250   2              pntr = sskey2_A2_table[temp].pntr;                      // pntr points to the first key byte. 
+ 251   2              //pntr += calc_index_comb(table_entry);         // Check combination.  Point to the correct byte. 
+ 252   2              pntr += calc_index_comb(table_entry,temp_table_entry,event);
+ 253   2              table_entry = *pntr;                                    // Get a sskey2. 
+ 254   2          }
+ 255   1      
+ 256   1          sskey3_proc(table_entry, event);                    // Generate scan code, set 2.
+ 257   1      
+ 258   1              Scanner_State = temp_scanner_state.byte;        // Update scanner state. 
+ 259   1      
+ 260   1          #if KB_FnStickKey 
+                  if(event==BREAK_EVENT)
+                  {
+                      if(temp_table_entry!=0x8E)  // Fn key
+                      {
+                          FnStickKey=0;
+                      }
+                  }
+                  #endif
+ 269   1      }
+ 270          
+ 271          /* ----------------------------------------------------------------------------
+ 272           * FUNCTION: Clear_Fn_Keys
+ 273           * ------------------------------------------------------------------------- */
+ 274          void Clear_Fn_Keys(void)
+ 275          {
+ 276   1          //Fn_Make_Key1 = 0;
+ 277   1      }
+ 278          
+ 279          /* ----------------------------------------------------------------------------
+ 280           * FUNCTION: sskey3_proc
+ 281           *
+ 282           * Input: sskey2 = Insyde Software Key 2
+ 283           *        event =  Contact event (MAKE_EVENT, BREAK_EVENT, or REPEAT_EVENT)
+ 284           *
+ 285           * Note: FUNCT_PTR_V_BS is a pointer to a function that returns nothing (V for
+ 286           *       void) and takes a BYTE and a BYTE for parameters (B for BYTE, S for
+ 287           *       BYTE).
+ 288           * ------------------------------------------------------------------------- */
+ 289          // Key Code Process Table.
+ 290          const FUNCT_PTR_V_BS code kcp_vector_table[] =
+ 291          {
+ 292              simple_code,        // index 00h DO_SIMPLE_CODE IBM key number 83,84 
+ 293              e0_prefix_code,     // index 01h DO_E0_PREFIX_CODE
+ 294              cursor_shift,       // index 02h DO_CURSOR_SHIFT
+ 295              cursor_numlock,     // index 03h DO_CURSOR_NUMLOCK
+ 296              special_code,       // index 04h DO_SPECIAL_CODE IBM key number 126 
+ 297              control_effect,     // index 05h DO_CONTROL_EFFECT Shift, Ctrl, Alt, Numlock 
+ 298              control_effect_e0,  // index 06h DO_CONTROL_EFFECT_E0 Ctrl, Alt 
+ 299              costomer_function   // index 07h DO_COSTOMER_FUNCTION costomer function key
+ 300          };
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 6   
+
+ 301          
+ 302          static void sskey3_proc(BYTE sskey2, BYTE event)
+ 303          {
+ 304   1          BYTE code_byte;
+ 305   1          BYTE index;
+ 306   1          FLAG quick_key = 0;
+ 307   1      
+ 308   1          if (sskey2 == 0)                            // Null code 
+ 309   1          {                           
+ 310   2              ;                                        
+ 311   2          }
+ 312   1          else if ((sskey2 & 0x80) == 0)
+ 313   1          {
+ 314   2              simple_code(sskey2, event);     // 01h through 7Fh = scan code. 
+ 315   2          }
+ 316   1          else                                                        // 80h through FFh. 
+ 317   1          {   
+ 318   2              sskey2 &= 0x7F;
+ 319   2              sskey2 = sskey2 << 1;
+ 320   2              code_byte = sskey3_80_table[sskey2+0];
+ 321   2              index = sskey3_80_table[sskey2+1];
+ 322   2              (kcp_vector_table[index])(code_byte, event); // Do procedure 
+ 323   2          } 
+ 324   1      }
+ 325          
+ 326          
+ 327          /* ----------------------------------------------------------------------------
+ 328           * FUNCTION: calc_index_comb
+ 329           *
+ 330           * Input: combination setting
+ 331           *             Bit   Meaning
+ 332           *             ---   --------
+ 333           *             7     reserved
+ 334           *             6     reserved
+ 335           *             5     Fn
+ 336           *             4     Num Lock
+ 337           *             3     Ctrl
+ 338           *             2     Alt
+ 339           *             1     Shift
+ 340           *             0     reserved
+ 341           *
+ 342           *       temp_scanner_state
+ 343           *
+ 344           * Return: offset.
+ 345           * ------------------------------------------------------------------------- */
+ 346          //static BYTE calc_index_comb(BYTE comb)
+ 347          static BYTE calc_index_comb(BYTE comb, BYTE table_entry, BYTE event)
+ 348          {
+ 349   1          BYTE offset;
+ 350   1          BYTE bit_num;
+ 351   1      
+ 352   1          offset  = 0;
+ 353   1          bit_num = 0;
+ 354   1      
+ 355   1          if (comb & BIT(1))
+ 356   1          {                                                                           // Combination has Shift. 
+ 357   2              if (temp_scanner_state.field.tLEFT | temp_scanner_state.field.tRIGHT)
+ 358   2                      {                                                               // Either left or right shift is pressed. 
+ 359   3                  offset |= Byte_Mask(bit_num);
+ 360   3              }
+ 361   2              bit_num++;                                              // Increment bit position. 
+ 362   2          }
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 7   
+
+ 363   1      
+ 364   1          if (comb & BIT(2))
+ 365   1          {                                                                           // Combination has Alt. 
+ 366   2                      if (temp_scanner_state.field.tALT)
+ 367   2              {                                                               // Alt is pressed. 
+ 368   3                  offset |= Byte_Mask(bit_num);
+ 369   3              }
+ 370   2              bit_num++;                                              // Increment bit position. 
+ 371   2          }
+ 372   1      
+ 373   1              if (comb & BIT(3))
+ 374   1          {                                                                           // Combination has Ctrl. 
+ 375   2                      if (temp_scanner_state.field.tCONTROL)
+ 376   2              {                                                                       // Ctrl is pressed. 
+ 377   3                  offset |= Byte_Mask(bit_num);
+ 378   3              }
+ 379   2              bit_num++;                                              // Increment bit position. 
+ 380   2          }
+ 381   1      
+ 382   1          if (comb & BIT(4))
+ 383   1          {                                                                           // Combination has Num Lock. 
+ 384   2              if (temp_scanner_state.field.tNUM_LOCK)
+ 385   2              {                                                               // NumLock has been pressed. 
+ 386   3                  offset |= Byte_Mask(bit_num);
+ 387   3              }
+ 388   2              bit_num++;                                                      // Increment bit position. 
+ 389   2          }
+ 390   1      
+ 391   1          if (comb & BIT(5))
+ 392   1          {                                                                           // Combination has Fn. 
+ 393   2              //if (temp_scanner_state.field.tFN)
+ 394   2              //{                                                             // Fn is pressed. 
+ 395   2              //    offset |= Byte_Mask(bit_num);
+ 396   2              //}
+ 397   2      
+ 398   2              if(CheckFnKeyBundledFalg(table_entry, event)==0x01)
+ 399   2              {
+ 400   3                  offset |= Byte_Mask(bit_num);
+ 401   3              }
+ 402   2              bit_num++;                                              // Increment bit position. 
+ 403   2          }
+ 404   1      
+ 405   1          if (comb & BIT(6))
+ 406   1          {                                                                           // Combination has Hook_calc_index_comb_BIT6 
+ 407   2              if(Hook_calc_index_comb_BIT6()==0xFF)
+ 408   2              {
+ 409   3                  offset |= Byte_Mask(bit_num);
+ 410   3              }
+ 411   2              bit_num++;                                              // Increment bit position. 
+ 412   2          }
+ 413   1      
+ 414   1          if (comb & BIT(7))
+ 415   1          {                                                                           // Combination has Hook_calc_index_comb_BIT7 
+ 416   2              if(Hook_calc_index_comb_BIT7()==0xFF)
+ 417   2              {
+ 418   3                  offset |= Byte_Mask(bit_num);
+ 419   3              }
+ 420   2              bit_num++;                                              // Increment bit position. 
+ 421   2          }
+ 422   1          
+ 423   1          return(offset);
+ 424   1      }
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 8   
+
+ 425          
+ 426          /* ----------------------------------------------------------------------------
+ 427           * FUNCTION: simple_code
+ 428           *
+ 429           * Input: scan_code, Set 2
+ 430           *        event = Contact event (MAKE_EVENT, BREAK_EVENT, or REPEAT_EVENT)
+ 431           * ------------------------------------------------------------------------- */
+ 432          void simple_code(BYTE scan_code, BYTE event)
+ 433          {
+ 434   1          if (event == BREAK_EVENT)
+ 435   1          {  
+ 436   2              Buffer_Key(0xF0);       // Buffer break prefix for break contact. F0h is break prefix. 
+ 437   2          }
+ 438   1          Buffer_Key(scan_code);  // Buffer base code. 
+ 439   1      }
+ 440          
+ 441          //*****************************************************************************
+ 442          //
+ 443          //  The function for checking additional key.
+ 444          //
+ 445          //  parameter :
+ 446          //      scan_code_a : scan_code, Set 2
+ 447          //
+ 448          //  return :
+ 449          //      0x00 : not additional key
+ 450          //      0x01 : additional key [group]
+ 451          //      0x02 : additional key [Numeric / on US keyboards]
+ 452          //
+ 453          //*****************************************************************************
+ 454          BYTE CheckAdditionalConditionKey(BYTE scan_code_a)
+ 455          {
+ 456   1          if(scan_code_a==0x70        // Insert
+ 457   1              ||scan_code_a==0x71     // Delete
+ 458   1              ||scan_code_a==0x6B     // Left Arrow
+ 459   1              ||scan_code_a==0x6C     // Home
+ 460   1              ||scan_code_a==0x69     // End
+ 461   1              ||scan_code_a==0x75     // Up Arrow
+ 462   1              ||scan_code_a==0x72     // Dn Arrow
+ 463   1              ||scan_code_a==0x7D     // Page Up
+ 464   1              ||scan_code_a==0x7A     // Page Down
+ 465   1              ||scan_code_a==0x74)    // Right Arrow
+ 466   1          {
+ 467   2              return(0x01);
+ 468   2          }
+ 469   1          else if(scan_code_a==0x4A)  // Numeric / on US keyboards
+ 470   1          {
+ 471   2              return(0x02);           
+ 472   2          }
+ 473   1          else
+ 474   1          {
+ 475   2              return(0x00);
+ 476   2          }
+ 477   1      }
+ 478          
+ 479          /* ----------------------------------------------------------------------------
+ 480           * FUNCTION: e0_prefix_code
+ 481           *
+ 482           * Input: scan_code, Set 2
+ 483           *        event = Contact event (MAKE_EVENT, BREAK_EVENT, or REPEAT_EVENT)
+ 484           * ------------------------------------------------------------------------- */
+ 485          void e0_prefix_code(BYTE scan_code, BYTE event)
+ 486          {
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 9   
+
+ 487   1          BYTE additional_key;
+ 488   1      
+ 489   1          additional_key = CheckAdditionalConditionKey(scan_code);
+ 490   1          //-------------------------------------------
+ 491   1          // To check make and repeat
+ 492   1          //-------------------------------------------
+ 493   1          if(event != BREAK_EVENT)    // Make. Repeat
+ 494   1          {
+ 495   2              if(additional_key==0x01)
+ 496   2              {
+ 497   3                  if(Scanner_State_NUM_LOCK)  // Num Lock ON
+ 498   3                  {
+ 499   4                      if(Scanner_State_LEFT || Scanner_State_RIGHT) // LShift || Rshift
+ 500   4                      {
+ 501   5                          // NULL
+ 502   5                      }
+ 503   4                      else
+ 504   4                      {
+ 505   5                          Buffer_Key(0xE0);   //Precede Base Make code with (E0 2A)
+ 506   5                          Buffer_Key(0x12);
+ 507   5                      }
+ 508   4                  }
+ 509   3                  else                        // Num Lock OFF
+ 510   3                  {
+ 511   4                      if(Scanner_State_LEFT && Scanner_State_RIGHT)
+ 512   4                      {
+ 513   5                          Buffer_Key(0xE0);   //Precede Base Make code with (E0 AA)
+ 514   5                          Buffer_Key(0xF0);
+ 515   5                          Buffer_Key(0x12);
+ 516   5      
+ 517   5                          Buffer_Key(0xE0);   //Precede Base Make code with (E0 B6)
+ 518   5                          Buffer_Key(0xF0);
+ 519   5                          Buffer_Key(0x59);
+ 520   5                      }
+ 521   4                      else if(Scanner_State_LEFT)
+ 522   4                      {
+ 523   5                          Buffer_Key(0xE0);   //Precede Base Make code with (E0 AA)
+ 524   5                          Buffer_Key(0xF0);
+ 525   5                          Buffer_Key(0x12);
+ 526   5                      }
+ 527   4                      else if(Scanner_State_RIGHT)
+ 528   4                      {
+ 529   5                          Buffer_Key(0xE0);   //Precede Base Make code with (E0 B6)
+ 530   5                          Buffer_Key(0xF0);
+ 531   5                          Buffer_Key(0x59);
+ 532   5                      }
+ 533   4                      else
+ 534   4                      {
+ 535   5                          // NULL
+ 536   5                      }
+ 537   4                  }
+ 538   3              }
+ 539   2              else if(additional_key==0x02)
+ 540   2              {
+ 541   3                  if(Scanner_State_LEFT && Scanner_State_RIGHT)
+ 542   3                  {
+ 543   4                      Buffer_Key(0xE0);   //Precede Base Make code with (E0 AA)
+ 544   4                      Buffer_Key(0xF0);
+ 545   4                      Buffer_Key(0x12);
+ 546   4      
+ 547   4                      Buffer_Key(0xE0);   //Precede Base Make code with (E0 B6)
+ 548   4                      Buffer_Key(0xF0);
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 10  
+
+ 549   4                      Buffer_Key(0x59);
+ 550   4                  }
+ 551   3                  else if(Scanner_State_LEFT)
+ 552   3                  {
+ 553   4                      Buffer_Key(0xE0);   //Precede Base Make code with (E0 AA)
+ 554   4                      Buffer_Key(0xF0);
+ 555   4                      Buffer_Key(0x12);
+ 556   4                  }
+ 557   3                  else if(Scanner_State_RIGHT)
+ 558   3                  {
+ 559   4                      Buffer_Key(0xE0);   //Precede Base Make code with (E0 B6)
+ 560   4                      Buffer_Key(0xF0);
+ 561   4                      Buffer_Key(0x59);
+ 562   4                  }
+ 563   3              }
+ 564   2          }
+ 565   1       
+ 566   1          Buffer_Key(0xE0);           // Buffer E0h prefix. 
+ 567   1          if (event == BREAK_EVENT)
+ 568   1          {                                           // Buffer break prefix for break contact. F0h is break prefix. 
+ 569   2              Buffer_Key(0xF0);
+ 570   2          }
+ 571   1          Buffer_Key(scan_code);  // Buffer base code. 
+ 572   1      
+ 573   1          //-------------------------------------------
+ 574   1          // To check break
+ 575   1          //-------------------------------------------
+ 576   1          if(event == BREAK_EVENT)    // Break
+ 577   1          {
+ 578   2              if(additional_key==0x01)
+ 579   2              {
+ 580   3                  if(Scanner_State_NUM_LOCK)  // Num Lock ON
+ 581   3                  {
+ 582   4                      if(Scanner_State_LEFT || Scanner_State_RIGHT) // LShift || Rshift
+ 583   4                      {
+ 584   5                          // NULL
+ 585   5                      }
+ 586   4                      else                    
+ 587   4                      {
+ 588   5                          Buffer_Key(0xE0);   // follow Base Break code with (E0 AA)
+ 589   5                          Buffer_Key(0xF0);
+ 590   5                          Buffer_Key(0x12);
+ 591   5                      }
+ 592   4                  }
+ 593   3                  else                        // Num Lock OFF
+ 594   3                  {
+ 595   4                      if(Scanner_State_LEFT && Scanner_State_RIGHT)
+ 596   4                      {
+ 597   5                          Buffer_Key(0xE0);   //follow Base Break code with (E0 36)
+ 598   5                          Buffer_Key(0x59);
+ 599   5                          
+ 600   5                          Buffer_Key(0xE0);   //follow Base Break code with (E0 2A)
+ 601   5                          Buffer_Key(0x12);
+ 602   5                      }
+ 603   4                      else if(Scanner_State_LEFT)
+ 604   4                      {
+ 605   5                          Buffer_Key(0xE0);   //follow Base Break code with (E0 2A)
+ 606   5                          Buffer_Key(0x12);
+ 607   5                      }
+ 608   4                      else if(Scanner_State_RIGHT)
+ 609   4                      {
+ 610   5                          Buffer_Key(0xE0);   //follow Base Break code with (E0 36)
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 11  
+
+ 611   5                          Buffer_Key(0x59);
+ 612   5                      }
+ 613   4                      else
+ 614   4                      {
+ 615   5                          // NULL
+ 616   5                      }
+ 617   4                  }
+ 618   3              }
+ 619   2              else if(additional_key==0x02)
+ 620   2              {
+ 621   3                  if(Scanner_State_LEFT && Scanner_State_RIGHT)
+ 622   3                  {
+ 623   4                      Buffer_Key(0xE0);   //follow Base Break code with (E0 36)
+ 624   4                      Buffer_Key(0x59);
+ 625   4                      
+ 626   4                      Buffer_Key(0xE0);   //follow Base Break code with (E0 2A)
+ 627   4                      Buffer_Key(0x12);
+ 628   4                  }
+ 629   3                  else if(Scanner_State_LEFT)
+ 630   3                  {
+ 631   4                      Buffer_Key(0xE0);   //follow Base Break code with (E0 2A)
+ 632   4                      Buffer_Key(0x12);
+ 633   4                  }
+ 634   3                  else if(Scanner_State_RIGHT)
+ 635   3                  {
+ 636   4                      Buffer_Key(0xE0);   //follow Base Break code with (E0 36)
+ 637   4                      Buffer_Key(0x59);
+ 638   4                  }
+ 639   3              }
+ 640   2          }
+ 641   1      }
+ 642          
+ 643          /* ----------------------------------------------------------------------------
+ 644           * FUNCTION: cursor_shift
+ 645           *
+ 646           * Input: scan_code, Set 2
+ 647           *        event = Contact event (MAKE_EVENT, BREAK_EVENT, or REPEAT_EVENT)
+ 648           *        temp_scanner_state
+ 649           * ------------------------------------------------------------------------- */
+ 650          /* BREAK_EVENT key string for cursor_shift and cursor_numlock. */
+ 651                  const BYTE code csr_brk1[] = {0xE0,0xF0,0x00};
+ 652          
+ 653          static void cursor_shift(BYTE scan_code, BYTE event)
+ 654          {
+ 655   1          static const BYTE code csr_sftl_mk[]   = {0xE0,0xF0,0x12,0x00};
+ 656   1          static const BYTE code csr_sftr_mk[]   = {0xE0,0xF0,0x59,0x00};
+ 657   1          static const BYTE code csr_sftl_brk2[] = {0xE0,0x12,0x00};
+ 658   1          static const BYTE code csr_sftr_brk2[] = {0xE0,0x59,0x00};
+ 659   1      
+ 660   1          if (event == BREAK_EVENT)
+ 661   1          {   /* Key has just been released. This is a "break event". */
+ 662   2              Buffer_String(csr_brk1);                /* Buffer pre-string. */
+ 663   2              Buffer_Key(scan_code);                  /* Buffer base code. */
+ 664   2      
+ 665   2              if (temp_scanner_state.field.tLEFT)
+ 666   2              {                                                                       /* Left shift has been pressed. */
+ 667   3                  Buffer_String(csr_sftl_brk2);   /* Buffer tail-string. */
+ 668   3              }
+ 669   2      
+ 670   2              if (temp_scanner_state.field.tRIGHT)
+ 671   2              {                                                                       /* Right shift has been pressed. */
+ 672   3                  Buffer_String(csr_sftr_brk2);   /* Buffer tail-string. */
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 12  
+
+ 673   3              }
+ 674   2          }
+ 675   1          else if (event == MAKE_EVENT)
+ 676   1          {   /* Key is pressed for the first time, a "make event". */
+ 677   2                                                                                      /* Left and/or Right SHIFT is pressed. */
+ 678   2              if (temp_scanner_state.field.tLEFT)
+ 679   2              {                                                                       /* Left SHIFT is pressed. */
+ 680   3                  Buffer_String(csr_sftl_mk);         /* Buffer pre-string. */
+ 681   3              }
+ 682   2      
+ 683   2              if (temp_scanner_state.field.tRIGHT)
+ 684   2              {                                                                       /* Right SHIFT is pressed. */
+ 685   3                  Buffer_String(csr_sftr_mk);         /* Buffer pre-string. */
+ 686   3              }
+ 687   2      
+ 688   2              Buffer_Key(0xE0);                               /* Buffer end of pre-string. */
+ 689   2              Buffer_Key(scan_code);                          /* Buffer base code. */
+ 690   2          }
+ 691   1          else
+ 692   1          {   /* Key is being held pressed for a length of time, a "repeat event". */
+ 693   2              Buffer_Key(0xE0);                               /* Buffer E0h prefix */
+ 694   2              Buffer_Key(scan_code);                          /* Buffer base code */
+ 695   2          } 
+ 696   1      }
+ 697          
+ 698          /* ----------------------------------------------------------------------------
+ 699           * FUNCTION: cursor_numlock
+ 700           *
+ 701           * Input: scan_code, Set 2
+ 702           *        event = Contact event (MAKE_EVENT, BREAK_EVENT, or REPEAT_EVENT)
+ 703           * ------------------------------------------------------------------------- */
+ 704          static void cursor_numlock(BYTE scan_code, BYTE event)
+ 705          {
+ 706   1          static const BYTE code csr_numlock_mk[]   = {0xE0,0x12,0xE0,0x00};
+ 707   1          static const BYTE code csr_numlock_brk2[] = {0xE0,0xF0,0x12,0x00};
+ 708   1      
+ 709   1          if (event == BREAK_EVENT)
+ 710   1          { 
+ 711   2              Buffer_String(csr_brk1);            // Buffer pre-string. 
+ 712   2              Buffer_Key(scan_code);              // Buffer base code. 
+ 713   2              Buffer_String(csr_numlock_brk2);    // Buffer tail-string. 
+ 714   2          }
+ 715   1          else if (event == MAKE_EVENT)
+ 716   1          {  
+ 717   2                                                                                      // The Num Lock key is pressed. 
+ 718   2              Buffer_String(csr_numlock_mk);          // Buffer pre-string. 
+ 719   2              Buffer_Key(scan_code);                  // Buffer base code. 
+ 720   2          }
+ 721   1          else
+ 722   1          {  
+ 723   2              Buffer_Key(0xE0);                               // Buffer E0h prefix. 
+ 724   2              Buffer_Key(scan_code);                          // Buffer base code. 
+ 725   2          } 
+ 726   1      }
+ 727          
+ 728          
+ 729          /* ----------------------------------------------------------------------------
+ 730           * FUNCTION: special_code
+ 731           *
+ 732           * For IBM Key Number 126. This key generates only make code.
+ 733           *
+ 734           * Input: code
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 13  
+
+ 735           *        event = Contact event (MAKE_EVENT, BREAK_EVENT, or REPEAT_EVENT)
+ 736           * ------------------------------------------------------------------------- */
+ 737          void special_code(BYTE code_byte, BYTE event)
+ 738          {
+ 739   1          static const BYTE code key126_normal_mk[] = {0xE1,0x14,0x77,0xE1,0xF0,0x14,0xF0,0x77,0x00};
+ 740   1          static const BYTE code key126_ctrl_mk[]   = {0xE0,0x7E,0xE0,0xF0,0x7E,0x00};
+ 741   1      
+ 742   1          if(code_byte == 2)                  // Print Scr
+ 743   1          {
+ 744   2              if(Scanner_State_ALT)           // + ALT
+ 745   2              {
+ 746   3                  simple_code(0x84, event);
+ 747   3              }
+ 748   2              else if(Scanner_State_CONTROL || Scanner_State_LEFT || Scanner_State_RIGHT) // + Ctrl || LShift ||
+             - Rshift
+ 749   2              {
+ 750   3                  e0_prefix_code(0x7C, event);
+ 751   3              }
+ 752   2              else
+ 753   2              {
+ 754   3                  if(event == BREAK_EVENT)    // Break
+ 755   3                  {
+ 756   4                      e0_prefix_code(0x7C, event);
+ 757   4                      e0_prefix_code(0x12, event);
+ 758   4                  }
+ 759   3                  else                        // Make or repeat
+ 760   3                  {
+ 761   4                      e0_prefix_code(0x12, event);
+ 762   4                      e0_prefix_code(0x7C, event);
+ 763   4                  }
+ 764   3              }
+ 765   2          }
+ 766   1          else
+ 767   1          {
+ 768   2              if (event == MAKE_EVENT)
+ 769   2              {
+ 770   3                  //if (code_byte == 0) 
+ 771   3                      //{   
+ 772   3                  //          Buffer_String(key126_normal_mk);// Buffer normal code string.
+ 773   3                  //}
+ 774   3                  //else 
+ 775   3                      //{  
+ 776   3                  //    Buffer_String(key126_ctrl_mk);        // Buffer Ctrl case string.
+ 777   3                  //}
+ 778   3                  if(Scanner_State_CONTROL)
+ 779   3                  {
+ 780   4                      Buffer_String(key126_ctrl_mk);      // Buffer Ctrl case string.
+ 781   4                  }
+ 782   3                  else
+ 783   3                  {
+ 784   4                      Buffer_String(key126_normal_mk);    // Buffer normal code string.
+ 785   4                  }
+ 786   3              }
+ 787   2          }
+ 788   1      }
+ 789          
+ 790          /* ----------------------------------------------------------------------------
+ 791           * FUNCTION: costomer_function
+ 792           *
+ 793           * Input: code
+ 794           *        event = Contact event (MAKE_EVENT, BREAK_EVENT, or REPEAT_EVENT)
+ 795           * ------------------------------------------------------------------------- */
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 14  
+
+ 796          
+ 797          //----------------------------------------------------------------------------
+ 798          // The function of hotkey Fn + Fx
+ 799          //----------------------------------------------------------------------------
+ 800          static void costomer_function(BYTE code_byte, BYTE event)
+ 801          {
+ 802   1              (HotKey_Fn_Fx[code_byte])(event);
+ 803   1              if (scan.kbf_head != scan.kbf_tail)
+ 804   1              {
+ 805   2              SetServiceSendFlag();
+ 806   2              }
+ 807   1      }
+ 808          
+ 809          /* ----------------------------------------------------------------------------
+ 810           * FUNCTION: control_effect
+ 811           *
+ 812           * Generate scan code set 2 and update scanner status.
+ 813           *
+ 814           * Input: state flags
+ 815           *        event = Contact event (MAKE_EVENT, BREAK_EVENT, or REPEAT_EVENT)
+ 816           *        temp_scanner_state
+ 817           *
+ 818           *  The following bits are defined for state flags and temp_scanner_state:
+ 819           *       NUM_LOCK
+ 820           *       LEFT
+ 821           *       RIGHT
+ 822           *       ALT
+ 823           *       CONTROL
+ 824           *       OVERLAY
+ 825           *       FN
+ 826           *       
+ 827           *
+ 828           * Returns: Updated temp_scanner_state
+ 829           * ------------------------------------------------------------------------- */
+ 830          static void control_effect(BYTE state, BYTE event)
+ 831          {
+ 832   1          if ((event == MAKE_EVENT)||(event == BREAK_EVENT))
+ 833   1          {
+ 834   2              if (state & LShift)                             // First generate scan code set 2.
+ 835   2                      {
+ 836   3                      simple_code(0x12, event);
+ 837   3              }
+ 838   2                      else if (state & LAlt)
+ 839   2                      {
+ 840   3                      simple_code(0x11, event);
+ 841   3              }
+ 842   2                      else if (state & LCtrl) 
+ 843   2                      {
+ 844   3                      simple_code(0x14, event);
+ 845   3              }
+ 846   2              else if (state & RShift) 
+ 847   2                      {
+ 848   3                      simple_code(0x59, event);
+ 849   3              }
+ 850   2                      //else if (state & FN) 
+ 851   2                      //{
+ 852   2              //      e0_prefix_code(0x63, event);
+ 853   2              //}
+ 854   2          }
+ 855   1         
+ 856   1          if (event == MAKE_EVENT)                    // Then update scanner state.
+ 857   1          {   // Key is pressed for the first time. This is a "make event".
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 15  
+
+ 858   2                      // Set scanner state for SHIFT, Alt, Ctrl, or Fn.
+ 859   2              temp_scanner_state.byte |= state;
+ 860   2              if (state & FN) 
+ 861   2              {
+ 862   3                  Hook_Fn_Key_Make();
+ 863   3                  #if KB_FnStickKey
+                          FnStickKey = 1;
+                          #endif
+ 866   3              }
+ 867   2          }
+ 868   1          else if (event == BREAK_EVENT)
+ 869   1          {   
+ 870   2              if (state & FN) 
+ 871   2              {
+ 872   3                  Hook_Fn_Key_Break();
+ 873   3              }
+ 874   2              temp_scanner_state.byte &= ~state;
+ 875   2          }
+ 876   1          else
+ 877   1          { 
+ 878   2              ;   // Do nothing for repeat event. 
+ 879   2          }
+ 880   1      }
+ 881          
+ 882          
+ 883          /* ----------------------------------------------------------------------------
+ 884           * FUNCTION: control_effect_e0
+ 885           *
+ 886           * Generate scan code set 2 and update scanner status.
+ 887           * Only for Alt-Right and Ctrl-Right.
+ 888           *
+ 889           * Input: state flags
+ 890           *        event = Contact event (MAKE_EVENT, BREAK_EVENT, or REPEAT_EVENT)
+ 891           *        temp_scanner_state
+ 892           *
+ 893           * The following bits are defined for state_flags and temp_scanner_state:
+ 894           *       NUM_LOCK
+ 895           *       LEFT
+ 896           *       RIGHT
+ 897           *       ALT
+ 898           *       CONTROL
+ 899           *       OVERLAY
+ 900           *       FN
+ 901           *
+ 902           * Return: Updated temp_scanner_state
+ 903           * ------------------------------------------------------------------------- */
+ 904          static void control_effect_e0(BYTE state, BYTE event)
+ 905          {   // This is only called for Alt-Right and Ctrl-Right. 
+ 906   1          if ((event == MAKE_EVENT)||(event == BREAK_EVENT))
+ 907   1          {
+ 908   2              // First setup to generate scan code set 2. 
+ 909   2              if (state & RAlt) 
+ 910   2                      {
+ 911   3                              e0_prefix_code(0x11, event);
+ 912   3              }
+ 913   2                      if (state & RCtrl) 
+ 914   2                      {
+ 915   3                              e0_prefix_code(0x14, event);
+ 916   3              }
+ 917   2              }
+ 918   1      
+ 919   1              if (event == MAKE_EVENT)
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 16  
+
+ 920   1              {       // Key is pressed for the first time. This is a "make event". 
+ 921   2                  // Set one flag in scanner state flags. 
+ 922   2              temp_scanner_state.byte |= state;
+ 923   2              }
+ 924   1              else if (event == BREAK_EVENT)
+ 925   1              {       // Key has just been released. This is a "break event". 
+ 926   2                  // Clear one flag in scanner state flags. 
+ 927   2              temp_scanner_state.byte &= ~state;
+ 928   2              }
+ 929   1              else
+ 930   1              {   
+ 931   2              ;   // Do nothing for repeat event. 
+ 932   2              }               
+ 933   1      }
+ 934          
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 17  
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION Com00CD (BEGIN)
+0000         L?0206:
+0000         L?0207:
+0000 900000      R     MOV     DPTR,#offset
+0003         L?0208:
+0003 E0                MOVX    A,@DPTR
+0004 FF                MOV     R7,A
+0005 A3                INC     DPTR
+0006         L?0209:
+0006 E0                MOVX    A,@DPTR
+0007 FE                MOV     R6,A
+0008 7401              MOV     A,#01H
+000A C8                XCH     A,R0
+000B EE                MOV     A,R6
+000C C8                XCH     A,R0
+000D 08                INC     R0
+000E 22                RET     
+000F         L?0210:
+000F         L?0211:
+000F 900000      R     MOV     DPTR,#l_buffer_index
+0012 E0                MOVX    A,@DPTR
+0013 2400        E     ADD     A,#LOW FnKeyBundledFalg
+0015 F582              MOV     DPL,A
+0017 E4                CLR     A
+0018 3400        E     ADDC    A,#HIGH FnKeyBundledFalg
+001A F583              MOV     DPH,A
+001C E0                MOVX    A,@DPTR
+001D FD                MOV     R5,A
+001E 7C00              MOV     R4,#00H
+0020 900000      R     MOV     DPTR,#l_buffer_mask
+0023 E0                MOVX    A,@DPTR
+0024 FF                MOV     R7,A
+0025 7401              MOV     A,#01H
+0027 7E00              MOV     R6,#00H
+0029 C8                XCH     A,R0
+002A EF                MOV     A,R7
+002B C8                XCH     A,R0
+002C 08                INC     R0
+002D 22                RET     
+002E         L?0212:
+002E         L?0213:
+002E 900000      R     MOV     DPTR,#bit_num
+0031 E0                MOVX    A,@DPTR
+0032 04                INC     A
+0033 F0                MOVX    @DPTR,A
+0034 22                RET     
+0035         L?0214:
+0035 900000      R     MOV     DPTR,#l_buffer_index
+0038 E0                MOVX    A,@DPTR
+0039 2400        E     ADD     A,#LOW FnKeyBundledFalg
+003B F582              MOV     DPL,A
+003D E4                CLR     A
+003E 3400        E     ADDC    A,#HIGH FnKeyBundledFalg
+0040 F583              MOV     DPH,A
+0042 22                RET     
+0043         L?0215:
+0043         L?0216:
+0043 FF                MOV     R7,A
+0044 EE                MOV     A,R6
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 18  
+
+0045 5C                ANL     A,R4
+0046 FE                MOV     R6,A
+0047 EF                MOV     A,R7
+0048 5D                ANL     A,R5
+0049 4E                ORL     A,R6
+004A 22                RET     
+004B         L?0217:
+004B 120000      E     LCALL   ?C?PLDCODE
+004E 8982              MOV     DPL,R1
+0050 8A83              MOV     DPH,R2
+0052 020000      E     LJMP    ?C?ICALL2
+0055         L?0218:
+0055         L?0219:
+0055 900000      R     MOV     DPTR,#key
+0058 E0                MOVX    A,@DPTR
+0059 5407              ANL     A,#07H
+005B 22                RET     
+             ; FUNCTION Com00CD (END)
+
+             ; FUNCTION Send_Scan2 (BEGIN)
+                                           ; SOURCE LINE # 41
+                                           ; SOURCE LINE # 42
+                                           ; SOURCE LINE # 43
+0000 900000      E     MOV     DPTR,#UtilityFlag
+0003 E0                MOVX    A,@DPTR
+0004 30E626            JNB     ACC.6,?C0001
+                                           ; SOURCE LINE # 44
+                                           ; SOURCE LINE # 45
+0007 900000      E     MOV     DPTR,#KeyScanACK
+000A E0                MOVX    A,@DPTR
+000B F4                CPL     A
+000C 7058              JNZ     ?C0005
+                                           ; SOURCE LINE # 46
+                                           ; SOURCE LINE # 47
+000E 900000      R     MOV     DPTR,#event
+0011 E0                MOVX    A,@DPTR
+0012 7052              JNZ     ?C0005
+                                           ; SOURCE LINE # 48
+                                           ; SOURCE LINE # 49
+0014 120000      R     LCALL   L?0218
+0017 900000      E     MOV     DPTR,#KeyScanKSI
+001A F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 50
+001B 900000      R     MOV     DPTR,#key
+001E E0                MOVX    A,@DPTR
+001F C4                SWAP    A
+0020 540F              ANL     A,#0FH
+0022 900000      E     MOV     DPTR,#KeyScanKSO
+0025 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 54
+0026 900000      E     MOV     DPTR,#KeyScanACK
+0029 7433              MOV     A,#033H
+002B F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 69
+                                           ; SOURCE LINE # 70
+                                           ; SOURCE LINE # 71
+002C 22                RET     
+002D         ?C0001:
+                                           ; SOURCE LINE # 73
+                                           ; SOURCE LINE # 77
+002D 120000      R     LCALL   L?0218
+0030 C4                SWAP    A
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 19  
+
+0031 54F0              ANL     A,#0F0H
+0033 FF                MOV     R7,A
+0034 E0                MOVX    A,@DPTR
+0035 C4                SWAP    A
+0036 540F              ANL     A,#0FH
+0038 4F                ORL     A,R7
+0039 F500        E     MOV     ITempB04,A
+                                           ; SOURCE LINE # 78
+003B AF00        E     MOV     R7,ITempB04
+003D 900000      E     MOV     DPTR,#Scanner_Table_Pntr
+0040 E0                MOVX    A,@DPTR
+0041 FC                MOV     R4,A
+0042 A3                INC     DPTR
+0043 E0                MOVX    A,@DPTR
+0044 2F                ADD     A,R7
+0045 F582              MOV     DPL,A
+0047 E4                CLR     A
+0048 3C                ADDC    A,R4
+0049 F583              MOV     DPH,A
+004B E4                CLR     A
+004C 93                MOVC    A,@A+DPTR
+004D F500        E     MOV     ITempB03,A
+                                           ; SOURCE LINE # 95
+004F 120000      R     LCALL   L?0219
+0052 FF                MOV     R7,A
+0053 E0                MOVX    A,@DPTR
+0054 FE                MOV     R6,A
+0055 C4                SWAP    A
+0056 540F              ANL     A,#0FH
+0058 FD                MOV     R5,A
+0059 120000      E     LCALL   _Hook_keyboard
+                                           ; SOURCE LINE # 96
+005C 900000      R     MOV     DPTR,#event
+005F E0                MOVX    A,@DPTR
+0060 FD                MOV     R5,A
+0061 AF00        E     MOV     R7,ITempB03
+0063 120000      R     LCALL   _Send_Key
+                                           ; SOURCE LINE # 97
+                                           ; SOURCE LINE # 98
+0066         ?C0005:
+0066 22                RET     
+             ; FUNCTION Send_Scan2 (END)
+
+             ; FUNCTION ClearFnKeyBundledFalg (BEGIN)
+                                           ; SOURCE LINE # 111
+                                           ; SOURCE LINE # 112
+                                           ; SOURCE LINE # 115
+;---- Variable 'index' assigned to Register 'R7' ----
+0000         ?C0006:
+                                           ; SOURCE LINE # 116
+                                           ; SOURCE LINE # 117
+0000 7F10              MOV     R7,#010H
+0002 900000      E     MOV     DPTR,#FnKeyBundledFalg
+0005 E4                CLR     A
+0006         ?C0157:
+0006 F0                MOVX    @DPTR,A
+0007 A3                INC     DPTR
+0008 DFFC              DJNZ    R7,?C0157
+                                           ; SOURCE LINE # 118
+                                           ; SOURCE LINE # 119
+000A         ?C0009:
+000A 22                RET     
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 20  
+
+             ; FUNCTION ClearFnKeyBundledFalg (END)
+
+             ; FUNCTION _CheckFnKeyBundledFalg (BEGIN)
+                                           ; SOURCE LINE # 134
+0000 900000      R     MOV     DPTR,#p_event
+0003 ED                MOV     A,R5
+0004 F0                MOVX    @DPTR,A
+;---- Variable 'p_table_entry' assigned to Register 'R4' ----
+0005 CC                XCH     A,R4
+0006 EF                MOV     A,R7
+0007 CC                XCH     A,R4
+                                           ; SOURCE LINE # 135
+                                           ; SOURCE LINE # 140
+0008 E4                CLR     A
+0009 A3                INC     DPTR
+000A F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 142
+000B EC                MOV     A,R4
+000C C3                CLR     C
+000D 949C              SUBB    A,#09CH
+000F 5003              JNC     $ + 5H
+0011 020000      R     LJMP    ?C0010
+                                           ; SOURCE LINE # 143
+                                           ; SOURCE LINE # 144
+0014 EC                MOV     A,R4
+0015 2470              ADD     A,#070H
+0017 FF                MOV     R7,A
+0018 E4                CLR     A
+0019 34FF              ADDC    A,#0FFH
+001B FE                MOV     R6,A
+001C EF                MOV     A,R7
+001D 7803              MOV     R0,#03H
+001F         ?C0158:
+001F CE                XCH     A,R6
+0020 C3                CLR     C
+0021 13                RRC     A
+0022 CE                XCH     A,R6
+0023 13                RRC     A
+0024 D8F9              DJNZ    R0,?C0158
+0026 900000      R     MOV     DPTR,#l_buffer_index
+0029 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 145
+002A EC                MOV     A,R4
+002B 2470              ADD     A,#070H
+002D 5407              ANL     A,#07H
+002F A3                INC     DPTR
+0030 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 147
+0031 900000      R     MOV     DPTR,#p_event
+0034 E0                MOVX    A,@DPTR
+0035 6401              XRL     A,#01H
+0037 7059              JNZ     ?C0011
+                                           ; SOURCE LINE # 148
+                                           ; SOURCE LINE # 149
+0039 7800        E     MOV     R0,#LOW temp_scanner_state
+003B E6                MOV     A,@R0
+003C 30E617            JNB     ACC.6,?C0012
+                                           ; SOURCE LINE # 150
+                                           ; SOURCE LINE # 151
+003F 120000      R     LCALL   L?0210
+0042 8005              SJMP    ?C0160
+0044         ?C0159:
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 21  
+
+0044 C3                CLR     C
+0045 33                RLC     A
+0046 CE                XCH     A,R6
+0047 33                RLC     A
+0048 CE                XCH     A,R6
+0049         ?C0160:
+0049 D8F9              DJNZ    R0,?C0159
+004B 120000      R     LCALL   L?0215
+004E 900000      R     MOV     DPTR,#l_Fn_bundled
+0051 7017              JNZ     ?C0183
+                                           ; SOURCE LINE # 152
+                                           ; SOURCE LINE # 153
+0053 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 154
+0054 801E              SJMP    ?C0015
+0056         ?C0012:
+                                           ; SOURCE LINE # 161
+                                           ; SOURCE LINE # 162
+0056 120000      R     LCALL   L?0210
+0059 8005              SJMP    ?C0162
+005B         ?C0161:
+005B C3                CLR     C
+005C 33                RLC     A
+005D CE                XCH     A,R6
+005E 33                RLC     A
+005F CE                XCH     A,R6
+0060         ?C0162:
+0060 D8F9              DJNZ    R0,?C0161
+0062 120000      R     LCALL   L?0215
+0065 6008              JZ      ?C0016
+                                           ; SOURCE LINE # 163
+                                           ; SOURCE LINE # 164
+0067 900000      R     MOV     DPTR,#l_Fn_bundled
+006A         ?C0183:
+006A 7401              MOV     A,#01H
+006C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 165
+006D 8005              SJMP    ?C0015
+006F         ?C0016:
+                                           ; SOURCE LINE # 167
+                                           ; SOURCE LINE # 168
+006F E4                CLR     A
+0070 900000      R     MOV     DPTR,#l_Fn_bundled
+0073 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 169
+                                           ; SOURCE LINE # 170
+0074         ?C0015:
+                                           ; SOURCE LINE # 171
+0074 120000      R     LCALL   L?0214
+0077 C083              PUSH    DPH
+0079 C082              PUSH    DPL
+007B E0                MOVX    A,@DPTR
+007C FF                MOV     R7,A
+007D 900000      R     MOV     DPTR,#l_buffer_mask
+0080 120000      R     LCALL   L?0209
+0083 8002              SJMP    ?C0164
+0085         ?C0163:
+0085 C3                CLR     C
+0086 33                RLC     A
+0087         ?C0164:
+0087 D8FC              DJNZ    R0,?C0163
+0089 F4                CPL     A
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 22  
+
+008A 5F                ANL     A,R7
+008B D082              POP     DPL
+008D D083              POP     DPH
+008F F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 172
+0090 8044              SJMP    ?C0010
+0092         ?C0011:
+                                           ; SOURCE LINE # 174
+                                           ; SOURCE LINE # 178
+0092 7800        E     MOV     R0,#LOW temp_scanner_state
+0094 E6                MOV     A,@R0
+0095 30E621            JNB     ACC.6,?C0022
+                                           ; SOURCE LINE # 180
+                                           ; SOURCE LINE # 181
+0098 900000      R     MOV     DPTR,#p_event
+009B E0                MOVX    A,@DPTR
+009C 701B              JNZ     ?C0022
+                                           ; SOURCE LINE # 182
+                                           ; SOURCE LINE # 183
+009E 120000      R     LCALL   L?0214
+00A1 C083              PUSH    DPH
+00A3 C082              PUSH    DPL
+00A5 E0                MOVX    A,@DPTR
+00A6 FF                MOV     R7,A
+00A7 900000      R     MOV     DPTR,#l_buffer_mask
+00AA 120000      R     LCALL   L?0209
+00AD 8002              SJMP    ?C0166
+00AF         ?C0165:
+00AF C3                CLR     C
+00B0 33                RLC     A
+00B1         ?C0166:
+00B1 D8FC              DJNZ    R0,?C0165
+00B3 4F                ORL     A,R7
+00B4 D082              POP     DPL
+00B6 D083              POP     DPH
+00B8 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 184
+                                           ; SOURCE LINE # 186
+                                           ; SOURCE LINE # 188
+                                           ; SOURCE LINE # 189
+                                           ; SOURCE LINE # 191
+                                           ; SOURCE LINE # 193
+00B9         ?C0022:
+                                           ; SOURCE LINE # 195
+00B9 7800        E     MOV     R0,#LOW temp_scanner_state
+00BB E6                MOV     A,@R0
+00BC 20E611            JB      ACC.6,?C0024
+00BF 120000      R     LCALL   L?0211
+00C2 8005              SJMP    ?C0168
+00C4         ?C0167:
+00C4 C3                CLR     C
+00C5 33                RLC     A
+00C6 CE                XCH     A,R6
+00C7 33                RLC     A
+00C8 CE                XCH     A,R6
+00C9         ?C0168:
+00C9 D8F9              DJNZ    R0,?C0167
+00CB 120000      R     LCALL   L?0216
+00CE 6006              JZ      ?C0010
+00D0         ?C0024:
+                                           ; SOURCE LINE # 196
+                                           ; SOURCE LINE # 197
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 23  
+
+00D0 900000      R     MOV     DPTR,#l_Fn_bundled
+00D3 7401              MOV     A,#01H
+00D5 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 198
+                                           ; SOURCE LINE # 199
+                                           ; SOURCE LINE # 200
+00D6         ?C0010:
+                                           ; SOURCE LINE # 202
+00D6 900000      R     MOV     DPTR,#l_Fn_bundled
+00D9 E0                MOVX    A,@DPTR
+00DA FF                MOV     R7,A
+                                           ; SOURCE LINE # 203
+00DB         ?C0025:
+00DB 22                RET     
+             ; FUNCTION _CheckFnKeyBundledFalg (END)
+
+             ; FUNCTION _Send_Key (BEGIN)
+                                           ; SOURCE LINE # 208
+0000 900000      R     MOV     DPTR,#table_entry
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 ED                MOV     A,R5
+0007 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 209
+                                           ; SOURCE LINE # 214
+0008 120000      E     LCALL   _OEM_Hook_Send_Key
+                                           ; SOURCE LINE # 216
+000B 120000      E     LCALL   OEM_Hook_Skip_Send_Key
+000E EF                MOV     A,R7
+000F F4                CPL     A
+0010 7003              JNZ     $ + 5H
+0012 020000      R     LJMP    ?C0027
+                                           ; SOURCE LINE # 217
+                                           ; SOURCE LINE # 219
+0015         ?C0026:
+                                           ; SOURCE LINE # 221
+0015 900000      R     MOV     DPTR,#table_entry
+0018 E0                MOVX    A,@DPTR
+0019 900000      R     MOV     DPTR,#temp_table_entry
+001C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 223
+001D 120000      E     LCALL   Buffer_Mark
+                                           ; SOURCE LINE # 224
+0020 7800        E     MOV     R0,#LOW temp_scanner_state
+0022 A600        E     MOV     @R0,Scanner_State
+                                           ; SOURCE LINE # 225
+0024 900000      R     MOV     DPTR,#table_entry
+0027 E0                MOVX    A,@DPTR
+0028 FF                MOV     R7,A
+0029 C3                CLR     C
+002A 94E0              SUBB    A,#0E0H
+002C 402A              JC      ?C0028
+                                           ; SOURCE LINE # 226
+                                           ; SOURCE LINE # 237
+002E EF                MOV     A,R7
+002F 2420              ADD     A,#020H
+0031 900000      R     MOV     DPTR,#temp
+0034 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 238
+0035 E0                MOVX    A,@DPTR
+0036 25E0              ADD     A,ACC
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 24  
+
+0038 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 239
+0039 900000      R     MOV     DPTR,#temp_table_entry
+003C E0                MOVX    A,@DPTR
+003D FF                MOV     R7,A
+003E 900000      R     MOV     DPTR,#event
+0041 E0                MOVX    A,@DPTR
+0042 FD                MOV     R5,A
+0043 120000      R     LCALL   _CheckFnKeyBundledFalg
+0046 BF0106            CJNE    R7,#01H,?C0029
+                                           ; SOURCE LINE # 240
+                                           ; SOURCE LINE # 241
+0049 900000      R     MOV     DPTR,#temp
+004C E0                MOVX    A,@DPTR
+004D 04                INC     A
+004E F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 242
+004F         ?C0029:
+                                           ; SOURCE LINE # 244
+004F 900000      R     MOV     DPTR,#temp
+0052 E0                MOVX    A,@DPTR
+0053 900000      E     MOV     DPTR,#sskey2_overlay_table
+                                           ; SOURCE LINE # 245
+0056 805B              SJMP    ?C0184
+0058         ?C0028:
+                                           ; SOURCE LINE # 246
+0058 900000      R     MOV     DPTR,#table_entry
+005B E0                MOVX    A,@DPTR
+005C FF                MOV     R7,A
+005D C3                CLR     C
+005E 949C              SUBB    A,#09CH
+0060 4056              JC      ?C0030
+                                           ; SOURCE LINE # 247
+                                           ; SOURCE LINE # 248
+0062 EF                MOV     A,R7
+0063 2464              ADD     A,#064H
+0065 900000      R     MOV     DPTR,#temp
+0068 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 249
+0069 E0                MOVX    A,@DPTR
+006A FE                MOV     R6,A
+006B 75F003            MOV     B,#03H
+006E 900000      E     MOV     DPTR,#sskey2_A2_table
+0071 120000      E     LCALL   ?C?OFFXADD
+0074 E4                CLR     A
+0075 93                MOVC    A,@A+DPTR
+0076 FF                MOV     R7,A
+0077 900000      R     MOV     DPTR,#table_entry
+007A F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 250
+007B 75F003            MOV     B,#03H
+007E EE                MOV     A,R6
+007F 900000      E     MOV     DPTR,#sskey2_A2_table+01H
+0082 120000      E     LCALL   ?C?OFFXADD
+0085 E4                CLR     A
+0086 93                MOVC    A,@A+DPTR
+0087 FD                MOV     R5,A
+0088 7401              MOV     A,#01H
+008A 93                MOVC    A,@A+DPTR
+008B 900000      R     MOV     DPTR,#pntr
+008E CD                XCH     A,R5
+008F F0                MOVX    @DPTR,A
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 25  
+
+0090 A3                INC     DPTR
+0091 ED                MOV     A,R5
+0092 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 252
+0093 A3                INC     DPTR
+0094 E0                MOVX    A,@DPTR
+0095 FD                MOV     R5,A
+0096 900000      R     MOV     DPTR,#event
+0099 E0                MOVX    A,@DPTR
+009A FB                MOV     R3,A
+009B 120000      R     LCALL   _calc_index_comb
+009E 900000      R     MOV     DPTR,#pntr
+00A1 E4                CLR     A
+00A2 8FF0              MOV     B,R7
+00A4 120000      E     LCALL   ?C?IILDX
+                                           ; SOURCE LINE # 253
+00A7 900000      R     MOV     DPTR,#pntr
+00AA E0                MOVX    A,@DPTR
+00AB FE                MOV     R6,A
+00AC A3                INC     DPTR
+00AD E0                MOVX    A,@DPTR
+00AE F582              MOV     DPL,A
+00B0 8E83              MOV     DPH,R6
+00B2 E4                CLR     A
+00B3         ?C0184:
+00B3 93                MOVC    A,@A+DPTR
+00B4 900000      R     MOV     DPTR,#table_entry
+00B7 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 254
+00B8         ?C0030:
+                                           ; SOURCE LINE # 256
+00B8 900000      R     MOV     DPTR,#table_entry
+00BB E0                MOVX    A,@DPTR
+00BC FF                MOV     R7,A
+00BD A3                INC     DPTR
+00BE E0                MOVX    A,@DPTR
+00BF FD                MOV     R5,A
+00C0 120000      R     LCALL   _sskey3_proc
+                                           ; SOURCE LINE # 258
+00C3 7800        E     MOV     R0,#LOW temp_scanner_state
+00C5 E6                MOV     A,@R0
+00C6 F500        E     MOV     Scanner_State,A
+                                           ; SOURCE LINE # 269
+00C8         ?C0027:
+00C8 22                RET     
+             ; FUNCTION _Send_Key (END)
+
+             ; FUNCTION Clear_Fn_Keys (BEGIN)
+                                           ; SOURCE LINE # 274
+                                           ; SOURCE LINE # 275
+                                           ; SOURCE LINE # 277
+0000 22                RET     
+             ; FUNCTION Clear_Fn_Keys (END)
+
+             ; FUNCTION _sskey3_proc (BEGIN)
+                                           ; SOURCE LINE # 302
+0000 900000      R     MOV     DPTR,#sskey2
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 ED                MOV     A,R5
+0007 F0                MOVX    @DPTR,A
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 26  
+
+                                           ; SOURCE LINE # 303
+                                           ; SOURCE LINE # 306
+0008 E4                CLR     A
+0009 A3                INC     DPTR
+000A F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 308
+000B 900000      R     MOV     DPTR,#sskey2
+000E E0                MOVX    A,@DPTR
+000F FF                MOV     R7,A
+0010 603B              JZ      ?C0037
+                                           ; SOURCE LINE # 309
+                                           ; SOURCE LINE # 311
+0012         ?C0033:
+                                           ; SOURCE LINE # 312
+0012 EF                MOV     A,R7
+0013 20E708            JB      ACC.7,?C0035
+                                           ; SOURCE LINE # 313
+                                           ; SOURCE LINE # 314
+0016 900000      R     MOV     DPTR,#event
+0019 E0                MOVX    A,@DPTR
+001A FD                MOV     R5,A
+001B 020000      R     LJMP    _simple_code
+                                           ; SOURCE LINE # 315
+001E         ?C0035:
+                                           ; SOURCE LINE # 317
+                                           ; SOURCE LINE # 318
+001E 900000      R     MOV     DPTR,#sskey2
+0021 E0                MOVX    A,@DPTR
+0022 547F              ANL     A,#07FH
+0024 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 319
+0025 E0                MOVX    A,@DPTR
+0026 25E0              ADD     A,ACC
+0028 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 320
+0029 E0                MOVX    A,@DPTR
+002A FF                MOV     R7,A
+002B 900000      E     MOV     DPTR,#sskey3_80_table
+002E 93                MOVC    A,@A+DPTR
+002F FE                MOV     R6,A
+;---- Variable 'code_byte' assigned to Register 'R6' ----
+                                           ; SOURCE LINE # 321
+0030 EF                MOV     A,R7
+0031 A3                INC     DPTR
+0032 93                MOVC    A,@A+DPTR
+;---- Variable 'index' assigned to Register 'R4' ----
+0033 FC                MOV     R4,A
+                                           ; SOURCE LINE # 322
+0034 CF                XCH     A,R7
+0035 EE                MOV     A,R6
+0036 CF                XCH     A,R7
+0037 900000      R     MOV     DPTR,#event
+003A E0                MOVX    A,@DPTR
+003B FD                MOV     R5,A
+003C EC                MOV     A,R4
+003D 75F003            MOV     B,#03H
+0040 A4                MUL     AB
+0041 2400        R     ADD     A,#LOW kcp_vector_table
+0043 F582              MOV     DPL,A
+0045 E4                CLR     A
+0046 3400        R     ADDC    A,#HIGH kcp_vector_table
+0048 F583              MOV     DPH,A
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 27  
+
+004A 120000      R     LCALL   L?0217
+                                           ; SOURCE LINE # 323
+                                           ; SOURCE LINE # 324
+004D         ?C0037:
+004D 22                RET     
+             ; FUNCTION _sskey3_proc (END)
+
+             ; FUNCTION _calc_index_comb (BEGIN)
+                                           ; SOURCE LINE # 347
+0000 900000      R     MOV     DPTR,#comb
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+;---- Variable 'event' assigned to Register 'R3' ----
+;---- Variable 'table_entry' assigned to Register 'R5' ----
+                                           ; SOURCE LINE # 348
+                                           ; SOURCE LINE # 352
+0005 E4                CLR     A
+0006 A3                INC     DPTR
+0007 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 353
+0008 A3                INC     DPTR
+0009 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 355
+000A EF                MOV     A,R7
+000B 30E122            JNB     ACC.1,?C0038
+                                           ; SOURCE LINE # 356
+                                           ; SOURCE LINE # 357
+000E 7800        E     MOV     R0,#LOW temp_scanner_state
+0010 E6                MOV     A,@R0
+0011 13                RRC     A
+0012 13                RRC     A
+0013 5401              ANL     A,#01H
+0015 FF                MOV     R7,A
+0016 E6                MOV     A,@R0
+0017 FE                MOV     R6,A
+0018 C3                CLR     C
+0019 13                RRC     A
+001A 5401              ANL     A,#01H
+001C 4F                ORL     A,R7
+001D 600E              JZ      ?C0039
+                                           ; SOURCE LINE # 358
+                                           ; SOURCE LINE # 359
+001F 120000      R     LCALL   L?0206
+0022 8002              SJMP    ?C0170
+0024         ?C0169:
+0024 C3                CLR     C
+0025 33                RLC     A
+0026         ?C0170:
+0026 D8FC              DJNZ    R0,?C0169
+0028 4F                ORL     A,R7
+0029 900000      R     MOV     DPTR,#offset
+002C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 360
+002D         ?C0039:
+                                           ; SOURCE LINE # 361
+002D 120000      R     LCALL   L?0212
+                                           ; SOURCE LINE # 362
+0030         ?C0038:
+                                           ; SOURCE LINE # 364
+0030 900000      R     MOV     DPTR,#comb
+0033 E0                MOVX    A,@DPTR
+0034 FC                MOV     R4,A
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 28  
+
+0035 30E218            JNB     ACC.2,?C0040
+                                           ; SOURCE LINE # 365
+                                           ; SOURCE LINE # 366
+0038 7800        E     MOV     R0,#LOW temp_scanner_state
+003A E6                MOV     A,@R0
+003B 30E30F            JNB     ACC.3,?C0041
+                                           ; SOURCE LINE # 367
+                                           ; SOURCE LINE # 368
+003E A3                INC     DPTR
+003F 120000      R     LCALL   L?0208
+0042 8002              SJMP    ?C0172
+0044         ?C0171:
+0044 C3                CLR     C
+0045 33                RLC     A
+0046         ?C0172:
+0046 D8FC              DJNZ    R0,?C0171
+0048 4F                ORL     A,R7
+0049 900000      R     MOV     DPTR,#offset
+004C F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 369
+004D         ?C0041:
+                                           ; SOURCE LINE # 370
+004D 120000      R     LCALL   L?0212
+                                           ; SOURCE LINE # 371
+0050         ?C0040:
+                                           ; SOURCE LINE # 373
+0050 EC                MOV     A,R4
+0051 30E317            JNB     ACC.3,?C0042
+                                           ; SOURCE LINE # 374
+                                           ; SOURCE LINE # 375
+0054 7800        E     MOV     R0,#LOW temp_scanner_state
+0056 E6                MOV     A,@R0
+0057 30E40E            JNB     ACC.4,?C0043
+                                           ; SOURCE LINE # 376
+                                           ; SOURCE LINE # 377
+005A 120000      R     LCALL   L?0206
+005D 8002              SJMP    ?C0174
+005F         ?C0173:
+005F C3                CLR     C
+0060 33                RLC     A
+0061         ?C0174:
+0061 D8FC              DJNZ    R0,?C0173
+0063 4F                ORL     A,R7
+0064 900000      R     MOV     DPTR,#offset
+0067 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 378
+0068         ?C0043:
+                                           ; SOURCE LINE # 379
+0068 120000      R     LCALL   L?0213
+                                           ; SOURCE LINE # 380
+006B         ?C0042:
+                                           ; SOURCE LINE # 382
+006B 900000      R     MOV     DPTR,#comb
+006E E0                MOVX    A,@DPTR
+006F 30E418            JNB     ACC.4,?C0044
+                                           ; SOURCE LINE # 383
+                                           ; SOURCE LINE # 384
+0072 7800        E     MOV     R0,#LOW temp_scanner_state
+0074 E6                MOV     A,@R0
+0075 30E00F            JNB     ACC.0,?C0045
+                                           ; SOURCE LINE # 385
+                                           ; SOURCE LINE # 386
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 29  
+
+0078 A3                INC     DPTR
+0079 120000      R     LCALL   L?0208
+007C 8002              SJMP    ?C0176
+007E         ?C0175:
+007E C3                CLR     C
+007F 33                RLC     A
+0080         ?C0176:
+0080 D8FC              DJNZ    R0,?C0175
+0082 4F                ORL     A,R7
+0083 900000      R     MOV     DPTR,#offset
+0086 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 387
+0087         ?C0045:
+                                           ; SOURCE LINE # 388
+0087 120000      R     LCALL   L?0213
+                                           ; SOURCE LINE # 389
+008A         ?C0044:
+                                           ; SOURCE LINE # 391
+008A 900000      R     MOV     DPTR,#comb
+008D E0                MOVX    A,@DPTR
+008E 30E520            JNB     ACC.5,?C0046
+                                           ; SOURCE LINE # 392
+                                           ; SOURCE LINE # 398
+0091 CF                XCH     A,R7
+0092 ED                MOV     A,R5
+0093 CF                XCH     A,R7
+0094 CE                XCH     A,R6
+0095 EB                MOV     A,R3
+0096 CE                XCH     A,R6
+0097 CD                XCH     A,R5
+0098 EE                MOV     A,R6
+0099 CD                XCH     A,R5
+009A 120000      R     LCALL   _CheckFnKeyBundledFalg
+009D BF010E            CJNE    R7,#01H,?C0047
+                                           ; SOURCE LINE # 399
+                                           ; SOURCE LINE # 400
+00A0 120000      R     LCALL   L?0207
+00A3 8002              SJMP    ?C0178
+00A5         ?C0177:
+00A5 C3                CLR     C
+00A6 33                RLC     A
+00A7         ?C0178:
+00A7 D8FC              DJNZ    R0,?C0177
+00A9 4F                ORL     A,R7
+00AA 900000      R     MOV     DPTR,#offset
+00AD F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 401
+00AE         ?C0047:
+                                           ; SOURCE LINE # 402
+00AE 120000      R     LCALL   L?0213
+                                           ; SOURCE LINE # 403
+00B1         ?C0046:
+                                           ; SOURCE LINE # 405
+00B1 900000      R     MOV     DPTR,#comb
+00B4 E0                MOVX    A,@DPTR
+00B5 30E617            JNB     ACC.6,?C0048
+                                           ; SOURCE LINE # 406
+                                           ; SOURCE LINE # 407
+00B8 120000      E     LCALL   Hook_calc_index_comb_BIT6
+00BB BFFF0E            CJNE    R7,#0FFH,?C0049
+                                           ; SOURCE LINE # 408
+                                           ; SOURCE LINE # 409
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 30  
+
+00BE 120000      R     LCALL   L?0207
+00C1 8002              SJMP    ?C0180
+00C3         ?C0179:
+00C3 C3                CLR     C
+00C4 33                RLC     A
+00C5         ?C0180:
+00C5 D8FC              DJNZ    R0,?C0179
+00C7 4F                ORL     A,R7
+00C8 900000      R     MOV     DPTR,#offset
+00CB F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 410
+00CC         ?C0049:
+                                           ; SOURCE LINE # 411
+00CC 120000      R     LCALL   L?0213
+                                           ; SOURCE LINE # 412
+00CF         ?C0048:
+                                           ; SOURCE LINE # 414
+00CF 900000      R     MOV     DPTR,#comb
+00D2 E0                MOVX    A,@DPTR
+00D3 30E717            JNB     ACC.7,?C0050
+                                           ; SOURCE LINE # 415
+                                           ; SOURCE LINE # 416
+00D6 120000      E     LCALL   Hook_calc_index_comb_BIT7
+00D9 BFFF0E            CJNE    R7,#0FFH,?C0051
+                                           ; SOURCE LINE # 417
+                                           ; SOURCE LINE # 418
+00DC 120000      R     LCALL   L?0207
+00DF 8002              SJMP    ?C0182
+00E1         ?C0181:
+00E1 C3                CLR     C
+00E2 33                RLC     A
+00E3         ?C0182:
+00E3 D8FC              DJNZ    R0,?C0181
+00E5 4F                ORL     A,R7
+00E6 900000      R     MOV     DPTR,#offset
+00E9 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 419
+00EA         ?C0051:
+                                           ; SOURCE LINE # 420
+00EA 120000      R     LCALL   L?0213
+                                           ; SOURCE LINE # 421
+00ED         ?C0050:
+                                           ; SOURCE LINE # 423
+00ED 900000      R     MOV     DPTR,#offset
+00F0 E0                MOVX    A,@DPTR
+00F1 FF                MOV     R7,A
+                                           ; SOURCE LINE # 424
+00F2         ?C0052:
+00F2 22                RET     
+             ; FUNCTION _calc_index_comb (END)
+
+             ; FUNCTION _simple_code (BEGIN)
+                                           ; SOURCE LINE # 432
+0000 900000      R     MOV     DPTR,#scan_code
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+;---- Variable 'event' assigned to Register 'R5' ----
+                                           ; SOURCE LINE # 433
+                                           ; SOURCE LINE # 434
+0005 ED                MOV     A,R5
+0006 B40105            CJNE    A,#01H,?C0053
+                                           ; SOURCE LINE # 435
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 31  
+
+                                           ; SOURCE LINE # 436
+0009 7FF0              MOV     R7,#0F0H
+000B 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 437
+000E         ?C0053:
+                                           ; SOURCE LINE # 438
+000E 900000      R     MOV     DPTR,#scan_code
+0011 E0                MOVX    A,@DPTR
+0012 FF                MOV     R7,A
+0013 020000      E     LJMP    _Buffer_Key
+             ; FUNCTION _simple_code (END)
+
+             ; FUNCTION _CheckAdditionalConditionKey (BEGIN)
+                                           ; SOURCE LINE # 454
+;---- Variable 'scan_code_a' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 455
+                                           ; SOURCE LINE # 456
+0000 EF                MOV     A,R7
+0001 6470              XRL     A,#070H
+0003 602C              JZ      ?C0056
+0005 EF                MOV     A,R7
+0006 6471              XRL     A,#071H
+0008 6027              JZ      ?C0056
+000A EF                MOV     A,R7
+000B 646B              XRL     A,#06BH
+000D 6022              JZ      ?C0056
+000F EF                MOV     A,R7
+0010 646C              XRL     A,#06CH
+0012 601D              JZ      ?C0056
+0014 EF                MOV     A,R7
+0015 6469              XRL     A,#069H
+0017 6018              JZ      ?C0056
+0019 EF                MOV     A,R7
+001A 6475              XRL     A,#075H
+001C 6013              JZ      ?C0056
+001E EF                MOV     A,R7
+001F 6472              XRL     A,#072H
+0021 600E              JZ      ?C0056
+0023 EF                MOV     A,R7
+0024 647D              XRL     A,#07DH
+0026 6009              JZ      ?C0056
+0028 EF                MOV     A,R7
+0029 647A              XRL     A,#07AH
+002B 6004              JZ      ?C0056
+002D EF                MOV     A,R7
+002E B47403            CJNE    A,#074H,?C0055
+0031         ?C0056:
+                                           ; SOURCE LINE # 466
+                                           ; SOURCE LINE # 467
+0031 7F01              MOV     R7,#01H
+0033 22                RET     
+                                           ; SOURCE LINE # 468
+0034         ?C0055:
+                                           ; SOURCE LINE # 469
+0034 EF                MOV     A,R7
+0035 B44A03            CJNE    A,#04AH,?C0059
+                                           ; SOURCE LINE # 470
+                                           ; SOURCE LINE # 471
+0038 7F02              MOV     R7,#02H
+003A 22                RET     
+                                           ; SOURCE LINE # 472
+003B         ?C0059:
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 32  
+
+                                           ; SOURCE LINE # 474
+                                           ; SOURCE LINE # 475
+003B 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 476
+                                           ; SOURCE LINE # 477
+003D         ?C0057:
+003D 22                RET     
+             ; FUNCTION _CheckAdditionalConditionKey (END)
+
+             ; FUNCTION _e0_prefix_code (BEGIN)
+                                           ; SOURCE LINE # 485
+0000 900000      R     MOV     DPTR,#event
+0003 ED                MOV     A,R5
+0004 F0                MOVX    @DPTR,A
+0005 900000      R     MOV     DPTR,#scan_code
+0008 EF                MOV     A,R7
+0009 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 486
+                                           ; SOURCE LINE # 489
+000A 120000      R     LCALL   _CheckAdditionalConditionKey
+000D 900000      R     MOV     DPTR,#additional_key
+0010 EF                MOV     A,R7
+0011 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 493
+0012 900000      R     MOV     DPTR,#event
+0015 E0                MOVX    A,@DPTR
+0016 6401              XRL     A,#01H
+0018 606E              JZ      ?C0061
+                                           ; SOURCE LINE # 494
+                                           ; SOURCE LINE # 495
+001A A3                INC     DPTR
+001B E0                MOVX    A,@DPTR
+001C 6401              XRL     A,#01H
+001E 7026              JNZ     ?C0062
+                                           ; SOURCE LINE # 496
+                                           ; SOURCE LINE # 497
+0020 30000A      E     JNB     Scanner_State_NUM_LOCK,?C0063
+                                           ; SOURCE LINE # 498
+                                           ; SOURCE LINE # 499
+0023 200062      E     JB      Scanner_State_LEFT,?C0061
+0026 20005F      E     JB      Scanner_State_RIGHT,?C0061
+                                           ; SOURCE LINE # 500
+                                           ; SOURCE LINE # 502
+0029         ?C0064:
+                                           ; SOURCE LINE # 504
+                                           ; SOURCE LINE # 505
+0029 7FE0              MOV     R7,#0E0H
+                                           ; SOURCE LINE # 506
+                                           ; SOURCE LINE # 507
+                                           ; SOURCE LINE # 508
+002B 8042              SJMP    ?C0187
+002D         ?C0063:
+                                           ; SOURCE LINE # 510
+                                           ; SOURCE LINE # 511
+002D 300005      E     JNB     Scanner_State_LEFT,?C0068
+0030 300002      E     JNB     Scanner_State_RIGHT,?C0068
+                                           ; SOURCE LINE # 512
+                                           ; SOURCE LINE # 513
+                                           ; SOURCE LINE # 514
+                                           ; SOURCE LINE # 515
+                                           ; SOURCE LINE # 517
+                                           ; SOURCE LINE # 518
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 33  
+
+                                           ; SOURCE LINE # 519
+                                           ; SOURCE LINE # 520
+0033 801F              SJMP    ?C0186
+0035         ?C0068:
+                                           ; SOURCE LINE # 521
+0035 300009      E     JNB     Scanner_State_LEFT,?C0070
+                                           ; SOURCE LINE # 522
+                                           ; SOURCE LINE # 523
+0038 7FE0              MOV     R7,#0E0H
+003A 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 524
+003D 7FF0              MOV     R7,#0F0H
+003F         ?C0185:
+                                           ; SOURCE LINE # 525
+                                           ; SOURCE LINE # 526
+003F 802E              SJMP    ?C0187
+0041         ?C0070:
+                                           ; SOURCE LINE # 527
+0041 300044      E     JNB     Scanner_State_RIGHT,?C0061
+                                           ; SOURCE LINE # 528
+                                           ; SOURCE LINE # 529
+                                           ; SOURCE LINE # 530
+                                           ; SOURCE LINE # 531
+                                           ; SOURCE LINE # 532
+0044 8033              SJMP    ?C0188
+                                           ; SOURCE LINE # 534
+                                           ; SOURCE LINE # 536
+                                           ; SOURCE LINE # 537
+                                           ; SOURCE LINE # 538
+0046         ?C0062:
+                                           ; SOURCE LINE # 539
+0046 900000      R     MOV     DPTR,#additional_key
+0049 E0                MOVX    A,@DPTR
+004A 6402              XRL     A,#02H
+004C 703A              JNZ     ?C0061
+                                           ; SOURCE LINE # 540
+                                           ; SOURCE LINE # 541
+004E 300014      E     JNB     Scanner_State_LEFT,?C0076
+0051 300011      E     JNB     Scanner_State_RIGHT,?C0076
+                                           ; SOURCE LINE # 542
+                                           ; SOURCE LINE # 543
+0054         ?C0186:
+0054 7FE0              MOV     R7,#0E0H
+0056 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 544
+0059 7FF0              MOV     R7,#0F0H
+005B 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 545
+005E 7F12              MOV     R7,#012H
+0060 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 547
+                                           ; SOURCE LINE # 548
+                                           ; SOURCE LINE # 549
+                                           ; SOURCE LINE # 550
+0063 8014              SJMP    ?C0189
+0065         ?C0076:
+                                           ; SOURCE LINE # 551
+0065 30000E      E     JNB     Scanner_State_LEFT,?C0078
+                                           ; SOURCE LINE # 552
+                                           ; SOURCE LINE # 553
+0068 7FE0              MOV     R7,#0E0H
+006A 120000      E     LCALL   _Buffer_Key
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 34  
+
+                                           ; SOURCE LINE # 554
+006D 7FF0              MOV     R7,#0F0H
+006F         ?C0187:
+006F 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 555
+0072 7F12              MOV     R7,#012H
+                                           ; SOURCE LINE # 556
+0074 800F              SJMP    ?C0190
+0076         ?C0078:
+                                           ; SOURCE LINE # 557
+0076 30000F      E     JNB     Scanner_State_RIGHT,?C0061
+                                           ; SOURCE LINE # 558
+                                           ; SOURCE LINE # 559
+0079         ?C0188:
+0079         ?C0189:
+0079 7FE0              MOV     R7,#0E0H
+007B 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 560
+007E 7FF0              MOV     R7,#0F0H
+0080 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 561
+0083 7F59              MOV     R7,#059H
+0085         ?C0190:
+0085 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 562
+                                           ; SOURCE LINE # 563
+                                           ; SOURCE LINE # 564
+0088         ?C0061:
+                                           ; SOURCE LINE # 566
+0088 7FE0              MOV     R7,#0E0H
+008A 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 567
+008D 900000      R     MOV     DPTR,#event
+0090 E0                MOVX    A,@DPTR
+0091 B40105            CJNE    A,#01H,?C0081
+                                           ; SOURCE LINE # 568
+                                           ; SOURCE LINE # 569
+0094 7FF0              MOV     R7,#0F0H
+0096 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 570
+0099         ?C0081:
+                                           ; SOURCE LINE # 571
+0099 900000      R     MOV     DPTR,#scan_code
+009C E0                MOVX    A,@DPTR
+009D FF                MOV     R7,A
+009E 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 576
+00A1 900000      R     MOV     DPTR,#event
+00A4 E0                MOVX    A,@DPTR
+00A5 6401              XRL     A,#01H
+00A7 706D              JNZ     ?C0102
+                                           ; SOURCE LINE # 577
+                                           ; SOURCE LINE # 578
+00A9 A3                INC     DPTR
+00AA E0                MOVX    A,@DPTR
+00AB 6401              XRL     A,#01H
+00AD 7032              JNZ     ?C0083
+                                           ; SOURCE LINE # 579
+                                           ; SOURCE LINE # 580
+00AF 30000F      E     JNB     Scanner_State_NUM_LOCK,?C0084
+                                           ; SOURCE LINE # 581
+                                           ; SOURCE LINE # 582
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 35  
+
+00B2 200061      E     JB      Scanner_State_LEFT,?C0102
+00B5 20005E      E     JB      Scanner_State_RIGHT,?C0102
+                                           ; SOURCE LINE # 583
+                                           ; SOURCE LINE # 585
+00B8         ?C0085:
+                                           ; SOURCE LINE # 587
+                                           ; SOURCE LINE # 588
+00B8 7FE0              MOV     R7,#0E0H
+00BA 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 589
+00BD 7FF0              MOV     R7,#0F0H
+                                           ; SOURCE LINE # 590
+                                           ; SOURCE LINE # 591
+                                           ; SOURCE LINE # 592
+00BF 8041              SJMP    ?C0195
+00C1         ?C0084:
+                                           ; SOURCE LINE # 594
+                                           ; SOURCE LINE # 595
+00C1 300011      E     JNB     Scanner_State_LEFT,?C0089
+00C4 30000E      E     JNB     Scanner_State_RIGHT,?C0089
+                                           ; SOURCE LINE # 596
+                                           ; SOURCE LINE # 597
+00C7 7FE0              MOV     R7,#0E0H
+00C9 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 598
+00CC 7F59              MOV     R7,#059H
+00CE 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 600
+00D1 7FE0              MOV     R7,#0E0H
+00D3         ?C0191:
+                                           ; SOURCE LINE # 601
+                                           ; SOURCE LINE # 602
+00D3 802D              SJMP    ?C0195
+00D5         ?C0089:
+                                           ; SOURCE LINE # 603
+00D5 300004      E     JNB     Scanner_State_LEFT,?C0091
+                                           ; SOURCE LINE # 604
+                                           ; SOURCE LINE # 605
+00D8 7FE0              MOV     R7,#0E0H
+00DA         ?C0192:
+                                           ; SOURCE LINE # 606
+                                           ; SOURCE LINE # 607
+00DA 8026              SJMP    ?C0195
+00DC         ?C0091:
+                                           ; SOURCE LINE # 608
+00DC 300037      E     JNB     Scanner_State_RIGHT,?C0102
+                                           ; SOURCE LINE # 609
+                                           ; SOURCE LINE # 610
+                                           ; SOURCE LINE # 611
+                                           ; SOURCE LINE # 612
+00DF 802B              SJMP    ?C0194
+                                           ; SOURCE LINE # 614
+                                           ; SOURCE LINE # 616
+                                           ; SOURCE LINE # 617
+                                           ; SOURCE LINE # 618
+00E1         ?C0083:
+                                           ; SOURCE LINE # 619
+00E1 900000      R     MOV     DPTR,#additional_key
+00E4 E0                MOVX    A,@DPTR
+00E5 6402              XRL     A,#02H
+00E7 702D              JNZ     ?C0102
+                                           ; SOURCE LINE # 620
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 36  
+
+                                           ; SOURCE LINE # 621
+00E9 300011      E     JNB     Scanner_State_LEFT,?C0097
+00EC 30000E      E     JNB     Scanner_State_RIGHT,?C0097
+                                           ; SOURCE LINE # 622
+                                           ; SOURCE LINE # 623
+00EF 7FE0              MOV     R7,#0E0H
+00F1 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 624
+00F4 7F59              MOV     R7,#059H
+00F6 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 626
+00F9 7FE0              MOV     R7,#0E0H
+00FB         ?C0193:
+                                           ; SOURCE LINE # 627
+                                           ; SOURCE LINE # 628
+00FB 8005              SJMP    ?C0195
+00FD         ?C0097:
+                                           ; SOURCE LINE # 629
+00FD 300009      E     JNB     Scanner_State_LEFT,?C0099
+                                           ; SOURCE LINE # 630
+                                           ; SOURCE LINE # 631
+0100 7FE0              MOV     R7,#0E0H
+0102         ?C0195:
+0102 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 632
+0105 7F12              MOV     R7,#012H
+                                           ; SOURCE LINE # 633
+0107 800A              SJMP    ?C0196
+0109         ?C0099:
+                                           ; SOURCE LINE # 634
+0109 30000A      E     JNB     Scanner_State_RIGHT,?C0102
+                                           ; SOURCE LINE # 635
+                                           ; SOURCE LINE # 636
+010C         ?C0194:
+010C 7FE0              MOV     R7,#0E0H
+010E 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 637
+0111 7F59              MOV     R7,#059H
+0113         ?C0196:
+0113 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 638
+                                           ; SOURCE LINE # 639
+                                           ; SOURCE LINE # 640
+                                           ; SOURCE LINE # 641
+0116         ?C0102:
+0116 22                RET     
+             ; FUNCTION _e0_prefix_code (END)
+
+             ; FUNCTION _cursor_shift (BEGIN)
+                                           ; SOURCE LINE # 653
+0000 900000      R     MOV     DPTR,#scan_code
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 ED                MOV     A,R5
+0007 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 654
+                                           ; SOURCE LINE # 660
+0008 6401              XRL     A,#01H
+000A 702F              JNZ     ?C0103
+                                           ; SOURCE LINE # 661
+                                           ; SOURCE LINE # 662
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 37  
+
+000C 7BFF              MOV     R3,#0FFH
+000E 7A00        R     MOV     R2,#HIGH csr_brk1
+0010 7900        R     MOV     R1,#LOW csr_brk1
+0012 120000      E     LCALL   _Buffer_String
+                                           ; SOURCE LINE # 663
+0015 900000      R     MOV     DPTR,#scan_code
+0018 E0                MOVX    A,@DPTR
+0019 FF                MOV     R7,A
+001A 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 665
+001D 7800        E     MOV     R0,#LOW temp_scanner_state
+001F E6                MOV     A,@R0
+0020 30E109            JNB     ACC.1,?C0104
+                                           ; SOURCE LINE # 666
+                                           ; SOURCE LINE # 667
+0023 7BFF              MOV     R3,#0FFH
+0025 7A00        R     MOV     R2,#HIGH csr_sftl_brk2
+0027 7900        R     MOV     R1,#LOW csr_sftl_brk2
+0029 120000      E     LCALL   _Buffer_String
+                                           ; SOURCE LINE # 668
+002C         ?C0104:
+                                           ; SOURCE LINE # 670
+002C 7800        E     MOV     R0,#LOW temp_scanner_state
+002E E6                MOV     A,@R0
+002F 30E23C            JNB     ACC.2,?C0111
+                                           ; SOURCE LINE # 671
+                                           ; SOURCE LINE # 672
+0032 7BFF              MOV     R3,#0FFH
+0034 7A00        R     MOV     R2,#HIGH csr_sftr_brk2
+0036 7900        R     MOV     R1,#LOW csr_sftr_brk2
+0038 020000      E     LJMP    _Buffer_String
+                                           ; SOURCE LINE # 673
+                                           ; SOURCE LINE # 674
+003B         ?C0103:
+                                           ; SOURCE LINE # 675
+003B 900000      R     MOV     DPTR,#event
+003E E0                MOVX    A,@DPTR
+003F 7020              JNZ     ?C0107
+                                           ; SOURCE LINE # 676
+                                           ; SOURCE LINE # 678
+0041 7800        E     MOV     R0,#LOW temp_scanner_state
+0043 E6                MOV     A,@R0
+0044 30E109            JNB     ACC.1,?C0108
+                                           ; SOURCE LINE # 679
+                                           ; SOURCE LINE # 680
+0047 7BFF              MOV     R3,#0FFH
+0049 7A00        R     MOV     R2,#HIGH csr_sftl_mk
+004B 7900        R     MOV     R1,#LOW csr_sftl_mk
+004D 120000      E     LCALL   _Buffer_String
+                                           ; SOURCE LINE # 681
+0050         ?C0108:
+                                           ; SOURCE LINE # 683
+0050 7800        E     MOV     R0,#LOW temp_scanner_state
+0052 E6                MOV     A,@R0
+0053 30E20B            JNB     ACC.2,?C0197
+                                           ; SOURCE LINE # 684
+                                           ; SOURCE LINE # 685
+0056 7BFF              MOV     R3,#0FFH
+0058 7A00        R     MOV     R2,#HIGH csr_sftr_mk
+005A 7900        R     MOV     R1,#LOW csr_sftr_mk
+005C 120000      E     LCALL   _Buffer_String
+                                           ; SOURCE LINE # 686
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 38  
+
+005F         ?C0109:
+                                           ; SOURCE LINE # 688
+                                           ; SOURCE LINE # 689
+                                           ; SOURCE LINE # 690
+005F 8000              SJMP    ?C0197
+0061         ?C0107:
+                                           ; SOURCE LINE # 692
+                                           ; SOURCE LINE # 693
+0061         ?C0197:
+0061 7FE0              MOV     R7,#0E0H
+0063 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 694
+0066 900000      R     MOV     DPTR,#scan_code
+0069 E0                MOVX    A,@DPTR
+006A FF                MOV     R7,A
+006B 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 695
+                                           ; SOURCE LINE # 696
+006E         ?C0111:
+006E 22                RET     
+             ; FUNCTION _cursor_shift (END)
+
+             ; FUNCTION _cursor_numlock (BEGIN)
+                                           ; SOURCE LINE # 704
+0000 900000      R     MOV     DPTR,#scan_code
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 ED                MOV     A,R5
+0007 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 705
+                                           ; SOURCE LINE # 709
+0008 BD011A            CJNE    R5,#01H,?C0112
+                                           ; SOURCE LINE # 710
+                                           ; SOURCE LINE # 711
+000B 7BFF              MOV     R3,#0FFH
+000D 7A00        R     MOV     R2,#HIGH csr_brk1
+000F 7900        R     MOV     R1,#LOW csr_brk1
+0011 120000      E     LCALL   _Buffer_String
+                                           ; SOURCE LINE # 712
+0014 900000      R     MOV     DPTR,#scan_code
+0017 E0                MOVX    A,@DPTR
+0018 FF                MOV     R7,A
+0019 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 713
+001C 7BFF              MOV     R3,#0FFH
+001E 7A00        R     MOV     R2,#HIGH csr_numlock_brk2
+0020 7900        R     MOV     R1,#LOW csr_numlock_brk2
+0022 020000      E     LJMP    _Buffer_String
+                                           ; SOURCE LINE # 714
+0025         ?C0112:
+                                           ; SOURCE LINE # 715
+0025 900000      R     MOV     DPTR,#event
+0028 E0                MOVX    A,@DPTR
+0029 700B              JNZ     ?C0114
+                                           ; SOURCE LINE # 716
+                                           ; SOURCE LINE # 718
+002B 7BFF              MOV     R3,#0FFH
+002D 7A00        R     MOV     R2,#HIGH csr_numlock_mk
+002F 7900        R     MOV     R1,#LOW csr_numlock_mk
+0031 120000      E     LCALL   _Buffer_String
+                                           ; SOURCE LINE # 719
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 39  
+
+                                           ; SOURCE LINE # 720
+0034 8005              SJMP    ?C0198
+0036         ?C0114:
+                                           ; SOURCE LINE # 722
+                                           ; SOURCE LINE # 723
+0036 7FE0              MOV     R7,#0E0H
+0038 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 724
+003B         ?C0198:
+003B 900000      R     MOV     DPTR,#scan_code
+003E E0                MOVX    A,@DPTR
+003F FF                MOV     R7,A
+0040 120000      E     LCALL   _Buffer_Key
+                                           ; SOURCE LINE # 725
+                                           ; SOURCE LINE # 726
+0043         ?C0116:
+0043 22                RET     
+             ; FUNCTION _cursor_numlock (END)
+
+             ; FUNCTION _special_code (BEGIN)
+                                           ; SOURCE LINE # 737
+0000 900000      R     MOV     DPTR,#event
+0003 ED                MOV     A,R5
+0004 F0                MOVX    @DPTR,A
+;---- Variable 'code_byte' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 738
+                                           ; SOURCE LINE # 742
+0005 EF                MOV     A,R7
+0006 6402              XRL     A,#02H
+0008 703F              JNZ     ?C0117
+                                           ; SOURCE LINE # 743
+                                           ; SOURCE LINE # 744
+000A 300007      E     JNB     Scanner_State_ALT,?C0118
+                                           ; SOURCE LINE # 745
+                                           ; SOURCE LINE # 746
+000D E0                MOVX    A,@DPTR
+000E FD                MOV     R5,A
+000F 7F84              MOV     R7,#084H
+0011 020000      R     LJMP    _simple_code
+                                           ; SOURCE LINE # 747
+0014         ?C0118:
+                                           ; SOURCE LINE # 748
+0014 200028      E     JB      Scanner_State_CONTROL,?C0199
+0017 200025      E     JB      Scanner_State_LEFT,?C0199
+001A 300002      E     JNB     Scanner_State_RIGHT,?C0120
+001D         ?C0121:
+                                           ; SOURCE LINE # 749
+                                           ; SOURCE LINE # 750
+                                           ; SOURCE LINE # 751
+001D 8020              SJMP    ?C0199
+001F         ?C0120:
+                                           ; SOURCE LINE # 753
+                                           ; SOURCE LINE # 754
+001F 900000      R     MOV     DPTR,#event
+0022 E0                MOVX    A,@DPTR
+0023 FD                MOV     R5,A
+0024 B4010E            CJNE    A,#01H,?C0123
+                                           ; SOURCE LINE # 755
+                                           ; SOURCE LINE # 756
+0027 7F7C              MOV     R7,#07CH
+0029 120000      R     LCALL   _e0_prefix_code
+                                           ; SOURCE LINE # 757
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 40  
+
+002C 900000      R     MOV     DPTR,#event
+002F E0                MOVX    A,@DPTR
+0030 FD                MOV     R5,A
+0031 7F12              MOV     R7,#012H
+                                           ; SOURCE LINE # 758
+0033 8011              SJMP    ?C0200
+0035         ?C0123:
+                                           ; SOURCE LINE # 760
+                                           ; SOURCE LINE # 761
+0035 900000      R     MOV     DPTR,#event
+0038 E0                MOVX    A,@DPTR
+0039 FD                MOV     R5,A
+003A 7F12              MOV     R7,#012H
+003C 120000      R     LCALL   _e0_prefix_code
+                                           ; SOURCE LINE # 762
+003F         ?C0199:
+003F 900000      R     MOV     DPTR,#event
+0042 E0                MOVX    A,@DPTR
+0043 FD                MOV     R5,A
+0044 7F7C              MOV     R7,#07CH
+0046         ?C0200:
+0046 020000      R     LJMP    _e0_prefix_code
+                                           ; SOURCE LINE # 763
+                                           ; SOURCE LINE # 764
+                                           ; SOURCE LINE # 765
+0049         ?C0117:
+                                           ; SOURCE LINE # 767
+                                           ; SOURCE LINE # 768
+0049 900000      R     MOV     DPTR,#event
+004C E0                MOVX    A,@DPTR
+004D 7012              JNZ     ?C0129
+                                           ; SOURCE LINE # 769
+                                           ; SOURCE LINE # 778
+004F 7BFF              MOV     R3,#0FFH
+0051 300006      E     JNB     Scanner_State_CONTROL,?C0127
+                                           ; SOURCE LINE # 779
+                                           ; SOURCE LINE # 780
+0054 7A00        R     MOV     R2,#HIGH key126_ctrl_mk
+0056 7900        R     MOV     R1,#LOW key126_ctrl_mk
+                                           ; SOURCE LINE # 781
+0058 8004              SJMP    ?C0201
+005A         ?C0127:
+                                           ; SOURCE LINE # 783
+                                           ; SOURCE LINE # 784
+005A 7A00        R     MOV     R2,#HIGH key126_normal_mk
+005C 7900        R     MOV     R1,#LOW key126_normal_mk
+005E         ?C0201:
+005E 120000      E     LCALL   _Buffer_String
+                                           ; SOURCE LINE # 785
+                                           ; SOURCE LINE # 786
+                                           ; SOURCE LINE # 787
+                                           ; SOURCE LINE # 788
+0061         ?C0129:
+0061 22                RET     
+             ; FUNCTION _special_code (END)
+
+             ; FUNCTION _costomer_function (BEGIN)
+                                           ; SOURCE LINE # 800
+;---- Variable 'event' assigned to Register 'R5' ----
+;---- Variable 'code_byte' assigned to Register 'R6' ----
+0000 CE                XCH     A,R6
+0001 EF                MOV     A,R7
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 41  
+
+0002 CE                XCH     A,R6
+                                           ; SOURCE LINE # 801
+                                           ; SOURCE LINE # 802
+0003 CF                XCH     A,R7
+0004 ED                MOV     A,R5
+0005 CF                XCH     A,R7
+0006 75F003            MOV     B,#03H
+0009 EE                MOV     A,R6
+000A 900000      E     MOV     DPTR,#HotKey_Fn_Fx
+000D 120000      E     LCALL   ?C?OFFXADD
+0010 120000      R     LCALL   L?0217
+                                           ; SOURCE LINE # 803
+0013 AF00        E     MOV     R7,scan
+0015 EF                MOV     A,R7
+0016 C4                SWAP    A
+0017 540F              ANL     A,#0FH
+0019 FF                MOV     R7,A
+001A E500        E     MOV     A,scan
+001C 540F              ANL     A,#0FH
+001E 6F                XRL     A,R7
+001F 6003              JZ      ?C0131
+                                           ; SOURCE LINE # 804
+                                           ; SOURCE LINE # 805
+0021 120000      E     LCALL   SetServiceSendFlag
+                                           ; SOURCE LINE # 806
+                                           ; SOURCE LINE # 807
+0024         ?C0131:
+0024 22                RET     
+             ; FUNCTION _costomer_function (END)
+
+             ; FUNCTION _control_effect (BEGIN)
+                                           ; SOURCE LINE # 830
+0000 900000      R     MOV     DPTR,#state
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 ED                MOV     A,R5
+0007 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 831
+                                           ; SOURCE LINE # 832
+0008 6005              JZ      ?C0133
+000A E0                MOVX    A,@DPTR
+000B 6401              XRL     A,#01H
+000D 7039              JNZ     ?C0132
+000F         ?C0133:
+                                           ; SOURCE LINE # 833
+                                           ; SOURCE LINE # 834
+000F 900000      R     MOV     DPTR,#state
+0012 E0                MOVX    A,@DPTR
+0013 30E107            JNB     ACC.1,?C0134
+                                           ; SOURCE LINE # 835
+                                           ; SOURCE LINE # 836
+0016 A3                INC     DPTR
+0017 E0                MOVX    A,@DPTR
+0018 FD                MOV     R5,A
+0019 7F12              MOV     R7,#012H
+                                           ; SOURCE LINE # 837
+001B 8028              SJMP    ?C0204
+001D         ?C0134:
+                                           ; SOURCE LINE # 838
+001D 900000      R     MOV     DPTR,#state
+0020 E0                MOVX    A,@DPTR
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 42  
+
+0021 30E307            JNB     ACC.3,?C0136
+                                           ; SOURCE LINE # 839
+                                           ; SOURCE LINE # 840
+0024 A3                INC     DPTR
+0025 E0                MOVX    A,@DPTR
+0026 FD                MOV     R5,A
+0027 7F11              MOV     R7,#011H
+0029         ?C0202:
+                                           ; SOURCE LINE # 841
+0029 801A              SJMP    ?C0204
+002B         ?C0136:
+                                           ; SOURCE LINE # 842
+002B 900000      R     MOV     DPTR,#state
+002E E0                MOVX    A,@DPTR
+002F 30E407            JNB     ACC.4,?C0138
+                                           ; SOURCE LINE # 843
+                                           ; SOURCE LINE # 844
+0032 A3                INC     DPTR
+0033 E0                MOVX    A,@DPTR
+0034 FD                MOV     R5,A
+0035 7F14              MOV     R7,#014H
+0037         ?C0203:
+                                           ; SOURCE LINE # 845
+0037 800C              SJMP    ?C0204
+0039         ?C0138:
+                                           ; SOURCE LINE # 846
+0039 900000      R     MOV     DPTR,#state
+003C E0                MOVX    A,@DPTR
+003D 30E208            JNB     ACC.2,?C0132
+                                           ; SOURCE LINE # 847
+                                           ; SOURCE LINE # 848
+0040 A3                INC     DPTR
+0041 E0                MOVX    A,@DPTR
+0042 FD                MOV     R5,A
+0043 7F59              MOV     R7,#059H
+0045         ?C0204:
+0045 120000      R     LCALL   _simple_code
+                                           ; SOURCE LINE # 849
+                                           ; SOURCE LINE # 854
+0048         ?C0132:
+                                           ; SOURCE LINE # 856
+0048 900000      R     MOV     DPTR,#event
+004B E0                MOVX    A,@DPTR
+004C 7010              JNZ     ?C0141
+                                           ; SOURCE LINE # 857
+                                           ; SOURCE LINE # 859
+004E 900000      R     MOV     DPTR,#state
+0051 E0                MOVX    A,@DPTR
+0052 FF                MOV     R7,A
+0053 7800        E     MOV     R0,#LOW temp_scanner_state
+0055 46                ORL     A,@R0
+0056 F6                MOV     @R0,A
+                                           ; SOURCE LINE # 860
+0057 EF                MOV     A,R7
+0058 30E61D            JNB     ACC.6,?C0147
+                                           ; SOURCE LINE # 861
+                                           ; SOURCE LINE # 862
+005B 020000      E     LJMP    Hook_Fn_Key_Make
+                                           ; SOURCE LINE # 866
+                                           ; SOURCE LINE # 867
+005E         ?C0141:
+                                           ; SOURCE LINE # 868
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 43  
+
+005E 900000      R     MOV     DPTR,#event
+0061 E0                MOVX    A,@DPTR
+0062 B40113            CJNE    A,#01H,?C0147
+                                           ; SOURCE LINE # 869
+                                           ; SOURCE LINE # 870
+0065 900000      R     MOV     DPTR,#state
+0068 E0                MOVX    A,@DPTR
+0069 30E603            JNB     ACC.6,?C0145
+                                           ; SOURCE LINE # 871
+                                           ; SOURCE LINE # 872
+006C 120000      E     LCALL   Hook_Fn_Key_Break
+                                           ; SOURCE LINE # 873
+006F         ?C0145:
+                                           ; SOURCE LINE # 874
+006F 900000      R     MOV     DPTR,#state
+0072 E0                MOVX    A,@DPTR
+0073 F4                CPL     A
+0074 7800        E     MOV     R0,#LOW temp_scanner_state
+0076 56                ANL     A,@R0
+0077 F6                MOV     @R0,A
+                                           ; SOURCE LINE # 875
+                                           ; SOURCE LINE # 877
+                                           ; SOURCE LINE # 879
+                                           ; SOURCE LINE # 880
+0078         ?C0147:
+0078 22                RET     
+             ; FUNCTION _control_effect (END)
+
+             ; FUNCTION _control_effect_e0 (BEGIN)
+                                           ; SOURCE LINE # 904
+0000 900000      R     MOV     DPTR,#state
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 ED                MOV     A,R5
+0007 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 905
+                                           ; SOURCE LINE # 906
+0008 6005              JZ      ?C0149
+000A E0                MOVX    A,@DPTR
+000B 6401              XRL     A,#01H
+000D 701E              JNZ     ?C0148
+000F         ?C0149:
+                                           ; SOURCE LINE # 907
+                                           ; SOURCE LINE # 909
+000F 900000      R     MOV     DPTR,#state
+0012 E0                MOVX    A,@DPTR
+0013 30E308            JNB     ACC.3,?C0150
+                                           ; SOURCE LINE # 910
+                                           ; SOURCE LINE # 911
+0016 A3                INC     DPTR
+0017 E0                MOVX    A,@DPTR
+0018 FD                MOV     R5,A
+0019 7F11              MOV     R7,#011H
+001B 120000      R     LCALL   _e0_prefix_code
+                                           ; SOURCE LINE # 912
+001E         ?C0150:
+                                           ; SOURCE LINE # 913
+001E 900000      R     MOV     DPTR,#state
+0021 E0                MOVX    A,@DPTR
+0022 30E408            JNB     ACC.4,?C0148
+                                           ; SOURCE LINE # 914
+C51 COMPILER V9.03   CORE_XLT                                                              02/02/2015 14:30:15 PAGE 44  
+
+                                           ; SOURCE LINE # 915
+0025 A3                INC     DPTR
+0026 E0                MOVX    A,@DPTR
+0027 FD                MOV     R5,A
+0028 7F14              MOV     R7,#014H
+002A 120000      R     LCALL   _e0_prefix_code
+                                           ; SOURCE LINE # 916
+                                           ; SOURCE LINE # 917
+002D         ?C0148:
+                                           ; SOURCE LINE # 919
+002D 900000      R     MOV     DPTR,#event
+0030 E0                MOVX    A,@DPTR
+0031 FF                MOV     R7,A
+0032 7009              JNZ     ?C0152
+                                           ; SOURCE LINE # 920
+                                           ; SOURCE LINE # 922
+0034 900000      R     MOV     DPTR,#state
+0037 E0                MOVX    A,@DPTR
+0038 7800        E     MOV     R0,#LOW temp_scanner_state
+003A 46                ORL     A,@R0
+003B F6                MOV     @R0,A
+                                           ; SOURCE LINE # 923
+003C 22                RET     
+003D         ?C0152:
+                                           ; SOURCE LINE # 924
+003D EF                MOV     A,R7
+003E B40109            CJNE    A,#01H,?C0156
+                                           ; SOURCE LINE # 925
+                                           ; SOURCE LINE # 927
+0041 900000      R     MOV     DPTR,#state
+0044 E0                MOVX    A,@DPTR
+0045 F4                CPL     A
+0046 7800        E     MOV     R0,#LOW temp_scanner_state
+0048 56                ANL     A,@R0
+0049 F6                MOV     @R0,A
+                                           ; SOURCE LINE # 928
+                                           ; SOURCE LINE # 930
+                                           ; SOURCE LINE # 932
+                                           ; SOURCE LINE # 933
+004A         ?C0156:
+004A 22                RET     
+             ; FUNCTION _control_effect_e0 (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1822    ----
+   CONSTANT SIZE    =     64    ----
+   XDATA SIZE       =   ----      31
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

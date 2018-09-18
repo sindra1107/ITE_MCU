@@ -1,0 +1,64 @@
+C51 COMPILER V9.03   OEM_SMBUS                                                             02/02/2015 14:30:24 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE OEM_SMBUS
+OBJECT MODULE PLACED IN Code\OEM\OEM_SMBUS.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\OEM\OEM_SMBUS.C LA WL(1) CD OT(9,SIZE) NOAREGS OR INCDI
+                    -R(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*----------------------------------------------------------------------------
+   2           * Filename: OEM_SMBus.C  For Chipset: ITE.IT85XX
+   3           *
+   4           * Function: The interrupt service method of SMBus function
+   5           *
+   6           * Author  : Dino
+   7           * 
+   8           * Copyright (c) 2009 - , ITE Tech. Inc. All Rights Reserved. 
+   9           *
+  10           * You may not present,reproduce,distribute,publish,display,modify,adapt,
+  11           * perform,transmit,broadcast,recite,release,license or otherwise exploit
+  12           * any part of this publication in any form,by any means,without the prior
+  13           * written permission of ITE Tech. Inc. 
+  14           *---------------------------------------------------------------------------*/
+  15          
+  16          #include <CORE_INCLUDE.H>
+  17          #include <OEM_INCLUDE.H>
+  18           
+  19          //----------------------------------------------------------------------------
+  20          // [rblk_bcis] the byte count of read smbus read block protocol
+  21          //----------------------------------------------------------------------------
+  22          void Hook_GetSMBusReadBlockByteCount(BYTE rblk_bc)
+  23          {
+  24   1      
+  25   1      }
+C51 COMPILER V9.03   OEM_SMBUS                                                             02/02/2015 14:30:24 PAGE 2   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION _Hook_GetSMBusReadBlockByteCount (BEGIN)
+                                           ; SOURCE LINE # 22
+0000 900000      R     MOV     DPTR,#rblk_bc
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 23
+                                           ; SOURCE LINE # 25
+0005 22                RET     
+             ; FUNCTION _Hook_GetSMBusReadBlockByteCount (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =      6    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       1
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

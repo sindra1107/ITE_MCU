@@ -1,0 +1,964 @@
+C51 COMPILER V9.03   CORE_CHIPREGS                                                         02/02/2015 14:30:16 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE CORE_CHIPREGS
+OBJECT MODULE PLACED IN Code\CHIP\CORE_CHIPREGS.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\CHIP\CORE_CHIPREGS.C LA WL(1) CD OT(9,SIZE) NOAREGS OR 
+                    -INCDIR(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*-----------------------------------------------------------------------------
+   2           * TITLE: CORE_CHIPREGS.C
+   3           *
+   4           * Copyright (c) ITE INC. All Rights Reserved.
+   5           *
+   6           *---------------------------------------------------------------------------*/
+   7           
+   8          #include <CORE_INCLUDE.H>
+   9          #include <OEM_INCLUDE.H>
+  10          
+  11          //-----------------------------------------------------------------------------
+  12          // (10XXh) Shared Memory Flash Interface Bridge (SMFI) 
+  13          //-----------------------------------------------------------------------------
+  14          ECReg   FBCFG                   _at_ 0x1000;    // FBIU Configuration
+  15          ECReg   FPCFG                   _at_ 0x1001;    // Flash Programming Configuration Register
+  16          ECReg   FECBSR                  _at_ 0x1005;    // Flash EC Code Banking Select Register
+  17          ECReg   FMSSR                   _at_ 0x1007;    // Flash Memory Size Select Registe
+  18          ECReg   SMECCS                  _at_ 0x1020;    // Shared Memory EC Control and Status
+  19          ECReg   SMHSR                   _at_ 0x1022;    // Shared Memory Host Semaphore
+  20          ECReg   FLHCTRL1R               _at_ 0x1031;    // Flash Control Register 1     
+  21          ECReg   FLHCTRL2R               _at_ 0x1032;    // Flash Control Register 2
+  22          ECReg   DCache                  _at_ 0x1033;    // 256 bytes cache
+  23          ECReg   UCCTRLR                 _at_ 0x1034;    // uC Control Register
+  24          ECReg   HCTRL2R                 _at_ 0x1036;    // Host Control 2 Register
+  25          ECReg   HSPICTRL2R      _at_ 0x1039;    // HSPI Control 2 Register
+  26          ECReg   HSPICTRL3R          _at_ 0x103A;        // HSPI
+  27          ECReg   ECINDAR0                _at_ 0x103B;    // EC-Indirect Memory Address Register 0
+  28          ECReg   ECINDAR1                _at_ 0x103C;    // EC-Indirect Memory Address Register 1
+  29          ECReg   ECINDAR2                _at_ 0x103D;    // EC-Indirect Memory Address Register 2
+  30          ECReg   ECINDAR3                _at_ 0x103E;    // EC-Indirect Memory Address Register 3
+  31          ECReg   ECINDDR                 _at_ 0x103F;    // EC-Indirect Memory Data Register
+  32          ECReg   SCRA0L                  _at_ 0x1040;    // Scratch SRAM 0 Address Low Byte Register
+  33          ECReg   SCRA0M                  _at_ 0x1041;    // Scratch SRAM 0 Address Middle Byte Register
+  34          ECReg   SCRA0H                  _at_ 0x1042;    // Scratch SRAM 0 Address High Byte Register
+  35          ECReg   SCRA1L                  _at_ 0x1043;    // Scratch SRAM 1 Address Low Byte Register
+  36          ECReg   SCRA1M                  _at_ 0x1044;    // Scratch SRAM 1 Address Middle Byte Register
+  37          ECReg   SCRA1H                  _at_ 0x1045;    // Scratch SRAM 1 Address High Byte Register
+  38          ECReg   SCRA2L                  _at_ 0x1046;    // Scratch SRAM 2 Address Low Byte Register
+  39          ECReg   SCRA2M                  _at_ 0x1047;    // Scratch SRAM 2 Address Middle Byte Register
+  40          ECReg   SCRA2H                  _at_ 0x1048;    // Scratch SRAM 2 Address High Byte Register
+  41          ECReg   SCRA3L                  _at_ 0x1049;    // Scratch SRAM 3 Address Low Byte Register
+  42          ECReg   SCRA3M                  _at_ 0x104A;    // Scratch SRAM 3 Address Middle Byte Register
+  43          ECReg   SCRA3H                  _at_ 0x104B;    // Scratch SRAM 3 Address High Byte Register
+  44          ECReg   SCRA4L                  _at_ 0x104C;    // Scratch SRAM 4 Address Low Byte Register
+  45          ECReg   SCRA4M                  _at_ 0x104D;    // Scratch SRAM 4 Address Middle Byte Register
+  46          ECReg   SCRA4H                  _at_ 0x104E;    // Scratch SRAM 4 Address High Byte Register
+  47          
+  48          ECReg   P0BA0R                  _at_ 0x104F;    // Protect 0 Base Addr Register 0
+  49          ECReg   P0BA1R                  _at_ 0x1050;    // Protect 0 Base Addr Register 1
+  50          ECReg   P0ZR                    _at_ 0x1051;    // Protect 0 Size Register
+  51          ECReg   P1BA0R                  _at_ 0x1052;    // Protect 1 Base Addr Register 0
+  52          ECReg   P1BA1R                  _at_ 0x1053;    // Protect 1 Base Addr Register 1
+  53          ECReg   P1ZR                    _at_ 0x1054;    // Protect 1 Size Register
+  54          ECReg   DSINST                  _at_ 0x1055;    // Deferred SPI Instruction
+C51 COMPILER V9.03   CORE_CHIPREGS                                                         02/02/2015 14:30:16 PAGE 2   
+
+  55          ECReg   DSADR1                  _at_ 0x1056;    // Deferred SPI Address
+  56          ECReg   DSADR2                  _at_ 0x1057;    // Deferred SPI Address
+  57          ECReg   HINSTC1                 _at_ 0x1058;    // Host Instruction Control 1
+  58          ECReg   HINSTC2                 _at_ 0x1059;    // Host Instruction Control 2
+  59          ECReg   HRAMWC                  _at_ 0x105A;    // Host RAM Window Control
+  60          ECReg   HRAMW0BA                _at_ 0x105B;    // Host RAM Winodw 0 Base Address
+  61          ECReg   HRAMW1BA                _at_ 0x105C;    // Host RAM Window 1 Base Address
+  62          ECReg   HRAMW0AAS               _at_ 0x105D;    // Host RAM Window 0 Access Allow Size
+  63          ECReg   HRAMW1AAS               _at_ 0x105E;    // Host RAM Window 1 Access Allow Size
+  64          ECReg   SCAR5H                  _at_ 0x105F;
+  65          ECReg   FLHCTRL3R               _at_ 0x1063;
+  66          ECReg   FLHCTRL4R       _at_ 0x1064;    // Flash Control 4 Register
+  67          ECReg   HSPICTRL        _at_ 0x1068;    // HSPI Control Register 4
+  68          ECReg   P2BA0R          _at_ 0x1070;    // Protect 2 Base Addr Register 0
+  69          ECReg   P2BA1R          _at_ 0x1071;    // Protect 2 Base Addr Register 1
+  70          ECReg   P2ZR            _at_ 0x1072;    // Protect 2 Size Register
+  71          ECReg   P3BA0R          _at_ 0x1073;    // Protect 3 Base Addr Register 0
+  72          ECReg   P3BA1R          _at_ 0x1074;    // Protect 3 Base Addr Register 1
+  73          ECReg   P3ZR            _at_ 0x1075;    // Protect 3 Size Register
+  74          ECReg   HRAMW2BA        _at_ 0x1076;    // Host RAM Windows 2 Base Address
+  75          ECReg   HRAMW3BA        _at_ 0x1077;    // Host RAM Windows 3 Base Address
+  76          ECReg   HRAMW2AAS       _at_ 0x1078;    // Host RAM Windows 2 Access Allow Size
+  77          ECReg   HRAMW3AAS       _at_ 0x1079;    // Host RAM Windows 3 Access Allow Size
+  78          ECReg   H2RAMECSIE      _at_ 0x107A;    // H2RAM EC Semaphore Interrupt Enable
+  79          ECReg   H2RAMECSA       _at_ 0x107B;    // H2RAM EC Semaphore Address
+  80          ECReg   H2RAMHSS        _at_ 0x107C;    // H2RAM Host Semphore Status
+  81          ECReg   HPADR           _at_ 0x107E;    // Host Protect Authentication Data Register
+  82          //-----------------------------------------------------------------------------
+  83          // (11xxh) Interrupt controller (INTC) 
+  84          //-----------------------------------------------------------------------------
+  85          ECReg   ISR0                    _at_ 0x1100;    // Interrupt Status Register 0
+  86          ECReg   ISR1                    _at_ 0x1101;    // Interrupt Status Register 1
+  87          ECReg   ISR2                    _at_ 0x1102;    // Interrupt Status Register 2
+  88          ECReg   ISR3                    _at_ 0x1103;    // Interrupt Status Register 3
+  89          ECReg   ISR4                    _at_ 0x1114;    // Interrupt Status Register 4
+  90          ECReg   ISR5                    _at_ 0x1118;    // Interrupt Status Register 5
+  91          ECReg   ISR6                    _at_ 0x111C;    // Interrupt Status Register 6
+  92          ECReg   ISR7                    _at_ 0x1120;    // Interrupt Status Register 7
+  93          ECReg   ISR8            _at_ 0x1124;    // Interrupt Status Register 8
+  94          ECReg   ISR9            _at_ 0x1128;    // Interrupt Status Register 9
+  95          ECReg   ISR10           _at_ 0x112C;    // Interrupt Status Register 10
+  96          ECReg   ISR11           _at_ 0x1130;    // Interrupt Status Register 11
+  97          ECReg   ISR12           _at_ 0x1134;    // Interrupt Status Register 12
+  98          ECReg   ISR13           _at_ 0x1138;    // Interrupt Status Register 13
+  99          ECReg   ISR14           _at_ 0x113C;    // Interrupt Status Register 14
+ 100          ECReg   ISR15           _at_ 0x1140;    // Interrupt Status Register 15
+ 101          ECReg   ISR16           _at_ 0x1144;    // Interrupt Status Register 16
+ 102          ECReg   ISR17           _at_ 0x1148;    // Interrupt Status Register 17
+ 103          ECReg   ISR18           _at_ 0x114C;    // Interrupt Status Register 18
+ 104          ECReg   ISR19           _at_ 0x1150;    // Interrupt Status Register 19
+ 105          
+ 106          ECReg   IER0                    _at_ 0x1104;    // Interrupt Enable Register 0
+ 107          ECReg   IER1                    _at_ 0x1105;    // Interrupt Enable Register 1
+ 108          ECReg   IER2                    _at_ 0x1106;    // Interrupt Enable Register 2
+ 109          ECReg   IER3                    _at_ 0x1107;    // Interrupt Enable Register 3
+ 110          ECReg   IER4                    _at_ 0x1115;    // Interrupt Enable Register 4
+ 111          ECReg   IER5                    _at_ 0x1119;    // Interrupt Enable Register 5
+ 112          ECReg   IER6                    _at_ 0x111D;    // Interrupt Enable Register 6
+ 113          ECReg   IER7                    _at_ 0x1121;    // Interrupt Enable Register 7
+ 114          ECReg   IER8                    _at_ 0x1125;    // Interrupt Enable Register 8
+ 115          ECReg   IER9                    _at_ 0x1129;    // Interrupt Enable Register 9
+ 116          ECReg   IER10           _at_ 0x112D;    // Interrupt Enable Register 10
+C51 COMPILER V9.03   CORE_CHIPREGS                                                         02/02/2015 14:30:16 PAGE 3   
+
+ 117          ECReg   IER11           _at_ 0x1131;    // Interrupt Enable Register 11
+ 118          ECReg   IER12           _at_ 0x1135;    // Interrupt Enable Register 12
+ 119          ECReg   IER13           _at_ 0x1139;    // Interrupt Enable Register 13
+ 120          ECReg   IER14           _at_ 0x113D;    // Interrupt Enable Register 14
+ 121          ECReg   IER15           _at_ 0x1141;    // Interrupt Enable Register 15
+ 122          ECReg   IER16           _at_ 0x1145;    // Interrupt Enable Register 16
+ 123          ECReg   IER17           _at_ 0x1149;    // Interrupt Enable Register 17
+ 124          ECReg   IER18           _at_ 0x114D;    // Interrupt Enable Register 18
+ 125          ECReg   IER19           _at_ 0x1151;    // Interrupt Enable Register 19
+ 126          
+ 127          ECReg   IELMR0                  _at_ 0x1108;    // Interrupt Edge/Level-Triggered Mode Register 0
+ 128          ECReg   IELMR1                  _at_ 0x1109;    // Interrupt Edge/Level-Triggered Mode Register 1
+ 129          ECReg   IELMR2                  _at_ 0x110A;    // Interrupt Edge/Level-Triggered Mode Register 2
+ 130          ECReg   IELMR3                  _at_ 0x110B;    // Interrupt Edge/Level-Triggered Mode Register 3
+ 131          ECReg   IELMR4                  _at_ 0x1116;    // Interrupt Edge/Level-Triggered Mode Register 4
+ 132          ECReg   IELMR5                  _at_ 0x111A;    // Interrupt Edge/Level-Triggered Mode Register 5
+ 133          ECReg   IELMR6                  _at_ 0x111E;    // Interrupt Edge/Level-Triggered Mode Register 6
+ 134          ECReg   IELMR7                  _at_ 0x1122;    // Interrupt Edge/Level-Triggered Mode Register 7
+ 135          ECReg   IELMR8                  _at_ 0x1126;    // Interrupt Edge/Level-Triggered Mode Register 8
+ 136          ECReg   IELMR9                  _at_ 0x112A;    // Interrupt Edge/Level-Triggered Mode Register 9
+ 137          ECReg   IELMR10         _at_ 0x112E;    // Interrupt Edge/Level-Triggered Mode Register 10
+ 138          ECReg   IELMR11         _at_ 0x1132;    // Interrupt Edge/Level-Triggered Mode Register 11
+ 139          ECReg   IELMR12         _at_ 0x1136;    // Interrupt Edge/Level-Triggered Mode Register 12
+ 140          ECReg   IELMR13         _at_ 0x113A;    // Interrupt Edge/Level-Triggered Mode Register 13
+ 141          ECReg   IELMR14         _at_ 0x113E;    // Interrupt Edge/Level-Triggered Mode Register 14
+ 142          ECReg   IELMR15         _at_ 0x1142;    // Interrupt Edge/Level-Triggered Mode Register 15
+ 143          ECReg   IELMR16         _at_ 0x1146;    // Interrupt Edge/Level-Triggered Mode Register 16
+ 144          ECReg   IELMR17         _at_ 0x114A;    // Interrupt Edge/Level-Triggered Mode Register 17
+ 145          ECReg   IELMR18         _at_ 0x114E;    // Interrupt Edge/Level-Triggered Mode Register 18
+ 146          ECReg   IELMR19         _at_ 0x1152;    // Interrupt Edge/Level-Triggered Mode Register 19
+ 147          
+ 148          ECReg   IPOLR0                  _at_ 0x110C;    // Interrupt Polarity Register 0
+ 149          ECReg   IPOLR1                  _at_ 0x110D;    // Interrupt Polarity Register 1
+ 150          ECReg   IPOLR2                  _at_ 0x110E;    // Interrupt Polarity Register 2
+ 151          ECReg   IPOLR3                  _at_ 0x110F;    // Interrupt Polarity Register 3
+ 152          ECReg   IPOLR4                  _at_ 0x1117;    // Interrupt Polarity Register 4
+ 153          ECReg   IPOLR5                  _at_ 0x111B;    // Interrupt Polarity Register 5
+ 154          ECReg   IPOLR6                  _at_ 0x111F;    // Interrupt Polarity Register 6
+ 155          ECReg   IPOLR7                  _at_ 0x1123;    // Interrupt Polarity Register 7
+ 156          ECReg   IPOLR8                  _at_ 0x1127;    // Interrupt Polarity Register 8
+ 157          ECReg   IPOLR9                  _at_ 0x112B;    // Interrupt Polarity Register 9
+ 158          ECReg   IPOLR10         _at_ 0x112F;    // Interrupt Polarity Register 10
+ 159          ECReg   IPOLR11         _at_ 0x1133;    // Interrupt Polarity Register 11
+ 160          ECReg   IPOLR12         _at_ 0x1137;    // Interrupt Polarity Register 12
+ 161          ECReg   IPOLR13         _at_ 0x113B;    // Interrupt Polarity Register 13
+ 162          ECReg   IPOLR14         _at_ 0x113F;    // Interrupt Polarity Register 14
+ 163          ECReg   IPOLR15         _at_ 0x1143;    // Interrupt Polarity Register 15
+ 164          ECReg   IPOLR16         _at_ 0x1147;    // Interrupt Polarity Register 16
+ 165          ECReg   IPOLR17         _at_ 0x114B;    // Interrupt Polarity Register 17
+ 166          ECReg   IPOLR18         _at_ 0x114F;    // Interrupt Polarity Register 18
+ 167          ECReg   IPOLR19         _at_ 0x1153;    // Interrupt Polarity Register 19
+ 168          
+ 169          ECReg   IVECT                   _at_ 0x1110;    // Interrupt Vector Register
+ 170          ECReg   INT0ST                  _at_ 0x1111;    // INT0# status
+ 171          ECReg   PFAILR                  _at_ 0x1112;    // Power Fail Register
+ 172          
+ 173          //-----------------------------------------------------------------------------
+ 174          // (12xxh) EC Access to ost Controlled Modules (EC2I Bridge) 
+ 175          //-----------------------------------------------------------------------------
+ 176          ECReg   IHIOA                   _at_ 0x1200;    // Indirect Host I/O Address
+ 177          ECReg   IHD                     _at_ 0x1201;    // Indirect Host Data
+ 178          ECReg   LSIOHA                  _at_ 0x1202;    // Lock Super I/O Host Access
+C51 COMPILER V9.03   CORE_CHIPREGS                                                         02/02/2015 14:30:16 PAGE 4   
+
+ 179          ECReg   SIOLV                   _at_ 0x1203;    // Super I/O Access Lock Violation
+ 180          ECReg   IBMAE                   _at_ 0x1204;    // EC to I-Bus Modules Access Enable
+ 181          ECReg   IBCTL                   _at_ 0x1205;    // I-Bus Control
+ 182          
+ 183          //-----------------------------------------------------------------------------
+ 184          // (13xxh) Keyboard Controller (KBC) 
+ 185          //-----------------------------------------------------------------------------
+ 186          ECReg   KBHICR                  _at_ 0x1300;    // KBC Host Interface Control Register
+ 187          ECReg   KBIRQR                  _at_ 0x1302;    // KBC Interrupt Control Register
+ 188          ECReg   KBHISR                  _at_ 0x1304;    // KBC Host Interface Keyboard/Mouse Status Register
+ 189          ECReg   KBHIKDOR                _at_ 0x1306;    // KBC Host Interface Keyboard Data Output Register
+ 190          ECReg   KBHIMDOR                _at_ 0x1308;    // KBC Host Interface Mouse Data Output Register
+ 191          ECReg   KBHIDIR                 _at_ 0x130A;    // KBC Host Interface Keyboard/Mouse Data Input Register
+ 192          
+ 193          //-----------------------------------------------------------------------------
+ 194          // (14xxh) System Wake-Up Control (SWUC) 
+ 195          //-----------------------------------------------------------------------------
+ 196          ECReg   SWCTL1                  _at_ 0x1400;    // SWUC Control Status 1 Register
+ 197          ECReg   SWCTL2                  _at_ 0x1402;    // SWUC Control Status 2 Register
+ 198          ECReg   SWCTL3                  _at_ 0x1404;    // SWUC Control Status 3 Register
+ 199          ECReg   SWCBALR                 _at_ 0x1408;    // SWUC Host Configuration Base Address Low Byte Register
+ 200          ECReg   SWCBAHR                 _at_ 0x140A;    // SWUC Host Configuration Base Address High Byte Register
+ 201          ECReg   SWCIER                  _at_ 0x140C;    // SWUC Interrupt Enable Register
+ 202          ECReg   SWCHSTR                 _at_ 0x140E;    // SWUC Host Event Status Register
+ 203          ECReg   SWCHIER                 _at_ 0x1410;    // SWUC Host Event Interrupt Enable Register
+ 204          
+ 205          //-----------------------------------------------------------------------------
+ 206          // (15xxh) Power Management Channel (PMC) 
+ 207          //-----------------------------------------------------------------------------
+ 208                                                                                          // PM1
+ 209          ECReg   PM1STS                  _at_ 0x1500;    // Host Interface PM Channel 1 Status
+ 210          ECReg   PM1DO                   _at_ 0x1501;    // Host Interface PM Channel 1 Data Out Port
+ 211          ECReg   PM1DOSCI                _at_ 0x1502;    // Host Interface PM Channel 1 Data Out Port with SCI
+ 212          ECReg   PM1DOSMI                _at_ 0x1503;    // Host Interface PM Channel 1 Data Out Port with SMI
+ 213          ECReg   PM1DI                   _at_ 0x1504;    // Host Interface PM Channel 1 Data In Port
+ 214          ECReg   PM1DISCI                _at_ 0x1505;    // Host Interface PM Channel 1 Data In Port with SCI
+ 215          ECReg   PM1CTL                  _at_ 0x1506;    // Host Interface PM Channel 1 Control
+ 216          ECReg   PM1IC                   _at_ 0x1507;    // Host Interface PM Channel 1 Interrupt Control
+ 217          ECReg   PM1IE                   _at_ 0x1508;    // Host Interface PM Channel 1 Interrupt Enable
+ 218                                                                                          // PM2
+ 219          ECReg   PM2STS                  _at_ 0x1510;    // Host Interface PM Channel 2 Status
+ 220          ECReg   PM2DO                   _at_ 0x1511;    // Host Interface PM Channel 2 Data Out Port
+ 221          ECReg   PM2DOSCI                _at_ 0x1512;    // Host Interface PM Channel 2 Data Out Port with SCI
+ 222          ECReg   PM2DOSMI                _at_ 0x1513;    // Host Interface PM Channel 2 Data Out Port with SMI
+ 223          ECReg   PM2DI                   _at_ 0x1514;    // Host Interface PM Channel 2 Data In Port
+ 224          ECReg   PM2DISCI                _at_ 0x1515;    // Host Interface PM Channel 2 Data In Port with SCI
+ 225          ECReg   PM2CTL                  _at_ 0x1516;    // Host Interface PM Channel 2 Control
+ 226          ECReg   PM2IC                   _at_ 0x1517;    // Host Interface PM Channel 2 Interrupt Control
+ 227          ECReg   PM2IE                   _at_ 0x1518;    // Host Interface PM Channel 2 Interrupt Enable
+ 228                                                                                          // Mailbox
+ 229          ECReg   MBXCTRL                 _at_ 0x1519;    // Mailbox Control
+ 230          ECReg   MBXEC[16]       _at_ 0x15F0;    // 16-byte PMC2EX Mailbox 0 ~ Mailbox 15
+ 231          
+ 232          ECReg   PM3STS                  _at_ 0x1520;    // Host Interface PM Channel 3 Status
+ 233          ECReg   PM3DO                   _at_ 0x1521;    // Host Interface PM Channel 3 Data Out Port
+ 234          ECReg   PM3DI                   _at_ 0x1522;    // Host Interface PM Channel 3 Data In Port
+ 235          ECReg   PM3CTL                  _at_ 0x1523;    // Host Interface PM Channel 3 Control
+ 236          ECReg   PM3IC                   _at_ 0x1524;    // Host Interface PM Channel 3 Interrupt Control
+ 237          ECReg   PM3IE                   _at_ 0x1525;    // Host Interface PM Channel 3 Interrupt Enable
+ 238          
+ 239          ECReg   PM4STS                  _at_ 0x1530;    // Host Interface PM Channel 4 Status
+ 240          ECReg   PM4DO                   _at_ 0x1531;    // Host Interface PM Channel 4 Data Out Port
+C51 COMPILER V9.03   CORE_CHIPREGS                                                         02/02/2015 14:30:16 PAGE 5   
+
+ 241          ECReg   PM4DI                   _at_ 0x1532;    // Host Interface PM Channel 4 Data In Port
+ 242          ECReg   PM4CTL                  _at_ 0x1533;    // Host Interface PM Channel 4 Control
+ 243          ECReg   PM4IC                   _at_ 0x1534;    // Host Interface PM Channel 4 Interrupt Control
+ 244          ECReg   PM4IE                   _at_ 0x1535;    // Host Interface PM Channel 4 Interrupt Enable
+ 245          
+ 246          ECReg   PM5STS          _at_ 0x1540;    // Host Interface PM Channel 5 Status
+ 247          ECReg   PM5DO           _at_ 0x1541;    // Host Interface PM Channel 5 Data Out Port
+ 248          ECReg   PM5DI           _at_ 0x1542;    // Host Interface PM Channel 5 Data In Port
+ 249          ECReg   PM5CTL          _at_ 0x1543;    // Host Interface PM Channel 5 Control
+ 250          ECReg   PM5IC           _at_ 0x1544;    // Host Interface PM Channel 5 Interrupt Control
+ 251          ECReg   PM5IE           _at_ 0x1545;    // Host Interface PM Channel 5 Interrupt Enable
+ 252          
+ 253          //-----------------------------------------------------------------------------
+ 254          // (16XXh) General Purpose I/O Control Register                           
+ 255          //-----------------------------------------------------------------------------
+ 256                                                                                          // GPIO data register
+ 257          ECReg   GCR                     _at_ 0x1600;    // General Control Register
+ 258          ECReg   GCR1                    _at_ 0x16F0;    // General Control 1 Register
+ 259          ECReg   GCR2                    _at_ 0x16F1;    // General Control 2 Register
+ 260          ECReg   GCR3                    _at_ 0x16F2;    // General Control 3 Register
+ 261          ECReg   GCR4                    _at_ 0x16F3;    // General Control 4 Register
+ 262          ECReg   GCR5                    _at_ 0x16F4;    // General Control 5 Register
+ 263          ECReg   GCR6                    _at_ 0x16F5;    // General Control 6 Register
+ 264          ECReg   GCR7                    _at_ 0x16F6;    // General Control 7 Register
+ 265          ECReg   GCR8            _at_ 0x16F7;    // General Control 8 Register
+ 266          ECReg   GCR9            _at_ 0x16F8;    // General Control 9 Register
+ 267          ECReg   GCR10           _at_ 0x16F9;    // General Control 10 Register
+ 268          ECReg   GCR11           _at_ 0x16FA;    // General Control 11 Register
+ 269          ECReg   GCR12           _at_ 0x16FB;    // General Control 12 Register
+ 270          ECReg   GCR13           _at_ 0x16FC;    // General Control 13 Register
+ 271          ECReg   GCR14           _at_ 0x16FD;    // General Control 14 Register
+ 272          ECReg   GCR15           _at_ 0x16FE;    // General Control 15 Register
+ 273          ECReg   GCR16           _at_ 0x16E0;    // General Control 16 Register
+ 274          ECReg   GCR17           _at_ 0x16E1;    // General Control 17 Register
+ 275          ECReg   GCR18           _at_ 0x16E2;    // General Control 18 Register
+ 276          
+ 277          ECReg   GCR19           _at_ 0x16E4;    // General Control 19 Register
+ 278          ECReg   GCR20           _at_ 0x16E5;    // General Control 20 Register
+ 279          ECReg   GCR21           _at_ 0x16E6;    // General Control 21 Register
+ 280          ECReg   GCR22           _at_ 0x16E7;    // General Control 22 Register
+ 281          
+ 282          ECReg   GPDRA                   _at_ 0x1601;    // Port A Data Register
+ 283          ECReg   GPDRB                   _at_ 0x1602;    // Port B Data Register
+ 284          ECReg   GPDRC                   _at_ 0x1603;    // Port C Data Register
+ 285          ECReg   GPDRD                   _at_ 0x1604;    // Port D Data Register
+ 286          ECReg   GPDRE                   _at_ 0x1605;    // Port E Data Register
+ 287          ECReg   GPDRF                   _at_ 0x1606;    // Port F Data Register
+ 288          ECReg   GPDRG                   _at_ 0x1607;    // Port G Data Register
+ 289          ECReg   GPDRH                   _at_ 0x1608;    // Port H Data Register
+ 290          ECReg   GPDRI                   _at_ 0x1609;    // Port I Data Register
+ 291          ECReg   GPDRJ                   _at_ 0x160A;    // Port J Data Register
+ 292          ECReg   GPDRM                   _at_ 0x160D;    // Port M Data Register
+ 293                                                                                          // GPIO control register
+ 294          ECReg   GPCRA0                  _at_ 0x1610;    // Port Control A0 Registers
+ 295          ECReg   GPCRA1                  _at_ 0x1611;    // Port Control A1 Registers
+ 296          ECReg   GPCRA2                  _at_ 0x1612;    // Port Control A2 Registers
+ 297          ECReg   GPCRA3                  _at_ 0x1613;    // Port Control A3 Registers
+ 298          ECReg   GPCRA4                  _at_ 0x1614;    // Port Control A4 Registers
+ 299          ECReg   GPCRA5                  _at_ 0x1615;    // Port Control A5 Registers
+ 300          ECReg   GPCRA6                  _at_ 0x1616;    // Port Control A6 Registers
+ 301          ECReg   GPCRA7                  _at_ 0x1617;    // Port Control A7 Registers
+ 302          
+C51 COMPILER V9.03   CORE_CHIPREGS                                                         02/02/2015 14:30:16 PAGE 6   
+
+ 303          ECReg   GPCRB0                  _at_ 0x1618;    // Port Control B0 Registers
+ 304          ECReg   GPCRB1                  _at_ 0x1619;    // Port Control B1 Registers
+ 305          ECReg   GPCRB2                  _at_ 0x161A;    // Port Control B2 Registers
+ 306          ECReg   GPCRB3                  _at_ 0x161B;    // Port Control B3 Registers
+ 307          ECReg   GPCRB4                  _at_ 0x161C;    // Port Control B4 Registers
+ 308          ECReg   GPCRB5                  _at_ 0x161D;    // Port Control B5 Registers
+ 309          ECReg   GPCRB6                  _at_ 0x161E;    // Port Control B6 Registers
+ 310          ECReg   GPCRB7                  _at_ 0x161F;    // Port Control B7 Registers
+ 311          
+ 312          ECReg   GPCRC0                  _at_ 0x1620;    // Port Control C0 Registers
+ 313          ECReg   GPCRC1                  _at_ 0x1621;    // Port Control C1 Registers
+ 314          ECReg   GPCRC2                  _at_ 0x1622;    // Port Control C2 Registers
+ 315          ECReg   GPCRC3                  _at_ 0x1623;    // Port Control C3 Registers
+ 316          ECReg   GPCRC4                  _at_ 0x1624;    // Port Control C4 Registers
+ 317          ECReg   GPCRC5                  _at_ 0x1625;    // Port Control C5 Registers
+ 318          ECReg   GPCRC6                  _at_ 0x1626;    // Port Control C6 Registers
+ 319          ECReg   GPCRC7                  _at_ 0x1627;    // Port Control C7 Registers
+ 320          
+ 321          ECReg   GPCRD0                  _at_ 0x1628;    // Port Control D0 Registers
+ 322          ECReg   GPCRD1                  _at_ 0x1629;    // Port Control D1 Registers
+ 323          ECReg   GPCRD2                  _at_ 0x162A;    // Port Control D2 Registers
+ 324          ECReg   GPCRD3                  _at_ 0x162B;    // Port Control D3 Registers
+ 325          ECReg   GPCRD4                  _at_ 0x162C;    // Port Control D4 Registers
+ 326          ECReg   GPCRD5                  _at_ 0x162D;    // Port Control D5 Registers
+ 327          ECReg   GPCRD6                  _at_ 0x162E;    // Port Control D6 Registers
+ 328          ECReg   GPCRD7                  _at_ 0x162F;    // Port Control D7 Registers
+ 329          
+ 330          ECReg   GPCRE0                  _at_ 0x1630;    // Port Control E0 Registers
+ 331          ECReg   GPCRE1                  _at_ 0x1631;    // Port Control E1 Registers
+ 332          ECReg   GPCRE2                  _at_ 0x1632;    // Port Control E2 Registers
+ 333          ECReg   GPCRE3                  _at_ 0x1633;    // Port Control E3 Registers
+ 334          ECReg   GPCRE4                  _at_ 0x1634;    // Port Control E4 Registers
+ 335          ECReg   GPCRE5                  _at_ 0x1635;    // Port Control E5 Registers
+ 336          ECReg   GPCRE6                  _at_ 0x1636;    // Port Control E6 Registers
+ 337          ECReg   GPCRE7                  _at_ 0x1637;    // Port Control E7 Registers
+ 338          
+ 339          ECReg   GPCRF0                  _at_ 0x1638;    // Port Control F0 Registers
+ 340          ECReg   GPCRF1                  _at_ 0x1639;    // Port Control F1 Registers
+ 341          ECReg   GPCRF2                  _at_ 0x163A;    // Port Control F2 Registers
+ 342          ECReg   GPCRF3                  _at_ 0x163B;    // Port Control F3 Registers
+ 343          ECReg   GPCRF4                  _at_ 0x163C;    // Port Control F4 Registers
+ 344          ECReg   GPCRF5                  _at_ 0x163D;    // Port Control F5 Registers
+ 345          ECReg   GPCRF6                  _at_ 0x163E;    // Port Control F6 Registers
+ 346          ECReg   GPCRF7                  _at_ 0x163F;    // Port Control F7 Registers
+ 347          
+ 348          ECReg   GPCRG0                  _at_ 0x1640;    // Port Control G0 Registers
+ 349          ECReg   GPCRG1                  _at_ 0x1641;    // Port Control G1 Registers
+ 350          ECReg   GPCRG2                  _at_ 0x1642;    // Port Control G2 Registers
+ 351          ECReg   GPCRG3                  _at_ 0x1643;    // Port Control G3 Registers
+ 352          ECReg   GPCRG4                  _at_ 0x1644;    // Port Control G4 Registers
+ 353          ECReg   GPCRG5                  _at_ 0x1645;    // Port Control G5 Registers
+ 354          ECReg   GPCRG6                  _at_ 0x1646;    // Port Control G6 Registers
+ 355          ECReg   GPCRG7                  _at_ 0x1647;    // Port Control G7 Registers
+ 356          
+ 357          ECReg   GPCRH0                  _at_ 0x1648;    // Port Control H0 Registers
+ 358          ECReg   GPCRH1                  _at_ 0x1649;    // Port Control H1 Registers
+ 359          ECReg   GPCRH2                  _at_ 0x164A;    // Port Control H2 Registers
+ 360          ECReg   GPCRH3                  _at_ 0x164B;    // Port Control H3 Registers
+ 361          ECReg   GPCRH4                  _at_ 0x164C;    // Port Control H4 Registers
+ 362          ECReg   GPCRH5                  _at_ 0x164D;    // Port Control H5 Registers
+ 363          ECReg   GPCRH6                  _at_ 0x164E;    // Port Control H6 Registers
+ 364          
+C51 COMPILER V9.03   CORE_CHIPREGS                                                         02/02/2015 14:30:16 PAGE 7   
+
+ 365          ECReg   GPCRI0                  _at_ 0x1650;    // Port Control I0 Registers
+ 366          ECReg   GPCRI1                  _at_ 0x1651;    // Port Control I1 Registers
+ 367          ECReg   GPCRI2                  _at_ 0x1652;    // Port Control I2 Registers
+ 368          ECReg   GPCRI3                  _at_ 0x1653;    // Port Control I3 Registers
+ 369          ECReg   GPCRI4                  _at_ 0x1654;    // Port Control I4 Registers
+ 370          ECReg   GPCRI5                  _at_ 0x1655;    // Port Control I5 Registers
+ 371          ECReg   GPCRI6                  _at_ 0x1656;    // Port Control I6 Registers
+ 372          ECReg   GPCRI7                  _at_ 0x1657;    // Port Control I7 Registers
+ 373          
+ 374          ECReg   GPCRJ0                  _at_ 0x1658;    // Port Control J0 Registers
+ 375          ECReg   GPCRJ1                  _at_ 0x1659;    // Port Control J1 Registers
+ 376          ECReg   GPCRJ2                  _at_ 0x165A;    // Port Control J2 Registers
+ 377          ECReg   GPCRJ3                  _at_ 0x165B;    // Port Control J3 Registers
+ 378          ECReg   GPCRJ4                  _at_ 0x165C;    // Port Control J4 Registers
+ 379          ECReg   GPCRJ5                  _at_ 0x165D;    // Port Control J5 Registers
+ 380          ECReg   GPCRJ6                  _at_ 0x165E;    // Port Control J6 Registers
+ 381          ECReg   GPCRJ7                  _at_ 0x165F;    // Port Control J7 Registers
+ 382          
+ 383          ECReg   GPCRM0                  _at_ 0x16A0;    // Port Control M0 Registers
+ 384          ECReg   GPCRM1                  _at_ 0x16A1;    // Port Control M1 Registers
+ 385          ECReg   GPCRM2                  _at_ 0x16A2;    // Port Control M2 Registers
+ 386          ECReg   GPCRM3                  _at_ 0x16A3;    // Port Control M3 Registers
+ 387          ECReg   GPCRM4                  _at_ 0x16A4;    // Port Control M4 Registers
+ 388          ECReg   GPCRM5                  _at_ 0x16A5;    // Port Control M5 Registers
+ 389          ECReg   GPCRM6                  _at_ 0x16A6;    // Port Control M6 Registers
+ 390          
+ 391                                                                                          // Port Data Mirror Register
+ 392          ECReg   GPDMRA                  _at_ 0x1661;    // Port A Data Mirror Register
+ 393          ECReg   GPDMRB                  _at_ 0x1662;    // Port B Data Mirror Register
+ 394          ECReg   GPDMRC                  _at_ 0x1663;    // Port C Data Mirror Register
+ 395          ECReg   GPDMRD                  _at_ 0x1664;    // Port D Data Mirror Register
+ 396          ECReg   GPDMRE                  _at_ 0x1665;    // Port E Data Mirror Register
+ 397          ECReg   GPDMRF                  _at_ 0x1666;    // Port F Data Mirror Register
+ 398          ECReg   GPDMRG                  _at_ 0x1667;    // Port G Data Mirror Register
+ 399          ECReg   GPDMRH                  _at_ 0x1668;    // Port H Data Mirror Register
+ 400          ECReg   GPDMRI                  _at_ 0x1669;    // Port I Data Mirror Register
+ 401          ECReg   GPDMRJ                  _at_ 0x166A;    // Port J Data Mirror Register
+ 402          ECReg   GPDMRM                  _at_ 0x166D;    // Port M Data Mirror Register
+ 403          
+ 404          ECReg   GPOTA                   _at_ 0x1671;    // Output Type Register
+ 405          ECReg   GPOTB                   _at_ 0x1672;    // Output Type Register
+ 406          ECReg   GPOTD                   _at_ 0x1674;    // Output Type Register
+ 407          ECReg   GPOTE                   _at_ 0x1675;    // Output Type Register
+ 408          ECReg   GPOTF           _at_ 0x1676;    // Output Type Register
+ 409          ECReg   GPOTH           _at_ 0x1678;    // Output Type Register
+ 410          ECReg   GPOTJ           _at_ 0x167A;    // Output Type Register
+ 411          
+ 412          //-----------------------------------------------------------------------------
+ 413          // (17XXh) PS/2 Interface Register                                                
+ 414          //-----------------------------------------------------------------------------
+ 415          ECReg   PSCTL1                  _at_ 0x1700;    // PS/2 Control Register 1
+ 416          ECReg   PSCTL2                  _at_ 0x1701;    // PS/2 Control Register 2
+ 417          ECReg   PSCTL3                  _at_ 0x1702;    // PS/2 Control Register 3
+ 418          ECReg   PSINT1                  _at_ 0x1704;    // PS/2 Interrupt Control Register 1
+ 419          ECReg   PSINT2                  _at_ 0x1705;    // PS/2 Interrupt Control Register 2
+ 420          ECReg   PSINT3                  _at_ 0x1706;    // PS/2 Interrupt Control Register 3
+ 421          ECReg   PSSTS1                  _at_ 0x1708;    // PS/2 Status Register 1
+ 422          ECReg   PSSTS2                  _at_ 0x1709;    // PS/2 Status Register 2
+ 423          ECReg   PSSTS3                  _at_ 0x170A;    // PS/2 Status Register 3
+ 424          ECReg   PSDAT1                  _at_ 0x170C;    // PS/2 Data Register 1
+ 425          ECReg   PSDAT2                  _at_ 0x170D;    // PS/2 Data Register 2
+ 426          ECReg   PSDAT3                  _at_ 0x170E;    // PS/2 Data Register 3
+C51 COMPILER V9.03   CORE_CHIPREGS                                                         02/02/2015 14:30:16 PAGE 8   
+
+ 427          
+ 428          //-----------------------------------------------------------------------------
+ 429          // (18xxh) PWM & SmartAuto Fan Control (PWM) 
+ 430          //-----------------------------------------------------------------------------
+ 431          ECReg   C0CPRS                  _at_ 0x1800;    // Channel 0 Clock Prescaler Register
+ 432          ECReg   CTR                     _at_ 0x1801;    // Cycle Time 0
+ 433          ECReg   DCR0                    _at_ 0x1802;    // Channel 0 PWM Duty Cycle             
+ 434          ECReg   DCR1                    _at_ 0x1803;    // Channel 0 PWM Duty Cycle     
+ 435          ECReg   DCR2                    _at_ 0x1804;    // Channel 0 PWM Duty Cycle     
+ 436          ECReg   DCR3                    _at_ 0x1805;    // Channel 0 PWM Duty Cycle     
+ 437          ECReg   DCR4                    _at_ 0x1806;    // Channel 0 PWM Duty Cycle     
+ 438          ECReg   DCR5                    _at_ 0x1807;    // Channel 0 PWM Duty Cycle     
+ 439          ECReg   DCR6                    _at_ 0x1808;    // Channel 0 PWM Duty Cycle     
+ 440          ECReg   DCR7                    _at_ 0x1809;    // Channel 0 PWM Duty Cycle     
+ 441          ECReg   PWMPOL          _at_ 0x180A;    // PWM Polarity
+ 442          ECReg   PCFSR                   _at_ 0x180B;    // Prescaler Clock Frequency Select Register
+ 443          ECReg   PCSSGL                  _at_ 0x180C;    // Prescaler Clock Source Select Group Low
+ 444          ECReg   PCSSGH                  _at_ 0x180D;    // Prescaler Clock Source Select Group High
+ 445          ECReg   CR256PCSSG              _at_ 0x180E;    // CR256 Prescaler Clock Source Select Group
+ 446          ECReg   PCSGR                   _at_ 0x180F;    // Prescaler Clock Source Gating Register
+ 447          ECReg   F1TLRR                  _at_ 0x181E;    // Fan 1 Tachometer LSB Reading
+ 448          ECReg   F1TMRR                  _at_ 0x181F;    // Fan 1 Tachometer MSB Reading
+ 449          ECReg   F2TLRR                  _at_ 0x1820;    // Fan 2 Tachometer LSB Reading
+ 450          ECReg   F2TMRR                  _at_ 0x1821;    // Fan 2 Tachometer MSB Reading
+ 451          ECReg   ZINTSCR                 _at_ 0x1822;    // Zone Interrupt Status Control
+ 452          ECReg   ZTIER                   _at_ 0x1823;    // PWM Clock Control Register
+ 453          ECReg   TSWCTLR                 _at_ 0x1824;    // Tachometer Switch Control Register
+ 454          ECReg   C4CPRS                  _at_ 0x1827;    // Channel 4 Clock Prescaler Register
+ 455          ECReg   C4MCPRS                 _at_ 0x1828;    // Channel 4 Clock Prescaler MSB Register
+ 456          ECReg   C6CPRS                  _at_ 0x182B;    // Channel 6 Clock Prescaler Register
+ 457          ECReg   C6MCPRS                 _at_ 0x182C;    // Channel 6 Clock Prescaler MSB Register
+ 458          ECReg   C7CPRS                  _at_ 0x182D;    // Channel 7 Clock Prescaler Register
+ 459          ECReg   C7MCPRS                 _at_ 0x182E;    // Channel 7 Clock Prescaler MSB Register
+ 460          ECReg   CLK6MSEL                _at_ 0x1840;    // PWM Clock 6MHz Select Register
+ 461          ECReg   CTR1                    _at_ 0x1841;    // Cycle Time 1
+ 462          ECReg   CTR2                    _at_ 0x1842;    // Cycle Time 2
+ 463          ECReg   CTR3                    _at_ 0x1843;    // Cycle Time 3
+ 464          ECReg   PWM5TOCTRL              _at_ 0x1844;    // PWM5 Timeout Control Register
+ 465          ECReg   CFLRR                   _at_ 0x1845;    // Color Frequency LSB Register
+ 466          ECReg   CFMRR                   _at_ 0x1846;    // Color Frequency MSB Register
+ 467          ECReg   CFINTCTRL               _at_ 0x1847;    // Color Frequency Interrupt Control Register
+ 468          
+ 469          ECReg   TSWCTRL                 _at_ 0x1848;    // Tachometer Switch Control Register
+ 470          ECReg   PWMODENR                _at_ 0x1849;    // PWM Output Open-Drain Enable Register
+ 471          
+ 472          ECReg   PWM0LHE                 _at_ 0x1850;    // PWM0 LED DIMMING ENABLE REGISTER
+ 473          ECReg   PWM0LCR1                _at_ 0x1851;    // PWM0 LED DIMMING CONTROL REGISTER 1
+ 474          ECReg   PWM0LCR2                _at_ 0x1852;    // PWM0 LED DIMMING CONTROL REGISTER 2
+ 475          ECReg   PWM1LHE                 _at_ 0x1853;    // PWM1 LED DIMMING ENABLE REGISTER
+ 476          ECReg   PWM1LCR1                _at_ 0x1854;    // PWM1 LED DIMMING CONTROL REGISTER 1
+ 477          ECReg   PWM1LCR2                _at_ 0x1855;    // PWM1 LED DIMMING CONTROL REGISTER 2
+ 478          
+ 479          //-----------------------------------------------------------------------------
+ 480          // (19xxh) Analog to Digital converter (ADC) 
+ 481          //-----------------------------------------------------------------------------
+ 482          ECReg   ADCSTS                  _at_ 0x1900;    // ADC Status
+ 483          ECReg   ADCCFG                  _at_ 0x1901;    // ADC Configuration
+ 484          ECReg   ADCCTL                  _at_ 0x1902;    // ADC Clock Control
+ 485          ECReg   ADCGCR          _at_ 0x1903;    // ADC General Control Register
+ 486          ECReg   VCH0CTL                 _at_ 0x1904;    // Voltage Channel 0 Channel Control
+ 487          ECReg   KDCTL                   _at_ 0x1905;    // Calibration Data Control Register
+ 488          ECReg   VCH1CTL         _at_ 0x1906;    // Voltage Channel 1 Control
+C51 COMPILER V9.03   CORE_CHIPREGS                                                         02/02/2015 14:30:16 PAGE 9   
+
+ 489          ECReg   VCH1DATL        _at_ 0x1907;    // Voltage Channel 1 Data Buffer LSB
+ 490          ECReg   VCH1DATM        _at_ 0x1908;    // Voltage Channel 1 Data Buffer MSB
+ 491          ECReg   VCH2CTL         _at_ 0x1909;    // Voltage Channel 2 Control
+ 492          ECReg   VCH2DATL        _at_ 0x190A;    // Voltage Channel 2 Data Buffer LSB
+ 493          ECReg   VCH2DATM        _at_ 0x190B;    // Voltage Channel 2 Data Buffer MSB
+ 494          ECReg   VCH3CTL         _at_ 0x190C;    // Voltage Channel 3 Control
+ 495          ECReg   VCH3DATL        _at_ 0x190D;    // Voltage Channel 3 Data Buffer LSB
+ 496          ECReg   VCH3DATM        _at_ 0x190E;    // Voltage Channel 3 Data Buffer MSB
+ 497          ECReg   VHSCDBL         _at_ 0x1914;    // Voltage High Scale Calibration Data Buffer LSB
+ 498          ECReg   VHSCDBM         _at_ 0x1915;    // Voltage High Scale Calibration Data Buffer MSB
+ 499          ECReg   VCH0DATL                _at_ 0x1918;    // Voltage Channel 0 Data Buffer LSB
+ 500          ECReg   VCH0DATM                _at_ 0x1919;    // Voltage Channel 0 Data Buffer MSB
+ 501          ECReg   VHSGCDBL        _at_ 0x191C;    // Voltage High Scale Gain-error Calibration Data Buffer LSB
+ 502          ECReg   VHSGCDBM        _at_ 0x191D;    // Voltage High Scale Gain-error Calibration Data Buffer MSB
+ 503          
+ 504          ECReg   VCMPSCP         _at_ 0x1937;    // Voltage Compare Scan Period
+ 505          ECReg   VCH4CTL         _at_ 0x1938;    // Voltage Channel 4 Control Register
+ 506          ECReg   VCH4DATM        _at_ 0x1939;    // Volt Channel 4 Data Buffer MSB
+ 507          ECReg   VCH4DATL        _at_ 0x193A;    // Volt Channel 4 Data Buffer LSB
+ 508          ECReg   VCH5CTL         _at_ 0x193B;    // Voltage Channel 5 Control Register
+ 509          ECReg   VCH5DATM        _at_ 0x193C;    // Volt Channel 5 Data Buffer MSB
+ 510          ECReg   VCH5DATL        _at_ 0x193D;    // Volt Channel 5 Data Buffer LSB
+ 511          ECReg   VCH6CTL         _at_ 0x193E;    // Voltage Channel 6 Control Register
+ 512          ECReg   VCH6DATM        _at_ 0x193F;    // Volt Channel 6 Data Buffer MSB
+ 513          ECReg   VCH6DATL        _at_ 0x1940;    // Volt Channel 6 Data Buffer LSB
+ 514          ECReg   VCH7CTL         _at_ 0x1941;    // Voltage Channel 7 Control Register
+ 515          ECReg   VCH7DATM        _at_ 0x1942;    // Volt Channel 7 Data Buffer MSB
+ 516          ECReg   VCH7DATL        _at_ 0x1943;    // Volt Channel 7 Data Buffer LSB
+ 517          ECReg   ADCDVSTS        _at_ 0x1944;    // ADC Data Vaild Status
+ 518          ECReg   VCMPSTS         _at_ 0x1945;    // Voltage Compare Status
+ 519          ECReg   VCMP0CTL        _at_ 0x1946;    // Voltage Compare Channel 0 Control Register
+ 520          ECReg   CMP0THRDATM     _at_ 0x1947;    // Voltage Compare 0 Threshold Data Buffer MSB
+ 521          ECReg   CMP0THRDATL     _at_ 0x1948;    // Voltage Compare 0 Threshold Data Buffer LSB
+ 522          ECReg   VCMP1CTL        _at_ 0x1949;    // Voltage Compare Channel 1 Control Register
+ 523          ECReg   CMP1THRDATM     _at_ 0x194A;    // Voltage Compare 1 Threshold Data Buffer MSB
+ 524          ECReg   CMP1THRDATL     _at_ 0x194B;    // Voltage Compare 1 Threshold Data Buffer LSB
+ 525          ECReg   VCMP2CTL        _at_ 0x194C;    // Voltage Compare Channel 2 Control Register
+ 526          ECReg   CMP2THRDATM     _at_ 0x194D;    // Voltage Compare 2 Threshold Data Buffer MSB
+ 527          ECReg   CMP2THRDATL     _at_ 0x194E;    // Voltage Compare 2 Threshold Data Buffer LSB
+ 528          ECReg   VCMPOTR                 _at_ 0x194F;    // Voltage Comparator Output Type Register
+ 529          ECReg   VCMPLR                  _at_ 0x1952;    // Voltage Comparator Lock Register
+ 530          
+ 531          //-----------------------------------------------------------------------------
+ 532          // (1Axxh) Digital to Analog Converter (DAC) 
+ 533          //-----------------------------------------------------------------------------
+ 534          ECReg   DACPWRDN        _at_ 0x1A01;    // DAC Power Down Register
+ 535          ECReg   DACDAT0         _at_ 0x1A02;    // DAC Data Channel 0
+ 536          ECReg   DACDAT1         _at_ 0x1A03;    // DAC Data Channel 1
+ 537          ECReg   DACDAT2         _at_ 0x1A04;    // DAC Data Channel 2
+ 538          ECReg   DACDAT3         _at_ 0x1A05;    // DAC Data Channel 3
+ 539          ECReg   DACDAT4         _at_ 0x1A06;    // DAC Data Channel 4
+ 540          ECReg   DACDAT5         _at_ 0x1A07;    // DAC Data Channel 5
+ 541          
+ 542          //-----------------------------------------------------------------------------
+ 543          // (1Bxxh) Wack-Up control (WUC) 
+ 544          //-----------------------------------------------------------------------------
+ 545          ECReg   WUEMR1                  _at_ 0x1B00;    // Wake-Up Edge Mode Register 1
+ 546          ECReg   WUEMR2          _at_ 0x1B01;    // Wake-Up Edge Mode Register 2
+ 547          ECReg   WUEMR3          _at_ 0x1B02;    // Wake-Up Edge Mode Register 3
+ 548          ECReg   WUEMR4          _at_ 0x1B03;    // Wake-Up Edge Mode Register 4
+ 549          ECReg   WUEMR6          _at_ 0x1B10;    // Wake-Up Edge Mode Register 6
+ 550          ECReg   WUEMR7          _at_ 0x1B14;    // Wake-Up Edge Mode Register 7
+C51 COMPILER V9.03   CORE_CHIPREGS                                                         02/02/2015 14:30:16 PAGE 10  
+
+ 551          ECReg   WUEMR8          _at_ 0x1B18;    // Wake-Up Edge Mode Register 8
+ 552          ECReg   WUEMR9          _at_ 0x1B1C;    // Wake-Up Edge Mode Register 9
+ 553          ECReg   WUEMR10         _at_ 0x1B20;    // Wake-Up Edge Mode Register 10
+ 554          ECReg   WUEMR11         _at_ 0x1B24;    // Wake-Up Edge Mode Register 11
+ 555          ECReg   WUEMR12         _at_ 0x1B28;    // Wake-Up Edge Mode Register 12
+ 556          ECReg   WUEMR13         _at_ 0x1B2C;    // Wake-Up Edge Mode Register 13
+ 557          ECReg   WUEMR14         _at_ 0x1B30;    // Wake-Up Edge Mode Register 14
+ 558          ECReg   WUESR1          _at_ 0x1B04;    // Wake-Up Edge Sense Register 1
+ 559          ECReg   WUESR2          _at_ 0x1B05;    // Wake-Up Edge Sense Register 2
+ 560          ECReg   WUESR3          _at_ 0x1B06;    // Wake-Up Edge Sense Register 3
+ 561          ECReg   WUESR4          _at_ 0x1B07;    // Wake-Up Edge Sense Register 4
+ 562          ECReg   WUESR6          _at_ 0x1B11;    // Wake-Up Edge Sense Register 6
+ 563          ECReg   WUESR7          _at_ 0x1B15;    // Wake-Up Edge Sense Register 7
+ 564          ECReg   WUESR8          _at_ 0x1B19;    // Wake-Up Edge Sense Register 8
+ 565          ECReg   WUESR9          _at_ 0x1B1D;    // Wake-Up Edge Sense Register 9
+ 566          ECReg   WUESR10         _at_ 0x1B21;    // Wake-Up Edge Sense Register 10
+ 567          ECReg   WUESR11         _at_ 0x1B25;    // Wake-Up Edge Sense Register 11
+ 568          ECReg   WUESR12         _at_ 0x1B29;    // Wake-Up Edge Sense Register 12
+ 569          ECReg   WUESR13         _at_ 0x1B2D;    // Wake-Up Edge Sense Register 13
+ 570          ECReg   WUESR14         _at_ 0x1B31;    // Wake-Up Edge Sense Register 14
+ 571          ECReg   WUENR1          _at_ 0x1B08;    // Wake-Up Enable Register 1
+ 572          ECReg   WUENR2          _at_ 0x1B09;    // Wake-Up Enable Register 2
+ 573          ECReg   WUENR3          _at_ 0x1B0A;    // Wake-Up Enable Register 3
+ 574          ECReg   WUENR4                  _at_ 0x1B0B;    // Wake-Up Enable Register 4
+ 575          ECReg   WUENR6                  _at_ 0x1B12;    // Wake-Up Enable Register 6
+ 576          ECReg   WUENR7                  _at_ 0x1B16;    // Wake-Up Enable Register 7
+ 577          ECReg   WUENR8          _at_ 0x1B1A;    // Wake-Up Enable Register 8
+ 578          ECReg   WUENR9          _at_ 0x1B1E;    // Wake-Up Enable Register 9
+ 579          
+ 580          //-----------------------------------------------------------------------------
+ 581          // (1Cxxh) SMBus Interface (SMB) 
+ 582          //-----------------------------------------------------------------------------
+ 583          ECReg   HOSTA_A         _at_ 0x1C00;    // Host Status A
+ 584          ECReg   HOSTA_B         _at_ 0x1C11;    // Host Status B
+ 585          ECReg   HOSTA_C         _at_ 0x1C29;    // Host Status C
+ 586          ECReg   HOSTA_D         _at_ 0x1C35;    // Host Status D
+ 587          ECReg   HOCTL_A         _at_ 0x1C01;    // Host Control A
+ 588          ECReg   HOCTL_B         _at_ 0x1C12;    // Host Control B
+ 589          ECReg   HOCTL_C         _at_ 0x1C2A;    // Host Control C
+ 590          ECReg   HOCTL_D         _at_ 0x1C36;    // Host Control D
+ 591          ECReg   HOCMD_A         _at_ 0x1C02;    // Host Command A
+ 592          ECReg   HOCMD_B         _at_ 0x1C13;    // Host Command B
+ 593          ECReg   HOCMD_C         _at_ 0x1C2B;    // Host Command C
+ 594          ECReg   HOCMD_D         _at_ 0x1C37;    // Host Command D
+ 595          ECReg   TRASLA_A        _at_ 0x1C03;    // Transmit Slave Address A
+ 596          ECReg   TRASLA_B        _at_ 0x1C14;    // Transmit Slave Address B
+ 597          ECReg   TRASLA_C        _at_ 0x1C2C;    // Transmit Slave Address C
+ 598          ECReg   TRASLA_D        _at_ 0x1C38;    // Transmit Slave Address D
+ 599          ECReg   D0REG_A         _at_ 0x1C04;    // Host Data 0 A
+ 600          ECReg   D0REG_B         _at_ 0x1C15;    // Host Data 0 B
+ 601          ECReg   D0REG_C         _at_ 0x1C2D;    // Host Data 0 C
+ 602          ECReg   D0REG_D         _at_ 0x1C39;    // Host Data 0 D
+ 603          ECReg   D1REG_A         _at_ 0x1C05;    // Host Data 1 A
+ 604          ECReg   D1REG_B         _at_ 0x1C16;    // Host Data 1 B
+ 605          ECReg   D1REG_C         _at_ 0x1C2E;    // Host Data 1 C
+ 606          ECReg   D1REG_D         _at_ 0x1C3A;    // Host Data 1 D
+ 607          ECReg   HOBDB_A         _at_ 0x1C06;    // Host Block Data Byte A
+ 608          ECReg   HOBDB_B         _at_ 0x1C17;    // Host Block Data Byte B
+ 609          ECReg   HOBDB_C         _at_ 0x1C2F;    // Host Block Data Byte C
+ 610          ECReg   HOBDB_D         _at_ 0x1C3B;    // Host Block Data Byte D
+ 611          ECReg   PECERC_A        _at_ 0x1C07;    // Packet Error Check A
+ 612          ECReg   PECERC_B        _at_ 0x1C18;    // Packet Error Check B
+C51 COMPILER V9.03   CORE_CHIPREGS                                                         02/02/2015 14:30:16 PAGE 11  
+
+ 613          ECReg   PECERC_C        _at_ 0x1C30;    // Packet Error Check C
+ 614          ECReg   PECERC_D        _at_ 0x1C3C;    // Packet Error Check D
+ 615          
+ 616          ECReg   RESLADR_A               _at_ 0x1C08;    // Receive Slave Adress A
+ 617          ECReg   RESLADR_B               _at_ 0x1C19;    // Receive Slave Adress B
+ 618          ECReg   RESLADR_2_A             _at_ 0x1C3F;    // Receive Slave Adress_2 A
+ 619          ECReg   RESLADR_2_B             _at_ 0x1C44;    // Receive Slave Adress_2 B
+ 620          ECReg   SLDA_A                  _at_ 0x1C09;    // Slave Data A
+ 621          ECReg   SLDA_B                  _at_ 0x1C1A;    // Slave Data B
+ 622          
+ 623          ECReg   SMBPCTL_A       _at_ 0x1C0A;    // SMBUS Pin Control A
+ 624          ECReg   SMBPCTL_B       _at_ 0x1C1B;    // SMBUS Pin Control B
+ 625          ECReg   SMBPCTL_C       _at_ 0x1C31;    // SMBUS Pin Control C
+ 626          ECReg   SMBPCTL_D       _at_ 0x1C3D;    // SMBUS Pin Control D
+ 627          
+ 628          ECReg   SLSTA_A                 _at_ 0x1C0B;    // Slave Status A
+ 629          ECReg   SLSTA_B                 _at_ 0x1C1C;    // Slave Status B
+ 630          ECReg   SICR_A                  _at_ 0x1C0C;    // Slave Interrupt Control A
+ 631          ECReg   SICR_B                  _at_ 0x1C1D;    // Slave Interrupt Control B
+ 632          ECReg   NDADR_A                 _at_ 0x1C0D;    // Notify Device Adress A
+ 633          ECReg   NDADR_B                 _at_ 0x1C1E;    // Notify Device Adress B
+ 634          ECReg   NDLB_A                  _at_ 0x1C0E;    // Notify Data Low Byte A
+ 635          ECReg   NDLB_B                  _at_ 0x1C1F;    // Notify Data Low Byte B
+ 636          ECReg   NDHB_A                  _at_ 0x1C0F;    // Notify Data High Byte A
+ 637          ECReg   NDHB_B                  _at_ 0x1C20;    // Notify Data High Byte B
+ 638          
+ 639          ECReg   HOCTL2_A        _at_ 0x1C10;    // Host Control2 A
+ 640          ECReg   HOCTL2_B        _at_ 0x1C21;    // Host Control2 B
+ 641          ECReg   HOCTL2_C        _at_ 0x1C32;    // Host Control2 C
+ 642          ECReg   HOCTL2_D        _at_ 0x1C3E;    // Host Control2 D
+ 643          ECReg   SMB4P7USL       _at_ 0x1C22;    // 4.7 £gs Low Register
+ 644          ECReg   SMB4P0USH       _at_ 0x1C23;    // 4.7 £gs High Register
+ 645          ECReg   SMB300NS                _at_ 0x1C24;    // 300 ns Register
+ 646          ECReg   SMB250NS                _at_ 0x1C25;    // 250 ns Register
+ 647          ECReg   SMB25MS                 _at_ 0x1C26;    // 25 ms Register
+ 648          ECReg   SMB45P3USL              _at_ 0x1C27;    // 45.3 £gs Low Register
+ 649          ECReg   SMBS4P3USH              _at_ 0x1C28;    // 45.3 £gs High Register
+ 650          ECReg   SMB4P7A4P0H             _at_ 0x1C33;    // 4.7 £gs and 4.0 £gs High Register
+ 651          
+ 652          ECReg   SLVISEL                 _at_ 0x1C34;    // Slave Interface Select
+ 653          ECReg   SCLKTS_A                _at_ 0x1C40;    // SMCLK Timing Setting Register A
+ 654          ECReg   SCLKTS_B                _at_ 0x1C41;    // SMCLK Timing Setting Register B
+ 655          ECReg   SCLKTS_C                _at_ 0x1C42;    // SMCLK Timing Setting Register C
+ 656          ECReg   SCLKTS_D                _at_ 0x1C43;    // SMCLK Timing Setting Register D
+ 657          ECReg   SMBFFCTRL1      _at_ 0x1C45;    // SMbus FIFO Control 1 Register
+ 658          ECReg   SMBFFSTS1       _at_ 0x1C46;    // SMBus FIFO Status 1 Register
+ 659          ECReg   SMBFFCTRL2      _at_ 0x1C47;    // SMBus FIFO Control 2 Register
+ 660          ECReg   SMBFFSTS2       _at_ 0x1C48;    // SMBus FIFO Status 2 Register
+ 661          
+ 662          ECReg   HONACKSRC_A     _at_ 0x1C49;    // HOST Nack Source A
+ 663          ECReg   HONACKSRC_B     _at_ 0x1C4A;    // HOST Nack Source     B
+ 664          ECReg   HONACKSRC_C     _at_ 0x1C4B;    // HOST Nack Source     C
+ 665          ECReg   HONACKSRC_D     _at_ 0x1C4C;    // HOST Nack Source     D
+ 666          ECReg   SLVFTH          _at_ 0x1C4D;    // Slave FIFO Threshold
+ 667          ECReg   MSTHTH          _at_ 0x1C4F;    // Master FIFO Threshold
+ 668          ECReg   MFTHEN          _at_ 0x1C50;    // Master FIFO Threshold Enable
+ 669          ECReg   MFTISTA         _at_ 0x1C51;    // Master FIFO Threshold Interrupt Status
+ 670          ECReg   SFTHEN          _at_ 0x1C58;    // Slave FIFO Threshold Enable
+ 671          ECReg   SFTISTA         _at_ 0x1C59;    // Slave FIFO Threshold Interrupt Status
+ 672          ECReg   SFFCTL          _at_ 0x1C5E;    // Slave FIFO Control Register
+ 673          ECReg   SFFSTA          _at_ 0x1C5F;    // Slave FIFO Status
+ 674          ECReg   I2CW2RF         _at_ 0x1C69;    // I2C Wr to Rd FIFO Register
+C51 COMPILER V9.03   CORE_CHIPREGS                                                         02/02/2015 14:30:16 PAGE 12  
+
+ 675          ECReg   IWRFISTA        _at_ 0x1C6A;    // I2C Wr to Rd FIFO Interrupt Status
+ 676          
+ 677          //-----------------------------------------------------------------------------
+ 678          // (1Dxxh) Keyboard Matrix Scan control (KBS) 
+ 679          //-----------------------------------------------------------------------------
+ 680          ECReg   KSOL            _at_ 0x1D00;    // Keyboard Scan Out
+ 681          ECReg   KSOH1           _at_ 0x1D01;    // Keyboard Scan Out
+ 682          ECReg   KSOCTRL         _at_ 0x1D02;    // Keyboard Scan Out Control
+ 683          ECReg   KSOH2                   _at_ 0x1D03;    // Keyboard Scan Out
+ 684          ECReg   KSI             _at_ 0x1D04;    // Keyboard Scan In
+ 685          ECReg   KSICTRL         _at_ 0x1D05;    // Keyboard Scan In Control
+ 686          ECReg   KSIGCTRL        _at_ 0x1D06;    // Keyboard Scan In [7:0] GPIO Control
+ 687          ECReg   KSIGOEN         _at_ 0x1D07;    // Keyboard Scan In [7:0] GPIO Output Enable
+ 688          ECReg   KSIGDAT         _at_ 0x1D08;    // Keyboard Scan In [7:0] GPIO DATA
+ 689          ECReg   KSIGDMRR        _at_ 0x1D09;    // Keyboard Scan In [7:0] GPIO DATA Mirror
+ 690          ECReg   KSOHGCTRL       _at_ 0x1D0A;    // Keyboard Scan Out [15:8] GPIO Control
+ 691          ECReg   KSOHGOEN        _at_ 0x1D0B;    // Keyboard Scan Out [15:8] GPIO Output Enable
+ 692          ECReg   KSOHGDMRR       _at_ 0x1D0C;    // Keyboard Scan Out [15:8] GPIO DATA Mirror
+ 693          ECReg   KSOLGCTRL       _at_ 0x1D0D;    // Keyboard Scan Out [7:0] GPIO Control
+ 694          ECReg   KSOLGOEN        _at_ 0x1D0E;    // Keyboard Scan Out [7:0] GPIO Output Enable
+ 695          ECReg   KSOLGDMRR       _at_ 0x1D0F;    // Keyboard Scan Out [7:0] GPIO DATA Mirror
+ 696          ECReg   KSO0LSDR        _at_ 0x1D10;    // KSO 0 Low Scan Data Register
+ 697          ECReg   KSO1LSDR        _at_ 0x1D11;    // KSO 1 Low Scan Data Register
+ 698          ECReg   KSO2LSDR        _at_ 0x1D12;    // KSO 2 Low Scan Data Register
+ 699          ECReg   KSO3LSDR        _at_ 0x1D13;    // KSO 3 Low Scan Data Register
+ 700          ECReg   KSO4LSDR        _at_ 0x1D14;    // KSO 4 Low Scan Data Register
+ 701          ECReg   KSO5LSDR        _at_ 0x1D15;    // KSO 5 Low Scan Data Register
+ 702          ECReg   KSO6LSDR        _at_ 0x1D16;    // KSO 6 Low Scan Data Register
+ 703          ECReg   KSO7LSDR        _at_ 0x1D17;    // KSO 7 Low Scan Data Register
+ 704          ECReg   KSO8LSDR        _at_ 0x1D18;    // KSO 8 Low Scan Data Register
+ 705          ECReg   KSO9LSDR        _at_ 0x1D19;    // KSO 9 Low Scan Data Register
+ 706          ECReg   KSO10LSDR       _at_ 0x1D1A;    // KSO 10 Low Scan Data Register
+ 707          ECReg   KSO11LSDR       _at_ 0x1D1B;    // KSO 11 Low Scan Data Register
+ 708          ECReg   KSO12LSDR       _at_ 0x1D1C;    // KSO 12 Low Scan Data Register
+ 709          ECReg   KSO13LSDR       _at_ 0x1D1D;    // KSO 13 Low Scan Data Register
+ 710          ECReg   KSO14LSDR       _at_ 0x1D1E;    // KSO 14 Low Scan Data Register
+ 711          ECReg   KSO15LSDR       _at_ 0x1D1F;    // KSO 15 Low Scan Data Register
+ 712          ECReg   KSO16LSDR       _at_ 0x1D20;    // KSO 16 Low Scan Data Register
+ 713          ECReg   KSO17LSDR       _at_ 0x1D21;    // KSO 17 Low Scan Data Register
+ 714          ECReg   SDC1R           _at_ 0x1D22;    // Scan Data Control 1 Register
+ 715          ECReg   SDC2R           _at_ 0x1D23;    // Scan Data Control 2 Register
+ 716          ECReg   SDC3R           _at_ 0x1D24;    // Scan Data Control 3 Register
+ 717          ECReg   SDSR            _at_ 0x1D25;    // Scan Data Control 4 Register
+ 718          //-----------------------------------------------------------------------------
+ 719          // (1Exxh) EC Clock and Power Management controller (ECPM) 
+ 720          //-----------------------------------------------------------------------------
+ 721          ECReg   CGCTRL1R        _at_ 0x1E01;    // Clock Gating Control 1
+ 722          ECReg   CGCTRL2R        _at_ 0x1E02;    // Clock Gating Control 2
+ 723          ECReg   CGCTRL3R                _at_ 0x1E05;    // Clock Gating Control 3
+ 724          ECReg   PLLCTRL         _at_ 0x1E03;    // PLL Control
+ 725          ECReg   AUTOCG                  _at_ 0x1E04;    // Auto Clock Gating
+ 726          ECReg   PLLFREQR                _at_ 0x1E06;    // PLL Frequency
+ 727          ECReg   PLLSSCR                 _at_ 0x1E07;    // PLL Frequency
+ 728          ECReg   PLLCSS          _at_ 0x1E08;    // PLL Clock Source Status
+ 729          ECReg   CGCTRL4R        _at_ 0x1E09;    // Clock Gating Control 4 Register
+ 730          //-----------------------------------------------------------------------------
+ 731          // (1Fxxh) External Timer & External Watchdog (ETWD) 
+ 732          //-----------------------------------------------------------------------------
+ 733          ECReg   ETWCFG          _at_ 0x1F01;    // External Timer/WDT Configuration Register
+ 734          ECReg   ETPSR           _at_ 0x1F02;    // External Timer Prescaler Register
+ 735          ECReg   ETCNTLHR        _at_ 0x1F03;    // External Timer Counter High Byte
+ 736          ECReg   ETCNTLLR        _at_ 0x1F04;    // External Timer Counter Low Byte
+C51 COMPILER V9.03   CORE_CHIPREGS                                                         02/02/2015 14:30:16 PAGE 13  
+
+ 737          ECReg   ETWCTRL         _at_ 0x1F05;    // External Timer/WDT Control Register
+ 738          ECReg   EWDCNTLR        _at_ 0x1F06;    // External WDT Counter Low Byte
+ 739          ECReg   EWDKEYR         _at_ 0x1F07;    // External WDT Key Register
+ 740          ECReg   EWDCNTHR                _at_ 0x1F09;    // External WDT Counter High Byte
+ 741          
+ 742          ECReg   ET2PSR          _at_ 0x1F0A;    // External Timer 2 Prescaler Register
+ 743          ECReg   ET2CNTLHR       _at_ 0x1F0B;    // External Timer 2 Counter High Byte
+ 744          ECReg   ET2CNTLLR       _at_ 0x1F0C;    // External Timer 2 Counter Low Byte
+ 745          ECReg   ET2CNTLH2R              _at_ 0x1F0E;    // External Timer 2 Counter High Byte 
+ 746          
+ 747          //-----------------------------------------------------------------------------
+ 748          // General Control (GCTRL) (20xxh)
+ 749          //-----------------------------------------------------------------------------
+ 750          ECReg   ECHIPID1                _at_ 0x2000;    // Chip ID Byte 1
+ 751          ECReg   ECHIPID2                _at_ 0x2001;    // Chip ID Byte 2
+ 752          ECReg   ECHIPVER                _at_ 0x2002;    // Chip Version
+ 753          ECReg   IDR                             _at_ 0x2004;    // Identify Input Register
+ 754          ECReg   RSTS                    _at_ 0x2006;    // Reset Status
+ 755          ECReg   RSTC1                   _at_ 0x2007;    // Reset Control 1
+ 756          ECReg   RSTC2                   _at_ 0x2008;    // Reset Control 2
+ 757          ECReg   RSTC3                   _at_ 0x2009;    // Reset Control 3
+ 758          ECReg   RSTC4                   _at_ 0x2011;    // Reset Control 4
+ 759          ECReg   RSTDMMC                 _at_ 0x2010;    // Reset Control DMMC
+ 760          ECReg   BADRSEL                 _at_ 0x200A;    // Base Address Select
+ 761          ECReg   WNCKR                   _at_ 0x200B;    // Wait Next Clock Rising
+ 762          ECReg   OSCTRL                  _at_ 0x200C;    // Oscillator Control Register
+ 763          ECReg   SPCTRL1                 _at_ 0x200D;    // Special Control 1
+ 764          ECReg   RSTCH                   _at_ 0x200E;    // Reset Control Host Side
+ 765          ECReg   GENIRQ                  _at_ 0x200F;    // Generate IRQ
+ 766          ECReg   SPECTRL2                _at_ 0x2012;    // Special Control 2
+ 767          ECReg   SPECTRL3                _at_ 0x2016;    // Special Control 3
+ 768          
+ 769          ECReg   PI2ECH                  _at_ 0x2014;    // Port I2EC High-Byte Register
+ 770          ECReg   PI2ECL                  _at_ 0x2015;    // Port I2EC Low-Byte Register
+ 771          ECReg   BINTADDR0R              _at_ 0x2019;    // BRAM Interrupt Address 0 Register
+ 772          ECReg   BINTADDR1R              _at_ 0x201A;    // BRAM Interrupt Address 1 Register
+ 773          ECReg   BINTCTRLR               _at_ 0x201B;    // BRAM Interrupt Control Register
+ 774          ECReg   SPCTRL4         _at_ 0x201C;    // Special Control 4
+ 775          
+ 776          ECReg   SHA1HASHCTRLR   _at_ 0x202D;    // SHA1 Hash Control Register
+ 777          ECReg   SHA1HBADDR      _at_ 0x202E;    // SHA1 Hash Base Address Register
+ 778          //-----------------------------------------------------------------------------
+ 779          // (21xxh) External GPIO Controller (EGPC) 
+ 780          //-----------------------------------------------------------------------------
+ 781          ECReg   EADDR                   _at_ 0x2100;    // External GPIO Address Register
+ 782          ECReg   EDAT                    _at_ 0x2101;    // External GPIO Data Register
+ 783          ECReg   ECNT                    _at_ 0x2102;    // External GPIO Control Register
+ 784          ECReg   ESTS                    _at_ 0x2103;    // External GPIO Status Register
+ 785          
+ 786          //-----------------------------------------------------------------------------
+ 787          // (22xxh) Battery-Backed SRAM (BRAM) 
+ 788          //-----------------------------------------------------------------------------
+ 789          ECReg   BRAM[64]                _at_ 0x2280;    // 64 bytes bram
+ 790          
+ 791          //-----------------------------------------------------------------------------
+ 792          // (23xxh) Consumer IR (CIR) 
+ 793          //-----------------------------------------------------------------------------
+ 794          ECReg   C0DR                    _at_ 0x2300;    // CIR Data Register
+ 795          ECReg   C0MSTCR                 _at_ 0x2301;    // CIR Master Control Register
+ 796          ECReg   C0IER                   _at_ 0x2302;    // CIR Interrupt Enable Register
+ 797          ECReg   C0IIR                   _at_ 0x2303;    // CIR Interrupt Identification Register
+ 798          ECReg   C0CFR                   _at_ 0x2304;    // CIR Carrier Frequency Register
+C51 COMPILER V9.03   CORE_CHIPREGS                                                         02/02/2015 14:30:16 PAGE 14  
+
+ 799          ECReg   C0RCR                   _at_ 0x2305;    // CIR Receive Control Register
+ 800          ECReg   C0TCR                   _at_ 0x2306;    // CIR Transmitter Register
+ 801          ECReg   C0SCK                   _at_ 0x2307;    // CIR for sleep mode
+ 802          ECReg   C0BDLR                  _at_ 0x2308;    // CIR Baud Rate Divisor Low Byte Register
+ 803          ECReg   C0BDHR                  _at_ 0x2309;    // CIR Baud Rate Divisor High Byte Register
+ 804          ECReg   C0TFSR                  _at_ 0x230A;    // CIR Transmitter FIFO Status Register
+ 805          ECReg   C0RFSR                  _at_ 0x230B;    // CIR Receiver FIFO Status Register
+ 806          ECReg   C0WCSSR                 _at_ 0x230C;    // CIR Wakeup Code Set Select Register
+ 807          ECReg   C0WCL                   _at_ 0x230D;    // CIR Wakeup Code Length Register
+ 808          ECReg   C0WCR                   _at_ 0x230E;    // CIR Wakeup Code Read/Write Register
+ 809          ECReg   C0WPS                   _at_ 0x230F;    // CIR Wakeup Code Power Control/Status Register
+ 810          ECReg   CSCRR                   _at_ 0x2310;    // CIR Scratch Register
+ 811          
+ 812          //-----------------------------------------------------------------------------
+ 813          // (25xxh) Debugger (DBGR) 
+ 814          //-----------------------------------------------------------------------------
+ 815          ECReg   BKA1L           _at_ 0x2510;    // Trigger 1 Address Low Byte Register
+ 816          ECReg   BKA1M           _at_ 0x2511;    // Trigger 1 Address Middle Byte Register
+ 817          ECReg   BKA1H           _at_ 0x2512;    // Trigger 1 Address High Byte Register
+ 818          ECReg   BKA2L           _at_ 0x2513;    // Trigger 2 Address Low Byte Register
+ 819          ECReg   BKA2M           _at_ 0x2514;    // Trigger 2 Address Middle Byte Register
+ 820          ECReg   BKA2H           _at_ 0x2515;    // Trigger 2 Address High Byte Register
+ 821          ECReg   BKA3L           _at_ 0x2516;    // Trigger 3 Address Low Byte Register
+ 822          ECReg   BKA3M           _at_ 0x2517;    // Trigger 3 Address Middle Byte Register
+ 823          ECReg   BKA3H           _at_ 0x2518;    // Trigger 3 Address High Byte Register
+ 824          
+ 825          //-----------------------------------------------------------------------------
+ 826          // (26xxh) Serial Peripheral Interface (SSPI) 
+ 827          //-----------------------------------------------------------------------------
+ 828          ECReg   SPIDATA                 _at_ 0x2600;    // SPI Data Register
+ 829          ECReg   SPICTRL1                _at_ 0x2601;    // SPI Control 1 Register
+ 830          ECReg   SPICTRL2                _at_ 0x2602;    // SPI Control 2 Register
+ 831          ECReg   SPICTRL3                _at_ 0x2604;    // SPI Control 3 Register
+ 832          ECReg   SPISTS                  _at_ 0x2603;    // SPI Status Register
+ 833          
+ 834          //-----------------------------------------------------------------------------
+ 835          // (27xxh) Extern Serial Port (UART1) 
+ 836          //-----------------------------------------------------------------------------
+ 837          ECReg   UART1_RBR               _at_ 0x2700;    // Receiver Buffer Register
+ 838          ECReg   UART1_IER               _at_ 0x2701;    // Interrupt Enable Register
+ 839          ECReg   UART1_IIR               _at_ 0x2702;    // Interrupt Identification Register
+ 840          ECReg   UART1_LCR               _at_ 0x2703;    // Line Control Register
+ 841          ECReg   UART1_MCR               _at_ 0x2704;    // Modem Control Register
+ 842          ECReg   UART1_LSR               _at_ 0x2705;    // Line Status Register
+ 843          ECReg   UART1_MSR               _at_ 0x2706;    // Modem Status Register
+ 844          ECReg   UART1_SCR               _at_ 0x2707;    // Scratch Pad Register
+ 845          ECReg   UART1_ECSPMR    _at_ 0x2708;    // EC Serial Port Mode Register
+ 846          
+ 847          //-----------------------------------------------------------------------------
+ 848          // (28xxh) Extern Serial Port (UART2) 
+ 849          //-----------------------------------------------------------------------------
+ 850          ECReg   UART2_RBR               _at_ 0x2800;    // Receiver Buffer Register
+ 851          ECReg   UART2_IER               _at_ 0x2801;    // Interrupt Enable Register
+ 852          ECReg   UART2_IIR               _at_ 0x2802;    // Interrupt Identification Register
+ 853          ECReg   UART2_LCR               _at_ 0x2803;    // Line Control Register
+ 854          ECReg   UART2_MCR               _at_ 0x2804;    // Modem Control Register
+ 855          ECReg   UART2_LSR               _at_ 0x2805;    // Line Status Register
+ 856          ECReg   UART2_MSR               _at_ 0x2806;    // Modem Status Register
+ 857          ECReg   UART2_SCR               _at_ 0x2807;    // Scratch Pad Register
+ 858          ECReg   UART2_ECSPMR    _at_ 0x2808;    // EC Serial Port Mode Register
+ 859          
+ 860          //-----------------------------------------------------------------------------
+C51 COMPILER V9.03   CORE_CHIPREGS                                                         02/02/2015 14:30:16 PAGE 15  
+
+ 861          // (29xxh) 8 Bit Timer (TMR)
+ 862          //-----------------------------------------------------------------------------
+ 863          ECReg   PRSC                    _at_ 0x2900;    // TMR Prescaler Register
+ 864          ECReg   GCSMS                   _at_ 0x2901;    // Group Clock Source and Mode Select Register
+ 865          ECReg   CTR_A0                  _at_ 0x2902;    // A0 Cycle Time Register
+ 866          ECReg   CTR_A1                  _at_ 0x2903;    // A1 Cycle Time Register
+ 867          ECReg   CTR_B0                  _at_ 0x2904;    // B0 Cycle Time Register
+ 868          ECReg   CTR_B1                  _at_ 0x2905;    // B1 Cycle Time Register
+ 869          ECReg   DCR_A0                  _at_ 0x2906;    // A0 Duty Time Register
+ 870          ECReg   DCR_A1                  _at_ 0x2907;    // A1 Duty Time Register
+ 871          ECReg   DCR_B0                  _at_ 0x2908;    // B0 Duty Time Register
+ 872          ECReg   DCR_B1                  _at_ 0x2909;    // B1 Duty Time Register
+ 873          ECReg   CCGSR                   _at_ 0x290A;    // Channel Clock Group Select Register
+ 874          ECReg   TMRCE                   _at_ 0x290B;    // TMR Clock Enable Register
+ 875          ECReg   TMEIE                   _at_ 0x290C;    // TMR Interrupt Enable Register
+ 876          
+ 877          //-----------------------------------------------------------------------------
+ 878          // (2Exxh) Consumer Electronics Control (CEC)
+ 879          //-----------------------------------------------------------------------------
+ 880          ECReg   CECDR          _at_ 0x2E00;    // CEC Data Register
+ 881          ECReg   CECFSTS        _at_ 0x2E01;    // CEC FIFO Status Register
+ 882          ECReg   CECDLA         _at_ 0x2E02;    // CEC Device Logical Address Register
+ 883          ECReg   CECCTRL        _at_ 0x2E03;    // CEC Control Register
+ 884          ECReg   CECSTS         _at_ 0x2E04;    // CEC Status Register
+ 885          ECReg   CECIE          _at_ 0x2E05;    // CEC Interrupt Enable Register
+ 886          ECReg   CECOPSTS       _at_ 0x2E06;    // CEC Operation Status Register
+ 887          ECReg   CECCRH         _at_ 0x2E07;    // CEC Received Header Register
+ 888          
+ 889          //-----------------------------------------------------------------------------
+ 890          // (30xxh) Platform Environment Control Interface (PECI)
+ 891          //-----------------------------------------------------------------------------
+ 892          ECReg   HOSTAR          _at_ 0x3000;    // Host Status Register
+ 893          ECReg   HOCTLR          _at_ 0x3001;    // Host Control Register
+ 894          ECReg   HOCMDR          _at_ 0x3002;    // Host Command Register
+ 895          ECReg   HOTRADDR        _at_ 0x3003;    // Host Target Address Register
+ 896          ECReg   HOWRLR          _at_ 0x3004;    // Host Write Length Register
+ 897          ECReg   HORDLR          _at_ 0x3005;    // Host Read Length Register
+ 898          ECReg   HOWRDR          _at_ 0x3006;    // Host Write Data Register
+ 899          ECReg   HORDDR          _at_ 0x3007;    // Host Read Data Register
+ 900          
+ 901          ECReg   HOCTL2R         _at_ 0x3008;    // Host Control 2 Register
+ 902          ECReg   RWFCSV          _at_ 0x3009;    // Received Write FCS Value
+ 903          ECReg   RRFCSV          _at_ 0x300A;    // Received Read FCS Value
+ 904          ECReg   WFCSV           _at_ 0x300B;    // Write FCS Value
+ 905          ECReg   RFCSV           _at_ 0x300C;    // Read FCS Falue
+ 906          ECReg   AWFCSV          _at_ 0x300D;    // Assured Write FCS Value
+ 907          ECReg   PADCTLR         _at_ 0x300E;    // Pad Control Register
+C51 COMPILER V9.03   CORE_CHIPREGS                                                         02/02/2015 14:30:16 PAGE 16  
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

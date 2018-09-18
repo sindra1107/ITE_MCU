@@ -1,0 +1,227 @@
+C51 COMPILER V9.03   OEM_ACPI                                                              02/02/2015 14:30:26 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE OEM_ACPI
+OBJECT MODULE PLACED IN Code\OEM\OEM_ACPI.OBJ
+COMPILER INVOKED BY: C:\Program Files\KeilC\C51\BIN\C51.exe Code\OEM\OEM_ACPI.C LA WL(1) CD OT(9,SIZE) NOAREGS OR INCDIR
+                    -(.\Code\CORE\INCLUDE\;.\Code\OEM\INCLUDE\;.\Code\CHIP\INCLUDE\;.\Code\API\INCLUDE\)
+
+line level    source
+
+   1          /*-----------------------------------------------------------------------------
+   2           * TITLE: OEM_ACPI.C
+   3           *
+   4           * Author : Dino
+   5           *
+   6           * Note : These functions are reference only.
+   7           *        Please follow your project software specification to do some modification.
+   8           *---------------------------------------------------------------------------*/
+   9          
+  10          #include <CORE_INCLUDE.H>
+  11          #include <OEM_INCLUDE.H>
+  12          
+  13          //----------------------------------------------------------------------------
+  14          // The hook function of 62 port data
+  15          //  Note : 
+  16          //  PM1Step != 0x00 is necessary.
+  17          //----------------------------------------------------------------------------
+  18          void Hook_62Port(BYTE PM1Data)
+  19          {
+  20   1      
+  21   1      }
+  22          
+  23          //----------------------------------------------------------------------------
+  24          // The hook function of 66 port command.
+  25          //----------------------------------------------------------------------------
+  26          void Hook_66Port(BYTE PM1Cmd)
+  27          {
+  28   1      
+  29   1      }
+  30          
+  31          //----------------------------------------------------------------------------
+  32          // Hook function of ACPI command
+  33          //----------------------------------------------------------------------------
+  34          void Hook_ACPICommand(void)
+  35          {
+  36   1      
+  37   1      }
+  38          
+  39          //-------------------------------------------------------------------------------
+  40          // parameter "QeventSCI" only, For a pulsed SCI
+  41          //------------------------------------------------------------------------------
+  42          void OEM_ACPI_Gen_Int(void)
+  43          {
+  44   1          ACPI_Gen_Int(QeventSCI);
+  45   1      }
+  46          
+  47          //-------------------------------------------------------------------------------
+  48          //
+  49          //-------------------------------------------------------------------------------
+  50          void ResetSCIEvent(void)
+  51          {
+  52   1          
+  53   1          CLEAR_MASK(PM1STS,SCIEVT);
+  54   1          ECCheckBurstMode = 0;
+C51 COMPILER V9.03   OEM_ACPI                                                              02/02/2015 14:30:26 PAGE 2   
+
+  55   1      }
+  56          
+  57          /* ----------------------------------------------------------------------------
+  58           * FUNCTION: ECQEvent -Setup cause flag for an SCI and start the ACPI_Timer.
+  59           *
+  60           * sci_number = 1 through 255.  The Host uses this number to determine the
+  61           * cause of the SCI.
+  62           * ------------------------------------------------------------------------- */
+  63          void ECQEvent(BYTE sci_number, BYTE sci_mode)
+  64          {
+  65   1      
+  66   1              SET_MASK(PM1STS,SCIEVT);
+  67   1          OEM_ACPI_Gen_Int();
+  68   1      }
+  69          
+  70          //----------------------------------------------------------------------------
+  71          // Read EC ram Space 
+  72          //----------------------------------------------------------------------------
+  73          BYTE Hook_ReadMapECSpace(BYTE MapIndex)
+  74          {
+  75   1              Tmp_XPntr=(ECRAM|MapIndex);
+  76   1              return(*Tmp_XPntr);     
+  77   1      }
+  78          
+  79          //----------------------------------------------------------------------------
+  80          // Write EC ram Space 
+  81          //----------------------------------------------------------------------------
+  82          void Hook_WriteMapECSpace(BYTE MapIndex, BYTE data1)
+  83          {
+  84   1              Tmp_XPntr=(ECRAM|MapIndex);
+  85   1              *Tmp_XPntr = data1;
+  86   1      }
+C51 COMPILER V9.03   OEM_ACPI                                                              02/02/2015 14:30:26 PAGE 3   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION Com0009 (BEGIN)
+0000         L?0010:
+0000 7403              MOV     A,#03H
+0002 7800        E     MOV     R0,#LOW Tmp_XPntr
+0004 F6                MOV     @R0,A
+0005 08                INC     R0
+0006 EF                MOV     A,R7
+0007 F6                MOV     @R0,A
+0008 F582              MOV     DPL,A
+000A 758303            MOV     DPH,#03H
+000D 22                RET     
+             ; FUNCTION Com0009 (END)
+
+             ; FUNCTION _Hook_62Port (BEGIN)
+                                           ; SOURCE LINE # 18
+0000 900000      R     MOV     DPTR,#PM1Data
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 19
+                                           ; SOURCE LINE # 21
+0005 22                RET     
+             ; FUNCTION _Hook_62Port (END)
+
+             ; FUNCTION _Hook_66Port (BEGIN)
+                                           ; SOURCE LINE # 26
+0000 900000      R     MOV     DPTR,#PM1Cmd
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 27
+                                           ; SOURCE LINE # 29
+0005 22                RET     
+             ; FUNCTION _Hook_66Port (END)
+
+             ; FUNCTION Hook_ACPICommand (BEGIN)
+                                           ; SOURCE LINE # 34
+                                           ; SOURCE LINE # 35
+                                           ; SOURCE LINE # 37
+0000 22                RET     
+             ; FUNCTION Hook_ACPICommand (END)
+
+             ; FUNCTION OEM_ACPI_Gen_Int (BEGIN)
+                                           ; SOURCE LINE # 42
+                                           ; SOURCE LINE # 43
+                                           ; SOURCE LINE # 44
+0000 7F01              MOV     R7,#01H
+0002 020000      E     LJMP    _ACPI_Gen_Int
+             ; FUNCTION OEM_ACPI_Gen_Int (END)
+
+             ; FUNCTION ResetSCIEvent (BEGIN)
+                                           ; SOURCE LINE # 50
+                                           ; SOURCE LINE # 51
+                                           ; SOURCE LINE # 53
+0000 900000      E     MOV     DPTR,#PM1STS
+0003 E0                MOVX    A,@DPTR
+0004 54DF              ANL     A,#0DFH
+0006 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 54
+0007 C200        E     CLR     ECCheckBurstMode
+                                           ; SOURCE LINE # 55
+C51 COMPILER V9.03   OEM_ACPI                                                              02/02/2015 14:30:26 PAGE 4   
+
+0009 22                RET     
+             ; FUNCTION ResetSCIEvent (END)
+
+             ; FUNCTION _ECQEvent (BEGIN)
+                                           ; SOURCE LINE # 63
+0000 900000      R     MOV     DPTR,#sci_number
+0003 EF                MOV     A,R7
+0004 F0                MOVX    @DPTR,A
+0005 A3                INC     DPTR
+0006 ED                MOV     A,R5
+0007 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 64
+                                           ; SOURCE LINE # 66
+0008 900000      E     MOV     DPTR,#PM1STS
+000B E0                MOVX    A,@DPTR
+000C 4420              ORL     A,#020H
+000E F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 67
+000F 020000      R     LJMP    OEM_ACPI_Gen_Int
+             ; FUNCTION _ECQEvent (END)
+
+             ; FUNCTION _Hook_ReadMapECSpace (BEGIN)
+                                           ; SOURCE LINE # 73
+;---- Variable 'MapIndex' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 74
+                                           ; SOURCE LINE # 75
+                                           ; SOURCE LINE # 76
+0000 120000      R     LCALL   L?0010
+0003 E0                MOVX    A,@DPTR
+0004 FF                MOV     R7,A
+                                           ; SOURCE LINE # 77
+0005         ?C0007:
+0005 22                RET     
+             ; FUNCTION _Hook_ReadMapECSpace (END)
+
+             ; FUNCTION _Hook_WriteMapECSpace (BEGIN)
+                                           ; SOURCE LINE # 82
+;---- Variable 'data1' assigned to Register 'R5' ----
+;---- Variable 'MapIndex' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 83
+                                           ; SOURCE LINE # 84
+                                           ; SOURCE LINE # 85
+0000 120000      R     LCALL   L?0010
+0003 ED                MOV     A,R5
+0004 F0                MOVX    @DPTR,A
+                                           ; SOURCE LINE # 86
+0005 22                RET     
+             ; FUNCTION _Hook_WriteMapECSpace (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     72    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       4
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
